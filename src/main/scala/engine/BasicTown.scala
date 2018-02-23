@@ -1,6 +1,12 @@
 package engine
 
-class BasicTown extends Town {
+import utils.Pos
+
+class BasicTown(pos : Pos) extends Town(pos : Pos) {
+
+  override def addStation(station: Station): Unit = {
+
+  }
 
   override def produce(): Unit = {
 

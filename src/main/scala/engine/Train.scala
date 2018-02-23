@@ -1,6 +1,8 @@
 package engine
 
-abstract class Train extends Item with Updatable {
+import utils.Pos
+
+abstract class Train(pos : Pos) extends Item with Updatable {
 
   val DEFAULT_SPEED = 10
   val DEFAULT_SIZE = 10
