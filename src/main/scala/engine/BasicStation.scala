@@ -1,6 +1,8 @@
 package engine
 
-class BasicStation extends Station {
+import utils.Pos
+
+class BasicStation(pos : Pos) extends Station(pos : Pos) {
 
   override def place(): Unit = {
 
@@ -14,4 +16,6 @@ class BasicStation extends Station {
     "Name : " + name + "\n\n" +
     "Capacity : " + capacity + "\n\n"
   }
+
+  override def getPos(): Pos = pos
 }

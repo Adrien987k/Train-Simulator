@@ -1,7 +1,0 @@
-package engine
-
-class EntityGroup {
-
-
-
-}

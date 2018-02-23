@@ -13,7 +13,8 @@ abstract class Town(pos : Pos) extends Updatable {
   var offer : Offer = new Offer
   var request : Request = new Request
 
-  var population = 0//Genérer
+  var population = 0//Generate
+
 
   override def getPos(): Pos = {
     pos
