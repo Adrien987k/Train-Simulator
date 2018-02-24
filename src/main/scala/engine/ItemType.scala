@@ -1,13 +1,7 @@
 package engine
 
-object ItemType {
-
-  sealed abstract class ItemType {
-
-  }
-
-  case object TRAIN   extends ItemType
-  case object TOWN    extends ItemType
-  case object STATION extends ItemType
-  case object ROAD    extends ItemType
+object ItemType extends Enumeration {
+  val TRAIN : Value = Value("Train")
+  val STATION : Value = Value("Station")
+  val ROAD : Value = Value("Road")
 }

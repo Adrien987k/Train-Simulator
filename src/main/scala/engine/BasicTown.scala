@@ -12,12 +12,12 @@ class BasicTown(pos : Pos) extends Town(pos : Pos) {
 
   }
 
-  override def unload(): Unit = {
-
+  override def unload(train : Train): Unit = {
+    population += train.nbPassenger
   }
 
-  override def load(): Unit = {
-
+  override def load(train : Train, from : Station, to : Station, nbPassenger : Int): Unit = {
+    from.load(train, to, nbPassenger)
   }
 
   override def explore(): Unit = {

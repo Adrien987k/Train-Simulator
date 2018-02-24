@@ -4,7 +4,7 @@ import utils.Pos
 
 import scala.collection.mutable.ArrayBuffer
 
-abstract class Station(pos : Pos) extends Item with Updatable {
+abstract class Station(pos : Pos, town : Town) extends Item with Updatable {
 
   val DEFAULT_CAPACITY = 5
 
@@ -13,5 +13,9 @@ abstract class Station(pos : Pos) extends Item with Updatable {
 
   val train:ArrayBuffer[Train] = ArrayBuffer.empty
   val rails:ArrayBuffer[Rail] = ArrayBuffer.empty
+
+  def unload(train : Train)
+
+  def load(train : Train, objective : Station, nbPassenger : Int)
 
 }

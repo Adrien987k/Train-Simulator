@@ -1,6 +1,8 @@
 package engine
 
-abstract class Rail extends Item with Updatable {
+import utils.Pos
+
+abstract class Rail(pos1 : Pos, pos2 : Pos) extends Item with Updatable {
 
   val DEFAULT_CAPACITY = 3
 

@@ -1,6 +1,8 @@
 package engine
 
-class BasicRail extends Rail {
+import utils.Pos
+
+class BasicRail(pos1 : Pos, pos2 : Pos) extends Rail(pos1 : Pos, pos2 : Pos) {
 
   override def place(): Unit = {
 
@@ -14,4 +16,6 @@ class BasicRail extends Rail {
     "Max capacity : " + DEFAULT_CAPACITY + "\n\n" +
     "Trains : " + currentNbTrains
   }
+
+  override def getPos(): Pos = pos1
 }

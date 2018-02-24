@@ -17,7 +17,7 @@ class BasicTrain(pos : Pos) extends Train(pos : Pos) {
     goalStation match {
       case Some(station) =>
         if (pos.inRange(station.getPos(), 10)) {
-          //Arrivé
+          station.unload(this)
         } else {
           pos.x = pos.x + (dir.x * speed)
           pos.y = pos.y + (dir.y * speed)
@@ -29,7 +29,20 @@ class BasicTrain(pos : Pos) extends Train(pos : Pos) {
     render()
   }
 
-  override def info(): String = ???
+  override def setObjective(station: Station, from: Pos, nbPassengers : Int): Unit = {
+      if (goalStation.nonEmpty) return
+
+      goalStation = Some(station)
+      dir.x = station.getPos().x - from.x
+      dir.x = station.getPos().y - from.y
+
+      this.nbPassenger = nbPassengers
+  }
+
+  override def info(): String = {
+    ""
+  }
 
   override def getPos(): Pos = pos
+
 }
