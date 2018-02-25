@@ -5,9 +5,8 @@ import utils.Pos
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
-abstract class Town(pos : Pos) extends Updatable {
+abstract class Town(_pos : Pos, _name : String) extends Updatable {
 
-  val name : String = ""
   val MAX_POPULATION = 1000000
   val MIN_POPULATION = 10
 
@@ -19,16 +18,16 @@ abstract class Town(pos : Pos) extends Updatable {
       new Random().nextInt(MAX_POPULATION + 1 - MIN_POPULATION)
 
 
-  def getPos(): Pos = pos
+  def pos: Pos = _pos
+  def name : String = _name
 
-  def addStation(station : Station)
+  def addStation(name : String)
 
-  def produce()
+  def sendPeopleToNeighbours(number : Int): Unit
 
-  def unload(train : Train)
-
-  def load(train : Train, from : Station, to : Station, nbPassenger : Int)
+  def sendPeople(from : Station, to : Station, nbPassenger : Int)
 
   def explore()
+  def produce()
 
 }

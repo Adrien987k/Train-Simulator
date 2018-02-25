@@ -4,7 +4,7 @@ import utils.Pos
 
 trait Updatable {
 
-  def getPos(): Pos
+  def pos : Pos
 
   def step()
 

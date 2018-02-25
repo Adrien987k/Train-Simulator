@@ -2,7 +2,7 @@ package engine
 
 import utils.Pos
 
-class BasicRail(pos1 : Pos, pos2 : Pos) extends Rail(pos1 : Pos, pos2 : Pos) {
+class BasicRail(_stationA : Station, _stationB : Station) extends Rail(_stationA : Station, _stationB : Station) {
 
   override def place(): Unit = {
 
@@ -14,8 +14,16 @@ class BasicRail(pos1 : Pos, pos2 : Pos) extends Rail(pos1 : Pos, pos2 : Pos) {
 
   override def info(): String = {
     "Max capacity : " + DEFAULT_CAPACITY + "\n\n" +
-    "Trains : " + currentNbTrains
+    "Trains : " + trains.size
   }
 
-  override def getPos(): Pos = pos1
+  override def pos: Pos = stationA.pos
+
+  override def addTrain(train: Train): Unit = {
+    trains += train
+  }
+
+  override def removeTrain(train: Train): Unit = {
+    trains -= train
+  }
 }

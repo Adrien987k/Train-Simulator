@@ -2,10 +2,23 @@ package engine
 
 import utils.Pos
 
-abstract class Rail(pos1 : Pos, pos2 : Pos) extends Item with Updatable {
+import scala.collection.mutable.ArrayBuffer
+
+abstract class Rail(_stationA : Station, _stationB : Station) extends Item with Updatable {
 
   val DEFAULT_CAPACITY = 3
 
-  var currentNbTrains = 0
+  val capacity : Int = DEFAULT_CAPACITY
 
+  val trains: ArrayBuffer[Train] = ArrayBuffer.empty
+
+  def stationA : Station = _stationA
+  def stationB : Station = _stationB
+
+  def nbTrain : Int = trains.size
+  def isFull : Boolean = capacity == trains.size
+
+  def addTrain(train : Train): Unit
+
+  def removeTrain(train : Train): Unit
 }

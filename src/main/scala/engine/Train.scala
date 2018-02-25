@@ -2,7 +2,7 @@ package engine
 
 import utils.{Dir, Pos}
 
-abstract class Train(pos : Pos) extends Item with Updatable {
+abstract class Train(_pos : Pos) extends Item with Updatable {
 
   val DEFAULT_SPEED = 5
   val DEFAULT_SIZE = 10
@@ -16,8 +16,13 @@ abstract class Train(pos : Pos) extends Item with Updatable {
   var nbPassenger = 0
 
   var goalStation : Option[Station] = None
+  var currentRail : Option[Rail] = None
+
+  def pos: Pos = _pos
 
   def setObjective(station : Station, from : Pos, nbPassengers : Int)
+  def putOnRail(rail : Rail): Boolean
+  def removeFromRail(): Unit
 
   def render()
 

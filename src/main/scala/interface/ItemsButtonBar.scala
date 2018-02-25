@@ -1,21 +1,23 @@
 package interface
 
-import engine.ItemType
+import engine.{ItemType, World}
 
+import scalafx.event.ActionEvent
 import scalafx.scene.control.{Button, ButtonBar}
 import scalafx.scene.layout.Border
 
 class ItemsButtonBar extends ButtonBar {
 
-  init()
+  var itemButtons : List[Button] = List.empty
 
-  def init() : Unit = {
-    var itemButtons : List[Button] = List.empty
-
-    for (item <- ItemType.values)
-      itemButtons = new Button(item.toString) :: itemButtons
-
-    this.buttons = itemButtons
+  for (item <- ItemType.values) {
+    val itemButton = new Button(item.toString)
+    itemButton.onAction = _ => {
+      World.company.select(item)
+    }
+    itemButtons +: itemButtons
   }
+
+  this.buttons = itemButtons
 
 }

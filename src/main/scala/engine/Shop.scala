@@ -3,6 +3,7 @@ package engine
 import engine.ItemType.{ROAD, STATION, TRAIN}
 
 object Shop {
+
   val ROAD_PRICE = 100
   val STATION_PRICE = 500
   val TRAIN_PRICE = 200
@@ -14,4 +15,5 @@ object Shop {
       case ROAD => ROAD_PRICE
     }
   }
+
 }

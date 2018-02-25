@@ -1,9 +1,10 @@
 package interface
 
-import scalafx.scene.control.Label
+import scalafx.scene.control.{Label, TextArea}
 
-class GlobalInformationTextArea extends Label {
+class GlobalInformationTextArea extends TextArea {
 
   this.text = "Global Information"
+  this.editable = false
 
 }

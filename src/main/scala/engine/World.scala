@@ -1,27 +1,33 @@
 package engine
 
 import interface.GUI
+import utils.Pos
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.ListBuffer
+import scala.util.Random
 
 object World {
 
   val MAP_WIDTH = 1000
-  val MAP_HEIGHT = 600
+  val MAP_HEIGHT = 1000
 
-  val INIT_NB_TOWNS = 5
+  val INIT_NB_TOWNS = 10
 
-  val towns: ArrayBuffer[Town] = ArrayBuffer.empty
-  val trains: ArrayBuffer[Train] = ArrayBuffer.empty
+  val towns : ListBuffer[Town] = ListBuffer.empty
+  val trains : ListBuffer[Train] = ListBuffer.empty
+  val rails :  ListBuffer[Rail] = ListBuffer.empty
   val company: Company = new Company
 
   var running = true
 
   def init(): Unit = {
-    //for (i = 0; i < INIT_NB_TOWNS; i++) {
-      //Générer INIT_NB_TOWNS positions cohérentes et créer les villes à ces positions
-      //towns.+=(new BasicTown(// GENERATED POS //))
-    //}
+    val rand = new Random
+    val areaWidth = MAP_WIDTH / INIT_NB_TOWNS
+    for (i <- 0 to INIT_NB_TOWNS) {
+      val x = rand.nextInt(areaWidth) + (i * areaWidth)
+      val y = rand.nextInt(MAP_HEIGHT)
+      towns += new BasicTown(new Pos(x, y), "Town " + i)
+    }
     GUI.initWorld(towns)
   }
 
