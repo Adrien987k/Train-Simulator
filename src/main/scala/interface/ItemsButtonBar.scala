@@ -7,17 +7,17 @@ import scalafx.scene.control.{Button, ButtonBar}
 import scalafx.scene.layout.Border
 
 class ItemsButtonBar extends ButtonBar {
-
+/*
   var itemButtons : List[Button] = List.empty
 
   for (item <- ItemType.values) {
     val itemButton = new Button(item.toString)
     itemButton.onAction = _ => {
-      World.company.select(item)
+      //select(item)
     }
     itemButtons +: itemButtons
   }
 
   this.buttons = itemButtons
-
+*/
 }

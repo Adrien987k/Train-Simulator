@@ -8,14 +8,12 @@ import scala.util.Random
 
 object World {
 
-  val MAP_WIDTH = 1000
-  val MAP_HEIGHT = 1000
+  val MAP_WIDTH = 800
+  val MAP_HEIGHT = 700
 
   val INIT_NB_TOWNS = 10
 
   val towns : ListBuffer[Town] = ListBuffer.empty
-  val trains : ListBuffer[Train] = ListBuffer.empty
-  val rails :  ListBuffer[Rail] = ListBuffer.empty
   val company: Company = new Company
 
   var running = true
@@ -28,13 +26,21 @@ object World {
       val y = rand.nextInt(MAP_HEIGHT)
       towns += new BasicTown(new Pos(x, y), "Town " + i)
     }
-    GUI.initWorld(towns)
+    GUI.initWorldCanvas(towns)
+  }
+
+  def updatableAt(pos : Pos): Updatable = {
+    //TODO
+    ???
   }
 
   def run(): Unit = {
     while (running) {
       for (town <- towns) {
         town.step()
+      }
+      for (train <- company.trains) {
+        train.step()
       }
       //GUI.display()
     }

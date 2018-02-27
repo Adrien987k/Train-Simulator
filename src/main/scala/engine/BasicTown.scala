@@ -6,40 +6,54 @@ import scala.util.Random
 
 class BasicTown(pos : Pos, name : String) extends Town(pos : Pos, name : String) {
 
+  var counter = 0
+
   override def step(): Unit = {
+    counter += 1
+    if (counter == 100) {
+      counter = 0
+      val traveler = proportionTraveler * population / 100
+      if (traveler != 0)
+        sendPeopleToNeighbours(traveler)
 
-  }
-
-  override def addStation(name : String): Unit = {
-    stations += new BasicStation(name, pos, this)
-  }
-
-  override def sendPeopleToNeighbours(number: Int): Unit = {
-    var nbNeighbour = 0
-    for (station <- stations) {
-      nbNeighbour += station.nbNeighbours()
+      station.foreach(_.step())
     }
+  }
 
+  override def buildStation(): Unit = {
+    station match {
+      case Some(_) =>
+        throw new CannotBuildItemException("This town already have a station")
+      case None => station = Some (new BasicStation(pos, this))
+    }
+  }
+
+  override def buildTrain(): Unit = {
+    if (!hasStation)
+      throw new CannotBuildItemException("This town does not have a station")
+    station.get.buildTrain()
+  }
+
+  override def sendPeopleToNeighbours(nbPassenger: Int): Unit = {
+    var (nbNeighbour, neighbours) = station match {
+      case Some(st) => st.nbNeighbours() -> st.neighbours()
+      case None => return
+    }
     if (nbNeighbour == 0) return
 
-    val nbPersonPerNeighbour = number / nbNeighbour
-    val nbPersonPerNeighbourRest = number % nbNeighbour
+    val nbPersonPerNeighbour = nbPassenger / nbNeighbour
+    val nbPersonPerNeighbourRest = nbPassenger % nbNeighbour
 
-    for (station <- stations) {
-      for (neighbourStation <- station.neighbours()) {
-        sendPeople(station, neighbourStation, nbPersonPerNeighbour)
-      }
-    }
-    val rand = new Random()
-    val randStation = rand.nextInt(stations.size)
-    val randNeigh = rand.nextInt(stations(randStation).nbNeighbours())
+    neighbours.foreach(neighbourStation =>
+      sendPeople(neighbourStation, nbPersonPerNeighbour)
+    )
 
-    val otherStations = stations(randStation).neighbours()
-    sendPeople(stations(randStation), otherStations(randNeigh), nbPersonPerNeighbourRest)
+    val randNeigh = new Random().nextInt(nbNeighbour)
+    sendPeople(neighbours(randNeigh), nbPersonPerNeighbourRest)
   }
 
-  override def sendPeople(from : Station, to : Station, nbPassenger : Int): Unit = {
-    from.sendPassenger(to, nbPassenger)
+  override def sendPeople(to : Station, nbPassenger : Int): Unit = {
+    station.foreach(_.sendPassenger(to, nbPassenger))
   }
 
   override def explore(): Unit = {

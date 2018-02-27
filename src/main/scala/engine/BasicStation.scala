@@ -4,23 +4,26 @@ import utils.Pos
 
 import scala.collection.mutable.ListBuffer
 
-class BasicStation(_name : String, _pos : Pos, town : Town) extends Station(_name : String, _pos : Pos, town : Town) {
+class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : Town) {
 
   override def place(): Unit = {
 
   }
 
   override def step(): Unit = {
-
+    for ((station, nbPassenger) <- waitingPassengers) {
+      val success = sendPassenger(station, nbPassenger)
+      if (success) waitingPassengers -= station
+    }
   }
 
   override def addRail(rail : Rail): Unit = {
     rails += rail
   }
 
-  override def addTrain(train : Train): Boolean = {
+  override def buildTrain(): Boolean = {
     if (isFull) return false
-    trains += train
+    trains += new BasicTrain(pos)
     true
   }
 
@@ -33,24 +36,27 @@ class BasicStation(_name : String, _pos : Pos, town : Town) extends Station(_nam
     neighbourList
   }
 
-  override def sendPassenger(objective : Station, nbPassenger : Int) : Unit = {
+  override def sendPassenger(objective : Station, nbPassenger : Int) : Boolean = {
     if (trains.isEmpty) {
-      waitingPassengers += nbPassenger
-      return
+
+      waitingPassengers += ((objective, nbPassenger))
+      return false
     }
     getRailTo(objective) match {
       case Some(rail) =>
         if (rail.nbTrain == rail.DEFAULT_CAPACITY) {
-          waitingPassengers += nbPassenger
-          return
+          waitingPassengers += ((objective, nbPassenger))
+          return false
         }
         val train = trains.remove(0)
         load(train, objective, nbPassenger)
-        rail.addTrain(train)
+        train.putOnRail(rail)
 
       case None =>
-        waitingPassengers += nbPassenger
+        waitingPassengers += ((objective, nbPassenger))
+        return false
     }
+    true
   }
 
   override def getRailTo(station : Station) : Option[Rail] = {
@@ -62,11 +68,12 @@ class BasicStation(_name : String, _pos : Pos, town : Town) extends Station(_nam
   }
 
   override def unload(train : Train) : Unit = {
+    train.removeFromRail()
     town.population += train.nbPassenger
   }
 
   override def info(): String = {
-    "Name : " + name + "\n\n" +
+    "Town : " + town.name + "\n\n" +
     "Capacity : " + capacity + "\n\n"
   }
 

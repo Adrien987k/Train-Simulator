@@ -2,32 +2,33 @@ package engine
 
 import utils.Pos
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-abstract class Station(_name : String, _pos : Pos, town : Town) extends Item with Updatable {
+abstract class Station(_pos : Pos, _town : Town) extends Item with Updatable {
 
   val DEFAULT_CAPACITY = 5
 
   var capacity : Int = DEFAULT_CAPACITY
 
-  var waitingPassengers = 0
+  var waitingPassengers : mutable.HashMap[Station, Int] = mutable.HashMap.empty
 
   val trains:ListBuffer[Train] = ListBuffer.empty
   val rails:ListBuffer[Rail] = ListBuffer.empty
 
-  def name: String = _name
   def pos: Pos = _pos
+  def town: Town = _town
 
   def addRail(rail : Rail): Unit
 
-  def addTrain(train : Train): Boolean
+  def buildTrain(): Boolean
 
   def isFull: Boolean = trains.lengthCompare(capacity) == 0
 
   def neighbours(): ListBuffer[Station]
   def nbNeighbours(): Int = rails.size
 
-  def sendPassenger(objective : Station, nbPassenger : Int)
+  def sendPassenger(objective : Station, nbPassenger : Int) : Boolean
 
   def getRailTo(station : Station): Option[Rail]
 

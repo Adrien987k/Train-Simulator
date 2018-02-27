@@ -45,7 +45,7 @@ class BasicTrain(_pos : Pos) extends Train(_pos : Pos) {
     "Max Weight : " + maxWeight + "\n" +
     "nbPassenger : " + nbPassenger + "\n" +
       (if (goalStation.isEmpty)  "No Goal Station"
-       else "Goal Station : " + goalStation.get.name)
+       else "Goal Station : " + goalStation.get.town.name)
   }
 
   override def putOnRail(rail: Rail): Boolean = {

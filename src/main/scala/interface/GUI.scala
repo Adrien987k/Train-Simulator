@@ -1,83 +1,76 @@
 package interface
 
-import engine.Town
-import link.Change
-import utils.Pos
+import engine.{ItemType, Town, World}
 
 import scalafx.Includes._
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ListBuffer
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
-import scalafx.geometry.{Insets, Orientation, Pos}
-import scalafx.scene.{Node, Scene}
-import scalafx.scene.effect.{DropShadow, InnerShadow}
+import scalafx.geometry.Orientation
+import scalafx.scene.Scene
 import scalafx.scene.layout._
-import scalafx.scene.paint.{Color, LinearGradient, Stops}
-import scalafx.scene.text.{Font, FontWeight, Text}
-import scalafx.scene.paint.Color._
-import scalafx.scene.shape.Ellipse
-import scalafx.scene.paint.Color
-import javafx.beans.{binding => jfxbb}
 
-import scala.collection.JavaConverters._
 import scalafx.Includes._
-import scalafx.Includes.when
-import scalafx.beans.binding._
-import scalafx.beans.property.ObjectProperty
 import scalafx.event.ActionEvent
-import scalafx.scene.canvas.Canvas
 import scalafx.scene.control._
 
 object GUI extends JFXApp {
 
   stage = new PrimaryStage {
     title = "Train simulator"
-    scene = new Scene(1000, 700) {
-      val menuBar = new MenuBar
-      val mapMenu = new Menu("Map")
-      val newGameItem = new MenuItem("New Game")
-      val saveItem = new MenuItem("Save Map")
-      val loadItem = new MenuItem("Save Map")
-      val exitItem = new MenuItem("Exit")
-      mapMenu.items = List(newGameItem, saveItem, loadItem, new SeparatorMenuItem(), exitItem)
-      menuBar.menus = List(mapMenu)
-
-      newGameItem.onAction = (event : ActionEvent) => {
-        //TODO Create a new game
-      }
-
-      saveItem.onAction = (event : ActionEvent) => {
-        //TODO save the current map in a file
-      }
-
-      loadItem.onAction = (event : ActionEvent) => {
-        //TODO load a map from a file
-      }
-
-      exitItem.onAction = (event : ActionEvent) => {
-        //TODO save the map
-        sys.exit(0)
-      }
-
-      val splitPane: SplitPane = makeMainSplitPain()
-
+    scene = new Scene(1200, 700) {
       val rootPane = new BorderPane
-      rootPane.top = menuBar
-      rootPane.center = splitPane
-      rootPane.bottom = new ItemsButtonBar
+      rootPane.top = makeMenu()
+      rootPane.center = makeMainSplitPain()
+      rootPane.bottom = makeItemsButtonsBar()
       root = rootPane
     }
+  }
+
+  World.init()
+
+  private def makeMenu(): MenuBar = {
+    val menuBar = new MenuBar
+    val mapMenu = new Menu("Map")
+    val newGameItem = new MenuItem("New Game")
+    val saveItem = new MenuItem("Save Map")
+    val loadItem = new MenuItem("Save Map")
+    val exitItem = new MenuItem("Exit")
+    mapMenu.items = List(newGameItem, saveItem, loadItem, new SeparatorMenuItem(), exitItem)
+    menuBar.menus = List(mapMenu)
+
+    newGameItem.onAction = (event : ActionEvent) => {
+      //TODO Create a new game
+    }
+
+    saveItem.onAction = (event : ActionEvent) => {
+      //TODO save the current map in a file
+    }
+
+    loadItem.onAction = (event : ActionEvent) => {
+      //TODO load a map from a file
+    }
+
+    exitItem.onAction = (event : ActionEvent) => {
+      //TODO save the map
+      sys.exit(0)
+    }
+    menuBar
   }
 
   private def makeMainSplitPain(): SplitPane = {
     val leftSplit = new SplitPane
     leftSplit.orientation = Orientation.Vertical
 
-    leftSplit.items ++= List(new GlobalInformationTextArea, new LocalInformationTextArea)
+    val globalInfoPane = new BorderPane
+    globalInfoPane.center = new GlobalInformationTextArea
+    val localInfoPane = new BorderPane
+    localInfoPane.center = new LocalInformationTextArea
+    leftSplit.items ++= List(globalInfoPane, localInfoPane)
 
     val rightBorder = new BorderPane
 
-    rightBorder.center = new WorldCanvas
+    rightBorder.center = WorldCanvas.makeWorldCanvas()
 
     val topSplit = new SplitPane
     topSplit.orientation = Orientation.Horizontal
@@ -87,17 +80,31 @@ object GUI extends JFXApp {
     topSplit
   }
 
-  //Eng
-  def initWorld(towns: ListBuffer[Town]): Unit = {
-    //
+  private var selected:Option[ItemType.Value] = None
+
+  def select(itemType: ItemType.Value): Unit = {
+    selected = Some(itemType)
+  }
+
+  private def makeItemsButtonsBar(): ButtonBar = {
+    val bar : ButtonBar = new ButtonBar
+    var itemButtons : ListBuffer[Button] = ListBuffer.empty
+
+    for (item <- ItemType.values) {
+      val itemButton = new Button(item.toString)
+      itemButton.onAction = _ => {
+        select(item)
+      }
+      itemButtons += itemButton
+    }
+
+    bar.buttons = itemButtons
+    bar
   }
 
   //Eng
-  def display(changes: ListBuffer[Change]): Unit = {
-    for (change <- changes) {
-      //Apply change
-    }
-    //Effacer les trains
+  def initWorldCanvas(towns: ListBuffer[Town]): Unit = {
+    WorldCanvas.initWorld(towns.map(town => town.pos).toList)
   }
 
   //Ad

@@ -1,30 +1,70 @@
 package engine
 
-import engine.ItemType.Value
+import link.Observable
 import utils.Pos
 
-class Company {
+import scala.collection.mutable.ListBuffer
+
+class Company extends Observable {
 
   var money = 0
-  private var selected:Option[ItemType.Value] = None
 
-  def select(itemType: ItemType.Value): Unit = {
-    selected = Some(itemType)
+  val trains : ListBuffer[Train] = ListBuffer.empty
+  val rails :  ListBuffer[Rail] = ListBuffer.empty
+
+  private var lastStation : Option[Station] = None
+
+  def tryPlace(itemType: ItemType.Value, pos : Pos): Unit = {
+    val elem = World.updatableAt(pos)
+    try {
+      if (!canBuy(itemType)) throw new CannotBuildItemException("Not enough money")
+      (itemType, elem) match {
+        case (ItemType.STATION, town : Town) =>
+          town.buildStation()
+        case (ItemType.TRAIN, town : Town) =>
+          town.buildTrain()
+        case (ItemType.ROAD, town : Town) =>
+          if (!town.hasStation) throw new CannotBuildItemException("This town does not have a station")
+          lastStation match {
+            case Some(station) =>
+              lastStation = None
+              buildRail(station, town.station.get)
+            case None =>
+              lastStation = Some(town.station.get)
+              return
+          }
+        case _ => return
+      }
+      buy(itemType)
+    } catch {
+      case e : CannotBuildItemException =>
+        //TODO display e.getMessage
+    }
   }
 
-  def place(itemType: ItemType.Value, pos : Pos): Boolean = {
-    //val item = ItemFactory.buildItem(itemType)
-    //item.place()
-    //Add item to World
-    true
+  private def railAlreadyExist(stationA : Station, stationB : Station) : Boolean = {
+    rails.exists(rail => rail.stationA == stationA && rail.stationB == stationB
+      | rail.stationB == stationA && rail.stationA == stationB)
   }
 
-  def buy(itemType: ItemType.Value): Boolean = {
+  private def canBuy(itemType: ItemType.Value) : Boolean = {
     val price = Shop.price(itemType)
-    if (money - price < 0) return false
+    money - price >= 0
+  }
+
+  def buy(itemType: ItemType.Value): Unit = {
+    val price = Shop.price(itemType)
+    if (money - price < 0)
+      throw new CannotBuildItemException("Not enough money")
     else {
       money -= price
     }
-    true
   }
+
+  def buildRail(stationA : Station, stationB : Station): Unit = {
+    val rail = new BasicRail(stationA, stationB)
+    rails += rail
+    //TODO Generate Change for the GUI
+  }
+
 }
