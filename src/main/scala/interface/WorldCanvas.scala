@@ -19,6 +19,8 @@ case class RAIL(pos1 : Pos, pos2 : Pos) extends Item(pos1 : Pos)
 
 object WorldCanvas extends Observer {
 
+  val TOWN_RADIUS = 10
+
   val canvas = new Canvas(World.MAP_WIDTH, World.MAP_HEIGHT)
   val gc: GraphicsContext = canvas.graphicsContext2D
   var items: ListBuffer[Item] = ListBuffer.empty
@@ -45,7 +47,7 @@ object WorldCanvas extends Observer {
     gc.fill = Color.Red
     townsPositions.foreach(pos => {
       items += TOWN(pos, 0)
-      gc.fillOval(pos.x, pos.y, 20, 20)
+      gc.fillOval(pos.x, pos.y, TOWN_RADIUS * 2, TOWN_RADIUS * 2)
     })
   }
 
@@ -55,10 +57,10 @@ object WorldCanvas extends Observer {
     items.foreach {
       case town: TOWN =>
         gc.fill = if (town.level == 0) Color.Red else Color.Green
-        gc.fillOval(town.pos1.x - 10, town.pos1.y - 10, 20, 20)
+        gc.fillOval(town.pos1.x - TOWN_RADIUS, town.pos1.y - TOWN_RADIUS, TOWN_RADIUS * 2, TOWN_RADIUS * 2)
       case rail: RAIL =>
         gc.fill = Color.Black
-        gc.stroke = 10
+        gc.stroke = 20
         gc.strokeLine(rail.pos1.x, rail.pos1.y, rail.pos2.x, rail.pos2.y)
     }
   }

@@ -1,5 +1,6 @@
 package engine
 
+import interface.GUI
 import link.{CreationChange, Observable}
 import utils.Pos
 
@@ -44,6 +45,7 @@ class Company extends Observable {
         case _ => return
       }
       buy(itemType)
+      GUI.select()
     } catch {
       case e : CannotBuildItemException =>
         //TODO display e.getMessage

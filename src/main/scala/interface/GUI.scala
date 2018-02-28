@@ -82,8 +82,8 @@ object GUI extends JFXApp {
 
   var selected:Option[ItemType.Value] = None
 
-  private def select(itemType: ItemType.Value): Unit = {
-    selected = Some(itemType)
+  def select(itemType: ItemType.Value = null): Unit = {
+    selected = Option(itemType)
   }
 
   private def makeItemsButtonsBar(): ButtonBar = {
@@ -109,8 +109,9 @@ object GUI extends JFXApp {
 
     val timer = AnimationTimer { time =>
       if (time - lastTime / 1e9 >= 1)
+        World.update()
+
         WorldCanvas.update()
-        //println("UPDATE")
       lastTime = time
     }
     timer.start()

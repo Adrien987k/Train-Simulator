@@ -1,6 +1,6 @@
 package engine
 
-import interface.GUI
+import interface.{GUI, WorldCanvas}
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
@@ -16,8 +16,6 @@ object World {
   val towns : ListBuffer[Town] = ListBuffer.empty
   val company: Company = new Company
 
-  var running = true
-
   def init(): Unit = {
     val rand = new Random
     val areaWidth = MAP_WIDTH / INIT_NB_TOWNS
@@ -30,18 +28,15 @@ object World {
   }
 
   def updatableAt(pos : Pos): Option[Updatable] = {
-    towns.find(town => town.pos.inRange(pos, 20))
+    towns.find(town => town.pos.inRange(pos, WorldCanvas.TOWN_RADIUS))
   }
 
-  def run(): Unit = {
-    while (running) {
-      for (town <- towns) {
-        town.step()
-      }
-      for (train <- company.trains) {
-        train.step()
-      }
-      //GUI.display()
+  def update(): Unit = {
+    for (town <- towns) {
+      town.step()
+    }
+    for (train <- company.trains) {
+      train.step()
     }
   }
 
