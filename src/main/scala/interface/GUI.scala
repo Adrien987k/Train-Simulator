@@ -22,7 +22,7 @@ object GUI extends JFXApp {
       val rootPane = new BorderPane
       rootPane.top = makeMenu()
       rootPane.center = makeMainSplitPain()
-      rootPane.bottom = makeItemsButtonsBar()
+      rootPane.bottom = ItemsButtonBar.makeItemsButtonsBar()
       root = rootPane
     }
   }
@@ -63,7 +63,7 @@ object GUI extends JFXApp {
     leftSplit.orientation = Orientation.Vertical
 
     val globalInfoPane = new BorderPane
-    globalInfoPane.center = new GlobalInformationTextArea
+    globalInfoPane.center = GlobalInformationPanel.makeGlobalInfoPanel()
     val localInfoPane = new BorderPane
     localInfoPane.center = new LocalInformationTextArea
     leftSplit.items ++= List(globalInfoPane, localInfoPane)
@@ -80,28 +80,6 @@ object GUI extends JFXApp {
     topSplit
   }
 
-  var selected:Option[ItemType.Value] = None
-
-  def select(itemType: ItemType.Value = null): Unit = {
-    selected = Option(itemType)
-  }
-
-  private def makeItemsButtonsBar(): ButtonBar = {
-    val bar : ButtonBar = new ButtonBar
-    var itemButtons : ListBuffer[Button] = ListBuffer.empty
-
-    for (item <- ItemType.values) {
-      val itemButton = new Button(item.toString)
-      itemButton.onAction = _ => {
-        select(item)
-      }
-      itemButtons += itemButton
-    }
-
-    bar.buttons = itemButtons
-    bar
-  }
-
   private var lastTime = 0L
 
   def initWorldCanvas(towns: ListBuffer[Town]): Unit = {
@@ -110,7 +88,7 @@ object GUI extends JFXApp {
     val timer = AnimationTimer { time =>
       if (time - lastTime / 1e9 >= 1)
         World.update()
-
+        GlobalInformationPanel.update()
         WorldCanvas.update()
       lastTime = time
     }

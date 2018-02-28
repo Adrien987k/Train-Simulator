@@ -23,7 +23,9 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
 
   override def buildTrain(): Boolean = {
     if (isFull) return false
-    trains += new BasicTrain(pos)
+    val train = new BasicTrain(pos)
+    World.company.trains += train
+    trains += train
     true
   }
 

@@ -1,6 +1,6 @@
 package engine
 
-import interface.GUI
+import interface.{GUI, GlobalInformationPanel, ItemsButtonBar}
 import link.{CreationChange, Observable}
 import utils.Pos
 
@@ -16,6 +16,7 @@ class Company extends Observable {
   private var lastStation : Option[Station] = None
 
   def tryPlace(itemType: ItemType.Value, pos : Pos): Unit = {
+    GlobalInformationPanel.removeWarningMessage()
     println("TRY PLACE : " + itemType.toString + " (" + pos.x + ", " + pos.y + ")")
     val elem = World.updatableAt(pos) match {
       case Some(e) =>
@@ -35,6 +36,7 @@ class Company extends Observable {
           if (!town.hasStation) throw new CannotBuildItemException("This town does not have a station")
           lastStation match {
             case Some(station) =>
+              if (station == town.station.get) return
               lastStation = None
               buildRail(station, town.station.get)
               addChange(new CreationChange(station.pos, town.station.get.pos, ItemType.RAIL))
@@ -45,10 +47,10 @@ class Company extends Observable {
         case _ => return
       }
       buy(itemType)
-      GUI.select()
+      ItemsButtonBar.select()
     } catch {
       case e : CannotBuildItemException =>
-        //TODO display e.getMessage
+        GlobalInformationPanel.displayWarningMessage(e.getMessage)
     }
     notifyObservers()
   }
@@ -75,7 +77,6 @@ class Company extends Observable {
   def buildRail(stationA : Station, stationB : Station): Unit = {
     val rail = new BasicRail(stationA, stationB)
     rails += rail
-    //TODO Generate Change for the GUI
   }
 
 }

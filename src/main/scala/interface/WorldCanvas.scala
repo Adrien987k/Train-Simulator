@@ -34,8 +34,8 @@ object WorldCanvas extends Observer {
   def initWorld(townsPositions : List[Pos]): Unit = {
     canvas.onMouseClicked = (event : MouseEvent) => {
       try {
-        if (GUI.selected != null)
-          GUI.selected.foreach(World.company.tryPlace(_, new Pos(event.x.toInt, event.y.toInt)))
+        if (ItemsButtonBar.selected != null)
+          ItemsButtonBar.selected.foreach(World.company.tryPlace(_, new Pos(event.x.toInt, event.y.toInt)))
       } catch {
         case e: CannotBuildItemException =>
           println("EXCEPTION " + e.getMessage)
