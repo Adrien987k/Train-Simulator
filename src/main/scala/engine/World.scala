@@ -29,9 +29,8 @@ object World {
     GUI.initWorldCanvas(towns)
   }
 
-  def updatableAt(pos : Pos): Updatable = {
-    //TODO
-    ???
+  def updatableAt(pos : Pos): Option[Updatable] = {
+    towns.find(town => town.pos.inRange(pos, 20))
   }
 
   def run(): Unit = {

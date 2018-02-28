@@ -1,6 +1,6 @@
 package engine
 
-import engine.ItemType.{ROAD, STATION, TRAIN}
+import engine.ItemType.{RAIL, STATION, TRAIN}
 import utils.Pos
 
 object ItemFactory {

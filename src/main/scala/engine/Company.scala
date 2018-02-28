@@ -1,13 +1,13 @@
 package engine
 
-import link.Observable
+import link.{CreationChange, Observable}
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
 
 class Company extends Observable {
 
-  var money = 0
+  var money = 100000
 
   val trains : ListBuffer[Train] = ListBuffer.empty
   val rails :  ListBuffer[Rail] = ListBuffer.empty
@@ -15,20 +15,28 @@ class Company extends Observable {
   private var lastStation : Option[Station] = None
 
   def tryPlace(itemType: ItemType.Value, pos : Pos): Unit = {
-    val elem = World.updatableAt(pos)
+    println("TRY PLACE : " + itemType.toString + " (" + pos.x + ", " + pos.y + ")")
+    val elem = World.updatableAt(pos) match {
+      case Some(e) =>
+        println("SOME")
+        e
+      case None => return
+    }
     try {
       if (!canBuy(itemType)) throw new CannotBuildItemException("Not enough money")
       (itemType, elem) match {
         case (ItemType.STATION, town : Town) =>
           town.buildStation()
+          addChange(new CreationChange(town.pos, null, ItemType.STATION))
         case (ItemType.TRAIN, town : Town) =>
           town.buildTrain()
-        case (ItemType.ROAD, town : Town) =>
+        case (ItemType.RAIL, town : Town) =>
           if (!town.hasStation) throw new CannotBuildItemException("This town does not have a station")
           lastStation match {
             case Some(station) =>
               lastStation = None
               buildRail(station, town.station.get)
+              addChange(new CreationChange(station.pos, town.station.get.pos, ItemType.RAIL))
             case None =>
               lastStation = Some(town.station.get)
               return
@@ -40,6 +48,7 @@ class Company extends Observable {
       case e : CannotBuildItemException =>
         //TODO display e.getMessage
     }
+    notifyObservers()
   }
 
   private def railAlreadyExist(stationA : Station, stationB : Station) : Boolean = {

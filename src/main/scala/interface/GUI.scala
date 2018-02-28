@@ -9,8 +9,8 @@ import scalafx.application.JFXApp.PrimaryStage
 import scalafx.geometry.Orientation
 import scalafx.scene.Scene
 import scalafx.scene.layout._
-
 import scalafx.Includes._
+import scalafx.animation.AnimationTimer
 import scalafx.event.ActionEvent
 import scalafx.scene.control._
 
@@ -80,9 +80,9 @@ object GUI extends JFXApp {
     topSplit
   }
 
-  private var selected:Option[ItemType.Value] = None
+  var selected:Option[ItemType.Value] = None
 
-  def select(itemType: ItemType.Value): Unit = {
+  private def select(itemType: ItemType.Value): Unit = {
     selected = Some(itemType)
   }
 
@@ -102,9 +102,18 @@ object GUI extends JFXApp {
     bar
   }
 
-  //Eng
+  private var lastTime = 0L
+
   def initWorldCanvas(towns: ListBuffer[Town]): Unit = {
     WorldCanvas.initWorld(towns.map(town => town.pos).toList)
+
+    val timer = AnimationTimer { time =>
+      if (time - lastTime / 1e9 >= 1)
+        WorldCanvas.update()
+        //println("UPDATE")
+      lastTime = time
+    }
+    timer.start()
   }
 
   //Ad

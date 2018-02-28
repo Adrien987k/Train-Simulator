@@ -1,6 +1,6 @@
 package engine
 
-import engine.ItemType.{ROAD, STATION, TRAIN}
+import engine.ItemType.{RAIL, STATION, TRAIN}
 
 object Shop {
 
@@ -12,7 +12,7 @@ object Shop {
     item match {
       case TRAIN => TRAIN_PRICE
       case STATION => STATION_PRICE
-      case ROAD => ROAD_PRICE
+      case RAIL => ROAD_PRICE
     }
   }
 

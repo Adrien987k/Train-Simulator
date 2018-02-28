@@ -1,6 +1,6 @@
 package utils
 
-class Pos(private var _x: Int, private var _y: Int) {
+class Pos(private var _x: Int, private var _y: Int) extends Comparable[Pos] {
 
   def x : Int = _x
   def y : Int = _y
@@ -14,4 +14,15 @@ class Pos(private var _x: Int, private var _y: Int) {
     dist <= range
   }
 
+  override def compareTo(o: Pos): Int = {
+    if (x == o.x && y == o.y) return 0
+    1
+  }
+
+  override def equals(obj: scala.Any): Boolean = {
+    obj match {
+      case pos : Pos => compareTo(pos) == 0
+      case _ => false
+    }
+  }
 }
