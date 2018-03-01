@@ -36,7 +36,11 @@ object World extends Observable {
   }
 
   def updatableAt(pos : Pos): Option[Updatable] = {
-    towns.find(town => town.pos.inRange(pos, WorldCanvas.TOWN_RADIUS))
+    val town = towns.find(town => town.pos.inRange(pos, WorldCanvas.TOWN_RADIUS))
+    if (town.nonEmpty) return town
+    val train = company.trains.find(train => train.pos.inRange(pos, WorldCanvas.TRAIN_RADIUS))
+    if (train.nonEmpty) return train
+    company.rails.find(rail => pos.inLineRange(rail.stationA.pos, rail.stationB.pos, 10))
   }
 
   def update(): Unit = {

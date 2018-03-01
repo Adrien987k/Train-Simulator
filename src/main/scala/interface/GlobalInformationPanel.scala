@@ -10,16 +10,17 @@ import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 import scalafx.scene.paint.Color
 
-object GlobalInformationPanel {
+object GlobalInformationPanel extends GUIComponent {
+
+  val panel = new VBox()
 
   val mainLabel = new Label("Global Information\n")
   val timeLabel = new Label()
   val moneyLabel = new Label("money : 0")
   val warningLabel = new Label()
-  val panel = new VBox()
-
   val nbTrainLabel = new Label("trains : 0")
-  def makeGlobalInfoPanel(): VBox = {
+
+  def make(): VBox = {
     panel.children = List(mainLabel, timeLabel, moneyLabel, nbTrainLabel)
     panel
   }

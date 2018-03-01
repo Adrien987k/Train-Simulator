@@ -21,8 +21,8 @@ object GUI extends JFXApp {
     scene = new Scene(1200, 700) {
       val rootPane = new BorderPane
       rootPane.top = makeMenu()
-      rootPane.center = makeMainSplitPain()
-      rootPane.bottom = ItemsButtonBar.makeItemsButtonsBar()
+      rootPane.center = makeCentralPain()
+      rootPane.bottom = ItemsButtonBar.make()
       root = rootPane
     }
   }
@@ -58,26 +58,31 @@ object GUI extends JFXApp {
     menuBar
   }
 
-  private def makeMainSplitPain(): SplitPane = {
+  private def makeCentralPain(): Node = {
     val leftSplit = new SplitPane
     leftSplit.orientation = Orientation.Vertical
-
     val globalInfoPane = new BorderPane
-    globalInfoPane.center = GlobalInformationPanel.makeGlobalInfoPanel()
+    globalInfoPane.center = GlobalInformationPanel.make()
     val localInfoPane = new BorderPane
-    localInfoPane.center = LocalInformationPanel.makeLocalnformationPanel()
+    localInfoPane.center = LocalInformationPanel.make()
     leftSplit.items ++= List(globalInfoPane, localInfoPane)
+    val rightSplit = new SplitPane
 
-    val rightBorder = new BorderPane
 
-    rightBorder.center = WorldCanvas.makeWorldCanvas()
+    rightSplit.orientation = Orientation.Vertical
+    //val trainsPane = new BorderPane
+    //trainsPane.center = AllTrainsInformationPanel.make()
+    val trainsPane = AllTrainsInformationPanel.make()
+    val trainInfoPane = new BorderPane
+    trainInfoPane.center = new Label("Train info") //TODO Make
+    rightSplit.items ++= List(trainsPane, trainInfoPane)
 
-    val topSplit = new SplitPane
-    topSplit.orientation = Orientation.Horizontal
-    topSplit.items ++= List(leftSplit, rightBorder)
-    topSplit.dividerPositions = 0.3
+    val centralSplit = new SplitPane
+    centralSplit.orientation = Orientation.Horizontal
+    centralSplit.setDividerPositions(0.15, 0.85)
+    centralSplit.items ++= List(leftSplit, WorldCanvas.make(), rightSplit)
 
-    topSplit
+    centralSplit
   }
 
   def restart(): Unit = {
@@ -94,6 +99,7 @@ object GUI extends JFXApp {
       //if (time - lastTime / 1e9 >= ) {
       World.update()
       GlobalInformationPanel.update(time)
+      AllTrainsInformationPanel.update()
       WorldCanvas.update()
       lastTime = time
     }

@@ -20,7 +20,7 @@ case class TOWN(pos1 : Pos, level : Int) extends Item(pos1 : Pos)
 case class RAIL(pos1 : Pos, pos2 : Pos) extends Item(pos1 : Pos)
 case class TRAIN(pos1 : Pos) extends Item(pos1 : Pos)
 
-object WorldCanvas extends Observer {
+object WorldCanvas extends Observer with GUIComponent {
 
   val TOWN_RADIUS = 10
   val TRAIN_RADIUS = 5
@@ -32,7 +32,7 @@ object WorldCanvas extends Observer {
 
   var lastPosCliked = new Pos(0,0)
 
-  def makeWorldCanvas(): Node = {
+  def make(): Node = {
     val scrollPane = new ScrollPane
     scrollPane.content = canvas
     scrollPane
@@ -63,11 +63,7 @@ object WorldCanvas extends Observer {
             newItemSelected = true
           }
         case RAIL(pos1, pos2) =>
-          if ((pos2.x - pos1.x) != 0 && (pos.x - pos1.x) != 0 &&
-            math.abs(((pos2.y - pos1.y).toDouble / (pos2.x - pos1.x).toDouble) - ((pos.y - pos1.y).toDouble / (pos.x - pos1.x).toDouble)) <= 0.1 &&
-            ((pos.x <= pos2.x && pos.x >= pos1.x) || (pos.x >= pos2.x && pos.x <= pos1.x)) &&
-              selectedItem.isEmpty) {
-            //println("DEBUG")
+          if (pos.inLineRange(pos1, pos2, 10) && selectedItem.isEmpty) {
             selectedItem = Some(RAIL(pos1, pos2))
             newItemSelected = true
           }

@@ -5,7 +5,7 @@ import engine.{ItemType, World}
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.control.{Button, ButtonBar}
 
-object ItemsButtonBar {
+object ItemsButtonBar extends GUIComponent {
 
   var selected:Option[ItemType.Value] = None
 
@@ -13,7 +13,7 @@ object ItemsButtonBar {
     selected = Option(itemType)
   }
 
-  def makeItemsButtonsBar(): ButtonBar = {
+  def make(): ButtonBar = {
     val bar : ButtonBar = new ButtonBar
     var itemButtons : ListBuffer[Button] = ListBuffer.empty
 
