@@ -3,6 +3,9 @@ package engine
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
+import scalafx.scene.Node
+import scalafx.scene.control.Label
+import scalafx.scene.layout.VBox
 
 class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : Town) {
 
@@ -74,9 +77,19 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
     town.population += train.nbPassenger
   }
 
-  override def info(): String = {
+  override def toString: String = {
     "Town : " + town.name + "\n\n" +
     "Capacity : " + capacity + "\n\n"
+  }
+
+  override def propertyPane(): Node = {
+    val panel = new VBox()
+    val stationLabel = new Label("=== Station ===")
+    val capacityLabel = new Label("Capacity : " + capacity)
+    val trainsLabel = new Label("Trains : " + trains.size)
+    val waitingPassengerLabel = new Label("Waiting passenger : " + nbWaitingPassengers())
+    panel.children = List(stationLabel, capacityLabel, trainsLabel, waitingPassengerLabel)
+    panel
   }
 
 }

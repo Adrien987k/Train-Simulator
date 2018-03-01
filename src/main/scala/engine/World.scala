@@ -13,8 +13,8 @@ object World {
 
   val INIT_NB_TOWNS = 10
 
-  val towns : ListBuffer[Town] = ListBuffer.empty
-  val company: Company = new Company
+  var towns: ListBuffer[Town] = ListBuffer.empty
+  var company: Company = new Company
 
   def init(): Unit = {
     val rand = new Random
@@ -25,6 +25,13 @@ object World {
       towns += new BasicTown(new Pos(x, y), "Town " + i)
     }
     GUI.initWorldCanvas(towns)
+  }
+
+  def newGame(): Unit = {
+    towns = ListBuffer.empty
+    company = new Company
+    GUI.restart()
+    init()
   }
 
   def updatableAt(pos : Pos): Option[Updatable] = {

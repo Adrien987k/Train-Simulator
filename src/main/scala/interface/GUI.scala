@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.geometry.Orientation
-import scalafx.scene.Scene
+import scalafx.scene.{Node, Scene}
 import scalafx.scene.layout._
 import scalafx.Includes._
 import scalafx.animation.AnimationTimer
@@ -40,7 +40,7 @@ object GUI extends JFXApp {
     menuBar.menus = List(mapMenu)
 
     newGameItem.onAction = (event : ActionEvent) => {
-      //TODO Create a new game
+      World.newGame()
     }
 
     saveItem.onAction = (event : ActionEvent) => {
@@ -65,7 +65,7 @@ object GUI extends JFXApp {
     val globalInfoPane = new BorderPane
     globalInfoPane.center = GlobalInformationPanel.makeGlobalInfoPanel()
     val localInfoPane = new BorderPane
-    localInfoPane.center = new LocalInformationTextArea
+    localInfoPane.center = LocalInformationPanel.makeLocalnformationPanel()
     leftSplit.items ++= List(globalInfoPane, localInfoPane)
 
     val rightBorder = new BorderPane
@@ -80,16 +80,22 @@ object GUI extends JFXApp {
     topSplit
   }
 
+  def restart(): Unit = {
+    WorldCanvas.restart()
+    LocalInformationPanel.restart()
+  }
+
   private var lastTime = 0L
 
   def initWorldCanvas(towns: ListBuffer[Town]): Unit = {
     WorldCanvas.initWorld(towns.map(town => town.pos).toList)
 
     val timer = AnimationTimer { time =>
-      if (time - lastTime / 1e9 >= 1)
+      if (time - lastTime / 1e9 >= 1) {
         World.update()
-        GlobalInformationPanel.update()
-        WorldCanvas.update()
+      }
+      GlobalInformationPanel.update(time)
+      WorldCanvas.update()
       lastTime = time
     }
     timer.start()

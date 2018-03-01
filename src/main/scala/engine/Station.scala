@@ -25,6 +25,12 @@ abstract class Station(_pos : Pos, _town : Town) extends Item with Updatable {
 
   def isFull: Boolean = trains.lengthCompare(capacity) == 0
 
+  def nbWaitingPassengers(): Int = {
+    waitingPassengers.foldLeft(0){
+      case (total, (_, nb)) => total + nb
+    }
+  }
+
   def neighbours(): ListBuffer[Station]
   def nbNeighbours(): Int = rails.size
 

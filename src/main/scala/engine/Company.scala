@@ -17,11 +17,9 @@ class Company extends Observable {
 
   def tryPlace(itemType: ItemType.Value, pos : Pos): Unit = {
     GlobalInformationPanel.removeWarningMessage()
-    println("TRY PLACE : " + itemType.toString + " (" + pos.x + ", " + pos.y + ")")
+    //println("TRY PLACE : " + itemType.toString + " (" + pos.x + ", " + pos.y + ")")
     val elem = World.updatableAt(pos) match {
-      case Some(e) =>
-        println("SOME")
-        e
+      case Some(e) => e
       case None => return
     }
     try {

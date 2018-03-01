@@ -3,9 +3,7 @@ package interface
 import engine.{ItemType, World}
 
 import scala.collection.mutable.ListBuffer
-import scalafx.event.ActionEvent
 import scalafx.scene.control.{Button, ButtonBar}
-import scalafx.scene.layout.Border
 
 object ItemsButtonBar {
 
