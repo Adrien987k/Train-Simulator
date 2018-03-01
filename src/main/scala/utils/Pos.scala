@@ -18,6 +18,10 @@ class Pos(private var _x: Int, private var _y: Int) extends Comparable[Pos] {
     dist(pos2) <= range
   }
 
+  def copy(): Pos = {
+    new Pos(x, y)
+  }
+
   override def compareTo(o: Pos): Int = {
     if (x == o.x && y == o.y) return 0
     1

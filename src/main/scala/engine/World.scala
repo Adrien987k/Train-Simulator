@@ -1,12 +1,13 @@
 package engine
 
 import interface.{GUI, WorldCanvas}
+import link.{Change, CreationChange, Observable}
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
-object World {
+object World extends Observable {
 
   val MAP_WIDTH = 800
   val MAP_HEIGHT = 700
@@ -45,6 +46,8 @@ object World {
     for (train <- company.trains) {
       train.step()
     }
+    company.trains.foreach(train => addChange(new CreationChange(train.pos, null, ItemType.TRAIN)))
+    notifyObservers()
   }
 
 }

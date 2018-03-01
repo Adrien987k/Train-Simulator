@@ -75,6 +75,8 @@ class Company extends Observable {
   def buildRail(stationA : Station, stationB : Station): Unit = {
     val rail = new BasicRail(stationA, stationB)
     rails += rail
+    stationA.addRail(rail)
+    stationB.addRail(rail)
   }
 
 }

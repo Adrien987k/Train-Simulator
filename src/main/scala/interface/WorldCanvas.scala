@@ -18,10 +18,12 @@ sealed abstract class Item(pos1 : Pos) { }
 
 case class TOWN(pos1 : Pos, level : Int) extends Item(pos1 : Pos)
 case class RAIL(pos1 : Pos, pos2 : Pos) extends Item(pos1 : Pos)
+case class TRAIN(pos1 : Pos) extends Item(pos1 : Pos)
 
 object WorldCanvas extends Observer {
 
   val TOWN_RADIUS = 10
+  val TRAIN_RADIUS = 5
 
   var canvas = new Canvas(World.MAP_WIDTH, World.MAP_HEIGHT)
   var gc: GraphicsContext = canvas.graphicsContext2D
@@ -69,10 +71,13 @@ object WorldCanvas extends Observer {
             selectedItem = Some(RAIL(pos1, pos2))
             newItemSelected = true
           }
+        case TRAIN(pos1) =>
+          //TODO When train selected
       }
       if (!newItemSelected) selectedItem = None
     }
 
+    this.register(World)
     this.register(World.company)
 
     gc.fill = Color.Red
@@ -103,17 +108,25 @@ object WorldCanvas extends Observer {
         } else {
           gc.strokeLine(rail.pos1.x, rail.pos1.y, rail.pos2.x, rail.pos2.y)
         }
+      case train: TRAIN =>
+        gc.fill = Color.Blue
+        gc.fillRect(train.pos1.x - TRAIN_RADIUS, train.pos1.y - TRAIN_RADIUS, TRAIN_RADIUS * 2, TRAIN_RADIUS * 2)
     }
     if (selectedItem.nonEmpty) {
       selectedItem.get match {
         case town : TOWN =>
-          gc.strokeRect(town.pos1.x - TOWN_RADIUS * 1.5, town.pos1.y - TOWN_RADIUS * 1.5, TOWN_RADIUS * 3, TOWN_RADIUS * 3)
+          gc.strokeRect(town.pos1.x - TOWN_RADIUS * 1.25, town.pos1.y - TOWN_RADIUS * 1.25, TOWN_RADIUS * 2.5, TOWN_RADIUS * 2.5)
         case rail : RAIL =>
           gc.lineWidth = 10
           gc.stroke = Color.Gold
           gc.strokeLine(rail.pos1.x, rail.pos1.y, rail.pos2.x, rail.pos2.y)
+        case _ =>
       }
     }
+    items.filter(item => item match {
+      case train: TRAIN => false
+      case _ => true
+    })
   }
 
   override def notifyChange(changes: ListBuffer[Change]): Unit = {
@@ -132,6 +145,8 @@ object WorldCanvas extends Observer {
             }
           case ItemType.RAIL =>
             items += RAIL(cch.pos1, cch.pos2)
+          case ItemType.TRAIN =>
+            items += TRAIN(cch.pos1)
         }
     }
   }

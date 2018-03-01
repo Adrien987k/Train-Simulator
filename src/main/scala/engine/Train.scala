@@ -4,12 +4,12 @@ import utils.{Dir, Pos}
 
 abstract class Train(_pos : Pos) extends Item with Updatable {
 
-  val DEFAULT_SPEED = 5
+  val DEFAULT_SPEED = 0.1
   val DEFAULT_SIZE = 10
   val DEFAULT_MAX_WEIGHT = 100
 
   var dir : Dir = new Dir(0, 0)
-  var speed : Int = DEFAULT_SPEED
+  var speed : Double = DEFAULT_SPEED
   var size : Int = DEFAULT_SIZE
   var maxWeight : Int = DEFAULT_MAX_WEIGHT
 
@@ -21,9 +21,9 @@ abstract class Train(_pos : Pos) extends Item with Updatable {
   def pos: Pos = _pos
 
   def setObjective(station : Station, from : Pos, nbPassengers : Int)
+  def unsetObjective()
+
   def putOnRail(rail : Rail): Boolean
   def removeFromRail(): Unit
-
-  def render()
 
 }

@@ -91,19 +91,13 @@ object GUI extends JFXApp {
     WorldCanvas.initWorld(towns.map(town => town.pos).toList)
 
     val timer = AnimationTimer { time =>
-      if (time - lastTime / 1e9 >= 1) {
-        World.update()
-      }
+      //if (time - lastTime / 1e9 >= ) {
+      World.update()
       GlobalInformationPanel.update(time)
       WorldCanvas.update()
       lastTime = time
     }
     timer.start()
-  }
-
-  //Ad
-  def displayTrain(pos : utils.Pos): Unit = {
-
   }
 
 }

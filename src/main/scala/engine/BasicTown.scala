@@ -13,7 +13,7 @@ class BasicTown(pos : Pos, name : String) extends Town(pos : Pos, name : String)
 
   override def step(): Unit = {
     counter += 1
-    if (counter == 100) {
+    if (counter == 500) {
       counter = 0
       val traveler = proportionTraveler * population / 100
       if (traveler != 0)
@@ -42,6 +42,7 @@ class BasicTown(pos : Pos, name : String) extends Town(pos : Pos, name : String)
       case Some(st) => st.nbNeighbours() -> st.neighbours()
       case None => return
     }
+
     if (nbNeighbour == 0) return
 
     val nbPersonPerNeighbour = nbPassenger / nbNeighbour
@@ -51,8 +52,12 @@ class BasicTown(pos : Pos, name : String) extends Town(pos : Pos, name : String)
       sendPeople(neighbourStation, nbPersonPerNeighbour)
     )
 
-    val randNeigh = new Random().nextInt(nbNeighbour)
-    sendPeople(neighbours(randNeigh), nbPersonPerNeighbourRest)
+    if (nbPersonPerNeighbourRest > 0) {
+      val randNeigh = new Random().nextInt(nbNeighbour)
+      sendPeople(neighbours(randNeigh), nbPersonPerNeighbourRest)
+    }
+
+    population -= nbPassenger
   }
 
   override def sendPeople(to : Station, nbPassenger : Int): Unit = {

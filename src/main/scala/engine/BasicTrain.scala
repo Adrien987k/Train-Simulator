@@ -1,6 +1,6 @@
 package engine
 
-import interface.GUI
+import interface.{GUI, WorldCanvas}
 import utils.Pos
 
 import scalafx.scene.Node
@@ -13,24 +13,24 @@ class BasicTrain(_pos : Pos) extends Train(_pos : Pos) {
 
   }
 
-  override def render(): Unit = {
-    GUI.displayTrain(pos)
-  }
+  private var counter = 0
 
   override def step(): Unit = {
-    goalStation match {
-      case Some(station) =>
-        if (pos.inRange(station.pos, 10)) {
-          station.unload(this)
-        } else {
-          pos.x = pos.x + (dir.x * speed)
-          pos.y = pos.y + (dir.y * speed)
-        }
-      case None =>
+    counter += 1
+    if (counter == 10) {
+      goalStation match {
+        case Some(station) =>
+          if (pos.inRange(station.pos, 10)) {
+            removeFromRail()
+            station.unload(this)
+          } else {
+            pos.x += (dir.x.toDouble * speed).toInt
+            pos.y += (dir.y.toDouble * speed).toInt
+          }
+        case None =>
+      }
+      counter = 0
     }
-
-    //
-    render()
   }
 
   override def setObjective(station: Station, from: Pos, nbPassengers : Int): Unit = {
@@ -38,19 +38,22 @@ class BasicTrain(_pos : Pos) extends Train(_pos : Pos) {
 
       goalStation = Some(station)
       dir.x = station.pos.x - from.x
-      dir.x = station.pos.y - from.y
+      dir.y = station.pos.y - from.y
 
       this.nbPassenger = nbPassengers
   }
 
+  override def unsetObjective(): Unit = {
+    goalStation = None
+  }
 
   override def putOnRail(rail: Rail): Boolean = {
     if (rail.isFull) return false
     currentRail match {
       case Some(_) => return false
       case None =>
-    rail.addTrain(this)
-    currentRail = Some(rail)
+        rail.addTrain(this)
+        currentRail = Some(rail)
     }
     true
   }

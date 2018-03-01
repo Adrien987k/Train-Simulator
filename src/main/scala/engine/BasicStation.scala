@@ -26,7 +26,7 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
 
   override def buildTrain(): Boolean = {
     if (isFull) return false
-    val train = new BasicTrain(pos)
+    val train = new BasicTrain(pos.copy())
     World.company.trains += train
     trains += train
     true
@@ -42,8 +42,8 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
   }
 
   override def sendPassenger(objective : Station, nbPassenger : Int) : Boolean = {
+    println("SEND PASSENGER")
     if (trains.isEmpty) {
-
       waitingPassengers += ((objective, nbPassenger))
       return false
     }
@@ -53,10 +53,10 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
           waitingPassengers += ((objective, nbPassenger))
           return false
         }
+        println("REAL SEND")
         val train = trains.remove(0)
         load(train, objective, nbPassenger)
         train.putOnRail(rail)
-
       case None =>
         waitingPassengers += ((objective, nbPassenger))
         return false
@@ -73,7 +73,8 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
   }
 
   override def unload(train : Train) : Unit = {
-    train.removeFromRail()
+    train.unsetObjective()
+    trains += train
     town.population += train.nbPassenger
   }
 
