@@ -1,7 +1,7 @@
 package engine
 
-abstract class Item {
+abstract class Item(company: Company) {
 
-  def place()
+
 
 }

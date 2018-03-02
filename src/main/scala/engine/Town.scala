@@ -24,6 +24,10 @@ abstract class Town(_pos : Pos, _name : String) extends Updatable {
   def name : String = _name
   def hasStation : Boolean = station.nonEmpty
 
+  def nbWaitingPassengers : Int = {
+    if (hasStation) station.get.nbWaitingPassengers() else 0
+  }
+
   @throws(classOf[CannotBuildItemException])
   def buildStation()
 

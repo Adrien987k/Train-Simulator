@@ -30,7 +30,7 @@ object WorldCanvas extends Observer with GUIComponent {
   var items: ListBuffer[Item] = ListBuffer.empty
   var selectedItem: Option[Item] = None
 
-  var lastPosCliked = new Pos(0,0)
+  var lastPosClicked = new Pos(0,0)
 
   def make(): Node = {
     val scrollPane = new ScrollPane
@@ -45,11 +45,11 @@ object WorldCanvas extends Observer with GUIComponent {
 
   def initWorld(townsPositions : List[Pos]): Unit = {
     canvas.onMouseClicked = (event: MouseEvent) => {
-      lastPosCliked = new Pos(event.x.toInt, event.y.toInt)
+      lastPosClicked = new Pos(event.x.toInt, event.y.toInt)
       if (ItemsButtonBar.selected != null)
         ItemsButtonBar.selected match {
-          case Some(item) => World.company.tryPlace(item, lastPosCliked)
-          case None => LocalInformationPanel.displayElementInfoAt(lastPosCliked)
+          case Some(item) => World.company.tryPlace(item, lastPosClicked)
+          case None => LocalInformationPanel.displayElementInfoAt(lastPosClicked)
         }
     }
 
@@ -120,7 +120,7 @@ object WorldCanvas extends Observer with GUIComponent {
       }
     }
     items.filter(item => item match {
-      case train: TRAIN => false
+      case _: TRAIN => false
       case _ => true
     })
   }

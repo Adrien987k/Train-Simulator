@@ -7,11 +7,7 @@ import scalafx.scene.Node
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 
-class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : Town) {
-
-  override def place(): Unit = {
-
-  }
+class BasicStation(company: Company, _pos : Pos, town : Town) extends Station(company: Company, _pos : Pos, town : Town) {
 
   override def step(): Unit = {
     for ((station, nbPassenger) <- waitingPassengers) {
@@ -26,8 +22,8 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
 
   override def buildTrain(): Boolean = {
     if (isFull) return false
-    val train = new BasicTrain(pos.copy())
-    World.company.trains += train
+    val train = new BasicTrain(company, pos.copy())
+    company.trains += train
     trains += train
     true
   }
@@ -42,7 +38,6 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
   }
 
   override def sendPassenger(objective : Station, nbPassenger : Int) : Boolean = {
-    println("SEND PASSENGER")
     if (trains.isEmpty) {
       waitingPassengers += ((objective, nbPassenger))
       return false
@@ -53,10 +48,15 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
           waitingPassengers += ((objective, nbPassenger))
           return false
         }
-        println("REAL SEND")
         val train = trains.remove(0)
         load(train, objective, nbPassenger)
-        train.putOnRail(rail)
+        val success = train.putOnRail(rail)
+        if (success) {
+          company.money += nbPassenger * rail.length * company.ticketPricePerKm
+        } else {
+          unload(train)
+          return false
+        }
       case None =>
         waitingPassengers += ((objective, nbPassenger))
         return false
@@ -69,15 +69,16 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
   }
 
   override def load(train: Train, objective: Station, nbPassenger : Int): Unit = {
+    town.population -= nbPassenger
     train.setObjective(objective, pos)
     train.nbPassenger = nbPassenger
   }
 
   override def unload(train : Train) : Unit = {
-    train.unsetObjective()
-    trains += train
-    train.nbPassenger = 0
     town.population += train.nbPassenger
+    train.unsetObjective()
+    train.nbPassenger = 0
+    trains += train
   }
 
   override def toString: String = {

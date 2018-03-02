@@ -2,10 +2,10 @@ package engine
 
 import utils.{Dir, Pos}
 
-abstract class Train(_pos : Pos) extends Item with Updatable {
+abstract class Train(company: Company, _pos : Pos) extends Item(company : Company) with Updatable {
 
   val DEFAULT_SPEED = 1
-  val DEFAULT_SIZE = 10
+  val DEFAULT_SIZE = 120
   val DEFAULT_MAX_WEIGHT = 100
 
   var dir : Dir = new Dir(0, 0)

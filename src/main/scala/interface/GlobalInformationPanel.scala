@@ -1,8 +1,6 @@
 package interface
 
-import java.sql.Time
 import java.text.SimpleDateFormat
-import java.util.{Calendar, Date}
 
 import engine.World
 
@@ -19,17 +17,19 @@ object GlobalInformationPanel extends GUIComponent {
   val moneyLabel = new Label("money : 0")
   val warningLabel = new Label()
   val nbTrainLabel = new Label("trains : 0")
+  val totalPopulationLabel = new Label
 
   def make(): VBox = {
-    panel.children = List(mainLabel, timeLabel, moneyLabel, nbTrainLabel)
+    panel.children = List(mainLabel, timeLabel, moneyLabel, nbTrainLabel, totalPopulationLabel)
     panel
   }
 
   def update(time: Long): Unit = {
     val hourFormat = new SimpleDateFormat("HH:mm")
     timeLabel.text = hourFormat.format(time / (1e3 * 4))
-    moneyLabel.text = "money : " + World.company.money
-    nbTrainLabel.text = "trains : " + World.company.trains.size
+    moneyLabel.text = "Money : " + World.company.money.toInt
+    nbTrainLabel.text = "Trains : " + World.company.trains.size
+    totalPopulationLabel.text = "Population : " + World.totalPopulation
   }
 
   def displayWarningMessage(message : String): Unit = {

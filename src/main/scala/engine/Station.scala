@@ -5,7 +5,7 @@ import utils.Pos
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-abstract class Station(_pos : Pos, _town : Town) extends Item with Updatable {
+abstract class Station(company: Company, _pos : Pos, _town : Town) extends Item(company: Company) with Updatable {
 
   val DEFAULT_CAPACITY = 5
 
@@ -19,11 +19,12 @@ abstract class Station(_pos : Pos, _town : Town) extends Item with Updatable {
   def pos: Pos = _pos
   def town: Town = _town
 
-  def addRail(rail : Rail): Unit
+  def addRail(rail : Rail) : Unit
 
-  def buildTrain(): Boolean
+  def buildTrain() : Boolean
 
-  def isFull: Boolean = trains.lengthCompare(capacity) == 0
+  def isFull : Boolean = trains.lengthCompare(capacity) == 0
+  def availableTrains : Int = trains.size
 
   def nbWaitingPassengers(): Int = {
     waitingPassengers.foldLeft(0){
@@ -31,12 +32,12 @@ abstract class Station(_pos : Pos, _town : Town) extends Item with Updatable {
     }
   }
 
-  def neighbours(): ListBuffer[Station]
-  def nbNeighbours(): Int = rails.size
+  def neighbours() : ListBuffer[Station]
+  def nbNeighbours() : Int = rails.size
 
   def sendPassenger(objective : Station, nbPassenger : Int) : Boolean
 
-  def getRailTo(station : Station): Option[Rail]
+  def getRailTo(station : Station) : Option[Rail]
 
   def unload(train : Train)
 

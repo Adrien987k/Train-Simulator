@@ -54,4 +54,10 @@ object World extends Observable {
     notifyObservers()
   }
 
+  def totalPopulation(): Int = {
+    val inTowns = towns.foldLeft(0)((total, town) => total + town.population + town.nbWaitingPassengers)
+    val inTrains = company.trains.foldLeft(0)((total, train) => total + train.nbPassenger)
+    inTowns + inTrains
+  }
+
 }

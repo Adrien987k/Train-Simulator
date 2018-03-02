@@ -1,23 +1,18 @@
 package engine
 
-import interface.{GUI, WorldCanvas}
 import utils.Pos
 
 import scalafx.scene.Node
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 
-class BasicTrain(_pos : Pos) extends Train(_pos : Pos) {
-
-  override def place(): Unit = {
-
-  }
+class BasicTrain(company: Company, _pos : Pos) extends Train(company: Company, _pos : Pos) {
 
   private var counter = 0
 
   override def step(): Unit = {
     counter += 1
-    if (counter == 5) {
+    if (counter == UpdateRate.TRAIN_UPDATE) {
       goalStation match {
         case Some(station) =>
           if (pos.inRange(station.pos, 10)) {
@@ -69,7 +64,7 @@ class BasicTrain(_pos : Pos) extends Train(_pos : Pos) {
 
   override def propertyPane(): Node = {
     val panel = new VBox()
-    val speedLabel = new Label("Maw capacity : " + speed)
+    val speedLabel = new Label("Max capacity : " + speed)
     val sizeLabel = new Label("Trains : " + size)
     val maxWeightLabel = new Label("Length : " + maxWeight)
     val nbPassengerLabel = new Label("Passengers : " + nbPassenger)

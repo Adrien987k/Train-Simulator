@@ -1,26 +1,24 @@
 package engine
 
-import interface.{AllTrainsInformationPanel, GUI, GlobalInformationPanel, ItemsButtonBar}
+import interface.{GlobalInformationPanel, ItemsButtonBar}
 import link.{CreationChange, Observable}
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
 import scalafx.collections.ObservableBuffer
-import scalafx.collections.ObservableBuffer.{Add, Remove}
 
 class Company extends Observable {
 
-  var money = 100000
+  var money = 100000.0
+  var ticketPricePerKm = 0.01
 
   val trains : ObservableBuffer[Train] = ObservableBuffer.empty
   val rails :  ListBuffer[Rail] = ListBuffer.empty
 
   private var lastStation : Option[Station] = None
 
-
   def tryPlace(itemType: ItemType.Value, pos : Pos): Unit = {
     GlobalInformationPanel.removeWarningMessage()
-    //println("TRY PLACE : " + itemType.toString + " (" + pos.x + ", " + pos.y + ")")
     val elem = World.updatableAt(pos) match {
       case Some(e) => e
       case None => return
@@ -76,7 +74,7 @@ class Company extends Observable {
   }
 
   def buildRail(stationA : Station, stationB : Station): Unit = {
-    val rail = new BasicRail(stationA, stationB)
+    val rail = new BasicRail(this, stationA, stationB)
     rails += rail
     stationA.addRail(rail)
     stationB.addRail(rail)

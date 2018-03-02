@@ -1,10 +1,8 @@
 package engine
 
-import utils.Pos
-
 import scala.collection.mutable.ArrayBuffer
 
-abstract class Rail(_stationA : Station, _stationB : Station) extends Item with Updatable {
+abstract class Rail(company: Company, _stationA : Station, _stationB : Station) extends Item(company: Company) with Updatable {
 
   val DEFAULT_CAPACITY = 3
 
