@@ -17,15 +17,15 @@ class BasicTrain(_pos : Pos) extends Train(_pos : Pos) {
 
   override def step(): Unit = {
     counter += 1
-    if (counter == 10) {
+    if (counter == 5) {
       goalStation match {
         case Some(station) =>
           if (pos.inRange(station.pos, 10)) {
             removeFromRail()
             station.unload(this)
           } else {
-            pos.x += (dir.x.toDouble * speed).toInt
-            pos.y += (dir.y.toDouble * speed).toInt
+            pos.x += dir.x * speed
+            pos.y += dir.y * speed
           }
         case None =>
       }
@@ -33,14 +33,14 @@ class BasicTrain(_pos : Pos) extends Train(_pos : Pos) {
     }
   }
 
-  override def setObjective(station: Station, from: Pos, nbPassengers : Int): Unit = {
+  override def setObjective(station: Station, from: Pos): Unit = {
       if (goalStation.nonEmpty) return
 
       goalStation = Some(station)
+
       dir.x = station.pos.x - from.x
       dir.y = station.pos.y - from.y
-
-      this.nbPassenger = nbPassengers
+      dir.normalize()
   }
 
   override def unsetObjective(): Unit = {

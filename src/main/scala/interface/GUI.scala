@@ -70,18 +70,17 @@ object GUI extends JFXApp {
 
 
     rightSplit.orientation = Orientation.Vertical
-    //val trainsPane = new BorderPane
-    //trainsPane.center = AllTrainsInformationPanel.make()
     val trainsPane = AllTrainsInformationPanel.make()
-    val trainInfoPane = new BorderPane
-    trainInfoPane.center = new Label("Train info") //TODO Make
-    rightSplit.items ++= List(trainsPane, trainInfoPane)
+    val oneTrainPane = OneTrainInformationPanel.make()
+
+    rightSplit.items ++= List(trainsPane, oneTrainPane)
 
     val centralSplit = new SplitPane
     centralSplit.orientation = Orientation.Horizontal
     centralSplit.setDividerPositions(0.15, 0.85)
     centralSplit.items ++= List(leftSplit, WorldCanvas.make(), rightSplit)
 
+    centralSplit.requestFocus()
     centralSplit
   }
 
@@ -99,7 +98,7 @@ object GUI extends JFXApp {
       //if (time - lastTime / 1e9 >= ) {
       World.update()
       GlobalInformationPanel.update(time)
-      AllTrainsInformationPanel.update()
+      //AllTrainsInformationPanel.update()
       WorldCanvas.update()
       lastTime = time
     }

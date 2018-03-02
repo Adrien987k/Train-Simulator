@@ -1,17 +1,17 @@
 package utils
 
-class Pos(private var _x: Int, private var _y: Int) extends Comparable[Pos] {
+class Pos(private var _x: Double, private var _y: Double) extends Comparable[Pos] {
 
-  def x : Int = _x
-  def y : Int = _y
+  def x : Double = _x
+  def y : Double = _y
 
-  def x_= (value:Int):Unit = _x = value
-  def y_= (value:Int):Unit = _y = value
+  def x_= (value:Double):Unit = _x = value
+  def y_= (value:Double):Unit = _y = value
 
 
-  def dist(pos : Pos) : Int = {
+  def dist(pos : Pos) : Double = {
     math.sqrt((pos.x - x) * (pos.x - x) +
-    (pos.y - y) * (pos.y - y)).toInt
+    (pos.y - y) * (pos.y - y))
   }
 
   def inRange(pos : Pos, range : Int) : Boolean = {
@@ -20,8 +20,8 @@ class Pos(private var _x: Int, private var _y: Int) extends Comparable[Pos] {
 
   def inLineRange(pos1 : Pos, pos2 : Pos, range : Double) : Boolean = {
       (pos2.x - pos1.x) != 0 && (x - pos1.x) != 0 &&
-      math.abs(((pos2.y - pos1.y).toDouble / (pos2.x - pos1.x).toDouble) -
-               ((y - pos1.y).toDouble / (x - pos1.x).toDouble)) <= (if (range != 0) 1 / range else 0.1) &&
+      math.abs(((pos2.y - pos1.y) / (pos2.x - pos1.x)) -
+               ((y - pos1.y) / (x - pos1.x))) <= (if (range != 0) 1 / range else 0.1) &&
       ((x <= pos2.x && x >= pos1.x) || (x >= pos2.x && x <= pos1.x))
   }
 

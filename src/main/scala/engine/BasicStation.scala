@@ -69,12 +69,14 @@ class BasicStation(_pos : Pos, town : Town) extends Station(_pos : Pos, town : T
   }
 
   override def load(train: Train, objective: Station, nbPassenger : Int): Unit = {
-    train.setObjective(objective, pos, nbPassenger)
+    train.setObjective(objective, pos)
+    train.nbPassenger = nbPassenger
   }
 
   override def unload(train : Train) : Unit = {
     train.unsetObjective()
     trains += train
+    train.nbPassenger = 0
     town.population += train.nbPassenger
   }
 

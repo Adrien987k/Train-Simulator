@@ -1,19 +1,22 @@
 package engine
 
-import interface.{GUI, GlobalInformationPanel, ItemsButtonBar}
+import interface.{AllTrainsInformationPanel, GUI, GlobalInformationPanel, ItemsButtonBar}
 import link.{CreationChange, Observable}
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
+import scalafx.collections.ObservableBuffer
+import scalafx.collections.ObservableBuffer.{Add, Remove}
 
 class Company extends Observable {
 
   var money = 100000
 
-  val trains : ListBuffer[Train] = ListBuffer.empty
+  val trains : ObservableBuffer[Train] = ObservableBuffer.empty
   val rails :  ListBuffer[Rail] = ListBuffer.empty
 
   private var lastStation : Option[Station] = None
+
 
   def tryPlace(itemType: ItemType.Value, pos : Pos): Unit = {
     GlobalInformationPanel.removeWarningMessage()

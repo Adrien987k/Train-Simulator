@@ -9,7 +9,7 @@ abstract class Rail(_stationA : Station, _stationB : Station) extends Item with 
   val DEFAULT_CAPACITY = 3
 
   val capacity : Int = DEFAULT_CAPACITY
-  val length : Int = _stationA.pos.dist(_stationB.pos)
+  val length : Double = _stationA.pos.dist(_stationB.pos)
 
   val trains: ArrayBuffer[Train] = ArrayBuffer.empty
 

@@ -27,7 +27,7 @@ class BasicRail(_stationA : Station, _stationB : Station) extends Rail(_stationA
     trains -= train
   }
 
-  override def toString(): String = {
+  override def toString: String = {
     "Max capacity : " + DEFAULT_CAPACITY + "\n\n" +
       "Trains : " + trains.size
   }
@@ -36,7 +36,7 @@ class BasicRail(_stationA : Station, _stationB : Station) extends Rail(_stationA
     val panel = new VBox()
     val maxCapLabel = new Label("Maw capacity : " + DEFAULT_CAPACITY)
     val nbTrainLabel = new Label("Trains : " + trains.size)
-    val lengthLabel = new Label("Length : " + length)
+    val lengthLabel = new Label("Length : " + length.toInt)
     panel.children = List(maxCapLabel, nbTrainLabel, lengthLabel)
     panel
   }
