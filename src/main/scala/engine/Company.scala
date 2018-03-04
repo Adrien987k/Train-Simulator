@@ -36,6 +36,8 @@ class Company extends Observable {
           lastStation match {
             case Some(station) =>
               if (station == town.station.get) return
+              if (railAlreadyExist(station, town.station.get))
+                throw new CannotBuildItemException("This rail already exists")
               lastStation = None
               buildRail(station, town.station.get)
               addChange(new CreationChange(station.pos, town.station.get.pos, ItemType.RAIL))

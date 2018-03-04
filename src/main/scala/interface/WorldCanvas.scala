@@ -1,13 +1,11 @@
 package interface
 
-import engine.{CannotBuildItemException, ItemType, World}
-import interface.WorldCanvas.gc
+import engine.{ItemType, World}
 import link.{Change, CreationChange, Observer}
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
 import scalafx.Includes._
-import scalafx.event.EventIncludes
 import scalafx.scene.Node
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.ScrollPane
@@ -45,7 +43,7 @@ object WorldCanvas extends Observer with GUIComponent {
 
   def initWorld(townsPositions : List[Pos]): Unit = {
     canvas.onMouseClicked = (event: MouseEvent) => {
-      lastPosClicked = new Pos(event.x.toInt, event.y.toInt)
+      lastPosClicked = new Pos(event.x, event.y)
       if (ItemsButtonBar.selected != null)
         ItemsButtonBar.selected match {
           case Some(item) => World.company.tryPlace(item, lastPosClicked)
@@ -54,7 +52,7 @@ object WorldCanvas extends Observer with GUIComponent {
     }
 
     canvas.onMouseMoved = (event: MouseEvent) => {
-      val pos = new Pos(event.x.toInt, event.y.toInt)
+      val pos = new Pos(event.x, event.y)
       var newItemSelected = false
       items.foreach {
         case TOWN(pos1, level) =>
@@ -63,12 +61,11 @@ object WorldCanvas extends Observer with GUIComponent {
             newItemSelected = true
           }
         case RAIL(pos1, pos2) =>
-          if (pos.inLineRange(pos1, pos2, 10) && selectedItem.isEmpty) {
+          if (pos.inLineRange(pos1, pos2, 10) && !newItemSelected) {
             selectedItem = Some(RAIL(pos1, pos2))
             newItemSelected = true
           }
-        case TRAIN(pos1) =>
-          //TODO When train selected
+        case _ =>
       }
       if (!newItemSelected) selectedItem = None
     }
@@ -130,7 +127,6 @@ object WorldCanvas extends Observer with GUIComponent {
       case cch: CreationChange =>
         cch.itemType match {
           case ItemType.STATION =>
-            println("NOTIFIED STATION")
             items = items.map {
               case town: TOWN =>
                 if (town.pos1.equals(cch.pos1)) {

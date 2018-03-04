@@ -19,10 +19,18 @@ class Pos(private var _x: Double, private var _y: Double) extends Comparable[Pos
   }
 
   def inLineRange(pos1 : Pos, pos2 : Pos, range : Double) : Boolean = {
-      (pos2.x - pos1.x) != 0 && (x - pos1.x) != 0 &&
-      math.abs(((pos2.y - pos1.y) / (pos2.x - pos1.x)) -
-               ((y - pos1.y) / (x - pos1.x))) <= (if (range != 0) 1 / range else 0.1) &&
-      ((x <= pos2.x && x >= pos1.x) || (x >= pos2.x && x <= pos1.x))
+    val distA = pos1.dist(this)
+    val distB = pos2.dist(this)
+    val distC = pos1.dist(pos2)
+    val dist: Double = if (distB * distB > distA * distA + distC * distC)
+      distA
+    else if (distA * distA > distB * distB + distC * distC)
+      distB
+    else {
+      val s = (distA + distB + distC) / 2
+      (2 / distC) * math.sqrt(s * (s - distA) * (s - distB) * (s - distC))
+    }
+    dist <= range
   }
 
   def copy(): Pos = {
@@ -42,6 +50,6 @@ class Pos(private var _x: Double, private var _y: Double) extends Comparable[Pos
   }
 
   override def toString: String = {
-    "(" + x + ", " + y + ")"
+    "(" + x.toInt + ", " + y.toInt + ")"
   }
 }

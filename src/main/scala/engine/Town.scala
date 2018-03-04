@@ -2,7 +2,6 @@ package engine
 
 import utils.Pos
 
-import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 abstract class Town(_pos : Pos, _name : String) extends Updatable {

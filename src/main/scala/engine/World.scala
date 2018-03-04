@@ -1,7 +1,7 @@
 package engine
 
 import interface.{GUI, WorldCanvas}
-import link.{Change, CreationChange, Observable}
+import link.{CreationChange, Observable}
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer

@@ -1,7 +1,7 @@
 package interface
 import scalafx.scene.Node
 import scalafx.scene.control.Label
-import scalafx.scene.layout.{BorderPane, VBox}
+import scalafx.scene.layout.BorderPane
 
 object OneTrainInformationPanel extends GUIComponent {
 

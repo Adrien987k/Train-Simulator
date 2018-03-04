@@ -1,8 +1,7 @@
 package interface
 
-import engine.{ItemType, Town, World}
+import engine.{Town, World}
 
-import scalafx.Includes._
 import scala.collection.mutable.ListBuffer
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
@@ -39,20 +38,19 @@ object GUI extends JFXApp {
     mapMenu.items = List(newGameItem, saveItem, loadItem, new SeparatorMenuItem(), exitItem)
     menuBar.menus = List(mapMenu)
 
-    newGameItem.onAction = (event : ActionEvent) => {
+    newGameItem.onAction = (_ : ActionEvent) => {
       World.newGame()
     }
 
-    saveItem.onAction = (event : ActionEvent) => {
+    saveItem.onAction = (_ : ActionEvent) => {
       //TODO save the current map in a file
     }
 
-    loadItem.onAction = (event : ActionEvent) => {
+    loadItem.onAction = (_ : ActionEvent) => {
       //TODO load a map from a file
     }
 
-    exitItem.onAction = (event : ActionEvent) => {
-      //TODO save the map
+    exitItem.onAction = (_ : ActionEvent) => {
       sys.exit(0)
     }
     menuBar
@@ -95,10 +93,8 @@ object GUI extends JFXApp {
     WorldCanvas.initWorld(towns.map(town => town.pos).toList)
 
     val timer = AnimationTimer { time =>
-      //if (time - lastTime / 1e9 >= ) {
       World.update()
       GlobalInformationPanel.update(time)
-      //AllTrainsInformationPanel.update()
       WorldCanvas.update()
       lastTime = time
     }

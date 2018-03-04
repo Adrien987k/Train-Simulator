@@ -3,9 +3,7 @@ package interface
 import engine.{Train, World}
 
 import scala.collection.mutable
-import scala.collection.mutable.Map
 import scalafx.Includes._
-import scala.collection.mutable.ListBuffer
 import scalafx.collections.ObservableBuffer.{Add, Remove}
 import scalafx.event.ActionEvent
 import scalafx.scene.Node
@@ -38,8 +36,8 @@ object AllTrainsInformationPanel extends GUIComponent {
   )
 
   def keyForValue(value: Button): Option[Train] = {
-    trainButtonsMap.find({case (train, button) => button  == value}) match {
-      case Some((train, button)) => Some(train)
+    trainButtonsMap.find({case (_, button) => button  == value}) match {
+      case Some((train, _)) => Some(train)
       case None => None
     }
   }
@@ -47,7 +45,7 @@ object AllTrainsInformationPanel extends GUIComponent {
   def addTrainButton(train : Train): Unit = {
     val trainButton = new Button("Train")
     trainButton.maxWidth = Double.MaxValue
-    trainButton.onAction = (event : ActionEvent) => {
+    trainButton.onAction = (_ : ActionEvent) => {
       keyForValue(trainButton) match {
         case Some(t) =>
           OneTrainInformationPanel.addPanel(t.propertyPane())

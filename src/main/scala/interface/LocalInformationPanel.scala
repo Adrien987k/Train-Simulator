@@ -4,12 +4,12 @@ import engine.World
 import utils.Pos
 
 import scalafx.scene.Node
-import scalafx.scene.control.{Label, TextArea}
+import scalafx.scene.control.Label
 import scalafx.scene.layout.BorderPane
 
 object LocalInformationPanel extends GUIComponent {
 
-  private var localInformationPane: BorderPane = new BorderPane
+  private val localInformationPane: BorderPane = new BorderPane
   private val noInfoLabel = new Label("No element selected")
 
   def make() : Node = {

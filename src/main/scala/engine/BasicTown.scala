@@ -87,9 +87,9 @@ class BasicTown(pos : Pos, name : String) extends Town(pos : Pos, name : String)
     val hasStationLabel = new Label(if (hasStation) "This town has a station"
     else "This does not have a station")
     val populationLabel = new Label("Population : " + population)
-    val propTravelertLabel = new Label("Proportion of traveler : " + proportionTraveler)
+    val propTravelerLabel = new Label("Proportion of traveler : " + proportionTraveler)
     val posLabel = new Label("position : " + pos)
-    panel.children = List(nameLabel, hasStationLabel, populationLabel, propTravelertLabel, posLabel)
+    panel.children = List(nameLabel, hasStationLabel, populationLabel, propTravelerLabel, posLabel, new Label("\n"))
     mainPane.top = panel
     if (hasStation)
       mainPane.center = station.get.propertyPane()

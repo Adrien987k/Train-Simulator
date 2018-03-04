@@ -1,8 +1,5 @@
 package engine
 
-import engine.ItemType.{RAIL, STATION, TRAIN}
-import utils.Pos
-
 object ItemFactory {
 
   /*def buildItem(item: ItemType): Item = {

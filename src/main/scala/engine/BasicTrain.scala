@@ -64,12 +64,12 @@ class BasicTrain(company: Company, _pos : Pos) extends Train(company: Company, _
 
   override def propertyPane(): Node = {
     val panel = new VBox()
-    val speedLabel = new Label("Max capacity : " + speed)
-    val sizeLabel = new Label("Trains : " + size)
-    val maxWeightLabel = new Label("Length : " + maxWeight)
+    val speedLabel = new Label("Speed : " + speed)
+    val sizeLabel = new Label("Size : " + size)
+    val maxWeightLabel = new Label("Max weight : " + maxWeight)
     val nbPassengerLabel = new Label("Passengers : " + nbPassenger)
-    val posLabel = new Label("position : " + pos)
-    panel.children = List(speedLabel, sizeLabel, maxWeightLabel, nbPassengerLabel)
+    val posLabel = new Label("Position : " + pos)
+    panel.children = List(speedLabel, sizeLabel, maxWeightLabel, nbPassengerLabel, posLabel)
     val goalStationLabel = new Label("Goal station : ")
     if (goalStation.nonEmpty)
       goalStationLabel.text = "Goal station : " + goalStation.get.town.name
