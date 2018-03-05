@@ -1,9 +1,12 @@
 package engine
 
+import interface.WorldCanvas
 import utils.Pos
 
+import scalafx.Includes._
+import scalafx.event.ActionEvent
 import scalafx.scene.Node
-import scalafx.scene.control.Label
+import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.VBox
 
 class BasicTrain(company: Company, _pos : Pos) extends Train(company: Company, _pos : Pos) {
@@ -36,6 +39,11 @@ class BasicTrain(company: Company, _pos : Pos) extends Train(company: Company, _
       dir.x = station.pos.x - from.x
       dir.y = station.pos.y - from.y
       dir.normalize()
+  }
+
+  override def setDestination(town : Town): Unit = {
+    println("DESTINATION : " + town.name)
+    destination = Some(town)
   }
 
   override def unsetObjective(): Unit = {
@@ -74,6 +82,12 @@ class BasicTrain(company: Company, _pos : Pos) extends Train(company: Company, _
     if (goalStation.nonEmpty)
       goalStationLabel.text = "Goal station : " + goalStation.get.town.name
     panel.children.add(goalStationLabel)
+    val chooseDestPanel = new Button("Choose destination")
+    chooseDestPanel.onAction = (_ : ActionEvent) => {
+      World.company.selectTrain(this)
+      WorldCanvas.activeDestinationChoice()
+    }
+    panel.children.add(chooseDestPanel)
     panel
   }
 

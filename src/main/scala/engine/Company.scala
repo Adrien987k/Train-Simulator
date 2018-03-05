@@ -16,6 +16,7 @@ class Company extends Observable {
   val rails :  ListBuffer[Rail] = ListBuffer.empty
 
   private var lastStation : Option[Station] = None
+  private var selectedTrain: Option[Train] = None
 
   def tryPlace(itemType: ItemType.Value, pos : Pos): Unit = {
     GlobalInformationPanel.removeWarningMessage()
@@ -54,6 +55,20 @@ class Company extends Observable {
         GlobalInformationPanel.displayWarningMessage(e.getMessage)
     }
     notifyObservers()
+  }
+
+  def selectTrain(train : Train): Unit = {
+    selectedTrain = Some(train)
+  }
+
+  def setTrainDestination(pos : Pos): Unit = {
+    selectedTrain.foreach(train =>
+      World.updatableAt(pos) match {
+        case Some(town : Town) =>
+          train.setDestination(town)
+        case _ =>
+      }
+    )
   }
 
   private def railAlreadyExist(stationA : Station, stationB : Station) : Boolean = {

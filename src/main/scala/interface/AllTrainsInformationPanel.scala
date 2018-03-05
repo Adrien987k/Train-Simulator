@@ -49,6 +49,7 @@ object AllTrainsInformationPanel extends GUIComponent {
       keyForValue(trainButton) match {
         case Some(t) =>
           OneTrainInformationPanel.addPanel(t.propertyPane())
+          WorldCanvas.selectTrain(t.pos)
         case None =>
       }
     }

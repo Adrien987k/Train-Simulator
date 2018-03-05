@@ -1,6 +1,6 @@
 package interface
 
-import engine.World
+import engine.{Train, World}
 import utils.Pos
 
 import scalafx.scene.Node
@@ -22,6 +22,9 @@ object LocalInformationPanel extends GUIComponent {
 
   def displayElementInfoAt(pos : Pos): Unit = {
     World.updatableAt(pos) match {
+      case Some(train : Train) =>
+        OneTrainInformationPanel.addPanel(train.propertyPane())
+        WorldCanvas.selectTrain(train.pos)
       case Some(e) => localInformationPane.center = e.propertyPane()
       case None => localInformationPane.center = noInfoLabel
     }

@@ -27,6 +27,8 @@ object WorldCanvas extends Observer with GUIComponent {
   var gc: GraphicsContext = canvas.graphicsContext2D
   var items: ListBuffer[Item] = ListBuffer.empty
   var selectedItem: Option[Item] = None
+  var selectedTrain: Option[TRAIN] = None
+  var destinationChoice = false
 
   var lastPosClicked = new Pos(0,0)
 
@@ -41,13 +43,26 @@ object WorldCanvas extends Observer with GUIComponent {
     selectedItem = None
   }
 
+  def selectTrain(pos : Pos): Unit = {
+    selectedTrain = Some(TRAIN(pos))
+  }
+
+  def activeDestinationChoice(): Unit = {
+    destinationChoice = true
+  }
+
   def initWorld(townsPositions : List[Pos]): Unit = {
     canvas.onMouseClicked = (event: MouseEvent) => {
       lastPosClicked = new Pos(event.x, event.y)
       if (ItemsButtonBar.selected != null)
         ItemsButtonBar.selected match {
           case Some(item) => World.company.tryPlace(item, lastPosClicked)
-          case None => LocalInformationPanel.displayElementInfoAt(lastPosClicked)
+          case None =>
+            if (destinationChoice) {
+              World.company.setTrainDestination(lastPosClicked)
+              destinationChoice = false
+            }
+            else LocalInformationPanel.displayElementInfoAt(lastPosClicked)
         }
     }
 
@@ -108,6 +123,7 @@ object WorldCanvas extends Observer with GUIComponent {
     if (selectedItem.nonEmpty) {
       selectedItem.get match {
         case town : TOWN =>
+          if (destinationChoice) gc.stroke = Color.BlueViolet
           gc.strokeRect(town.pos1.x - TOWN_RADIUS * 1.25, town.pos1.y - TOWN_RADIUS * 1.25, TOWN_RADIUS * 2.5, TOWN_RADIUS * 2.5)
         case rail : RAIL =>
           gc.lineWidth = 10
@@ -115,6 +131,13 @@ object WorldCanvas extends Observer with GUIComponent {
           gc.strokeLine(rail.pos1.x, rail.pos1.y, rail.pos2.x, rail.pos2.y)
         case _ =>
       }
+    }
+    if (selectedTrain.nonEmpty) {
+      val pos = selectedTrain.get.pos1
+      gc.lineWidth = 3
+      gc.stroke = Color.BlueViolet
+      gc.strokeRect(pos.x - TOWN_RADIUS * 1.25, pos.y - TOWN_RADIUS * 1.25, TOWN_RADIUS * 2.5, TOWN_RADIUS * 2.5)
+
     }
     items.filter(item => item match {
       case _: TRAIN => false
