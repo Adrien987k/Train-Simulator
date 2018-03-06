@@ -24,7 +24,7 @@ When the game starts, towns are generated at random positions and with a random 
 	\item Build a station in a town (there can be no more than one station per town)
 	\item Build a rail between two town having a station
 	\item Build a train in a town having a station
-\end
+\end{itemize}
 Each of these action cost money
 The player can also click on a town or a rail in order to get extras information about it
 The player has access to the list of the trains and can click on one of the element of the list to get extra info about the train
@@ -37,7 +37,7 @@ The project is divided in 4 packages :
 	\item interface : All the classes used for the graphical user interface
 	\item link : Utility classes in order to make the link between the engine and the interface
 	\item utils : Utility classes that can be used everywhere in the project
-\end
+\end{itemize}
 
 \subsection{Engine}
 The towns graph is contained in the object World, each node is an instance of the abstract class Town, and each edge is an instance of the class Rail.
@@ -51,27 +51,38 @@ The station manage the available trains.
 When there is no train available for a specific destination, the station keep in memory the number of waiting passengers for this destination. 
 When a station try to send passenger to a destination, it take the first train available for this destination and it load it with the passengers.
 When a train is updated, it check its destination and check if it is arrived. 
-If so, it called a method unload of the class station, on itself. 
+If so, it called a method unload of the class station, on itself.
 If not, it moves toward its destination.
 
 \subsection{Interface}
 The interface use the ScalaFX library.
 It is divided in objects, each object manage a specific part of the interface.
 GUI is the main object, it is also the main class, indeed it extends JFXApp (a scalaFX class) therefore it is launch first.
-The other components are
+The other components are the following, they all inherit from the class GUIComponent and all have a method make that allowed building them
 \begin{itemize}
-	\item ItemsButtonsBar
-	\item AllTrainsInformationPanel
-	\item GlobalInformationPanel
-	\item LocalInformationPanel
-	\item OneTrainInformationPanel
-\end
+	\item ItemsButtonsBar: Manages the buttons used to select an item to build (Station, rail, train)
+	\item AllTrainsInformationPanel: The list of all the trains in the map, each train is represented by a button
+	\item GlobalInformationPanel: Global information about the world
+	\item LocalInformationPanel: Information about an element (A rail or a town) of the world is displayed there when the user clicks on it.
+	\item OneTrainInformationPanel: Information about one specific train when the user clicks on it directly on the map or on the list of trains
+\end{itemize}
 
 \subsection{Link}
+We use the observer, observable design pattern.
+In the link package are all the classes used to make the link between the engine and the interface.
+Elements of the engine are observables and elements of the interface are observers.
+When a change occurs in the engine, it is putted in a list of changed.
+At each tick, the interface is notified about the changes.
 
 \subsection{Utils}
+All utilitarian classes
 
 \section{Shortcomings}
+\begin{itemize}
+	\item For now there is only one type of train, all trains have the same characteristics.
+	\item There is also one type of city, station and rail.
+	\item We can set a destination to a train with the interface but it actually doesn't do anything.
+\end{itemize}
 
 \end{document}
 
