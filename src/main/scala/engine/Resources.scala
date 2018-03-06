@@ -1,5 +1,6 @@
 package engine
 
+/* NOT USED YET */
 object Resources {
 
   sealed abstract class Resource(

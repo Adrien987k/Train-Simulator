@@ -21,50 +21,51 @@
 \section{The game}
 When the game starts, towns are generated at random positions and with a random number of citizen. The player is in charge of a train company and he can do the following actions :
 \begin{itemize}
-	\item Build a station in a town (there can be no more than one station per town)
-	\item Build a rail between two town having a station
+	\item Build a station in a town (there can not be more than one station per town)
+	\item Build a rail between two towns having a station
 	\item Build a train in a town having a station
 \end{itemize}
-Each of these action cost money
-The player can also click on a town or a rail in order to get extras information about it
-The player has access to the list of the trains and can click on one of the element of the list to get extra info about the train
+Each of these actions cost money
+The player can also click on a town or a rail in order to get extra information about it
+The player has access to the list of trains and can click on one of the elements of the list to get extra info about the train
 
 \section{Architecture of the project}
 
-The project is divided in 4 packages : 
+The project is divided into 4 packages : 
 \begin{itemize}
-	\item engine : the core of the game where the logic is executed
+	\item engine : The core of the game where the logic is executed
 	\item interface : All the classes used for the graphical user interface
 	\item link : Utility classes in order to make the link between the engine and the interface
 	\item utils : Utility classes that can be used everywhere in the project
 \end{itemize}
 
 \subsection{Engine}
-The towns graph is contained in the object World, each node is an instance of the abstract class Town, and each edge is an instance of the class Rail.
-The game progress by tick, at each tick, the world state is updated and the changes are sent to the interface.
-The world contains instance of the class Company.
+The towns graph is contained in the object \textit{World}, each node is an instance of the abstract class \textit{Town}, and each edge is an instance of the class \textit{Rail}.
+The game progresses by tick, at each tick, the world state is updated and the changes are sent to the interface.
+The world contains instance of the class \textit{Company}.
 The rails and the trains belongs to the company. 
 For now there is only one company, owned by the player.
-When a town is updated, it generate a percentage of passengers which are sent to the neighbors towns, in function of the number of available trains.
-The town contains an instance of the abstract class Station. 
-The station manage the available trains. 
-When there is no train available for a specific destination, the station keep in memory the number of waiting passengers for this destination. 
-When a station try to send passenger to a destination, it take the first train available for this destination and it load it with the passengers.
-When a train is updated, it check its destination and check if it is arrived. 
-If so, it called a method unload of the class station, on itself.
+
+When a town is updated, it generates a percentage of passengers which are sent to the neighbouring towns, according to the number of available trains.
+The town contains an instance of the abstract class \textit{Station}. 
+The station manages the available trains. 
+When there is no train available for a specific destination, the station keeps in memory the number of waiting passengers for this destination. 
+When a station tries to send passenger to a destination, it takes the first train available for this destination and it loads it with the passengers.
+When a train is updated, it checks its destination and checks if it is arrived. 
+If so, it calls the method unload of the class station, on itself. 
 If not, it moves toward its destination.
 
 \subsection{Interface}
-The interface use the ScalaFX library.
-It is divided in objects, each object manage a specific part of the interface.
-GUI is the main object, it is also the main class, indeed it extends JFXApp (a scalaFX class) therefore it is launch first.
-The other components are the following, they all inherit from the class GUIComponent and all have a method make that allowed building them
+The interface uses the \textit{ScalaFX} library.
+It is divided in objects, each object manages a specific part of the interface.
+\textit{GUI} is the main object, it is also the main class, indeed it extends \textit{JFXApp} (a scalaFX class) therefore it is launched first.
+The other components are the following, they all inherit from the class \textit{GUIComponent} and all have a method make that allowed building them
 \begin{itemize}
-	\item ItemsButtonsBar: Manages the buttons used to select an item to build (Station, rail, train)
-	\item AllTrainsInformationPanel: The list of all the trains in the map, each train is represented by a button
-	\item GlobalInformationPanel: Global information about the world
-	\item LocalInformationPanel: Information about an element (A rail or a town) of the world is displayed there when the user clicks on it.
-	\item OneTrainInformationPanel: Information about one specific train when the user clicks on it directly on the map or on the list of trains
+	\item \textit{ItemsButtonsBar}: Manages the buttons used to select an item to build (Station, rail, train)
+	\item \textit{AllTrainsInformationPanel}: The list of all the trains in the map, each train is represented by a button
+	\item \textit{GlobalInformationPanel}: Global information about the world
+	\item \textit{LocalInformationPanel}: Information about an element (A rail or a town) of the world is displayed there when the user clicks on it.
+	\item \textit{OneTrainInformationPanel}: Information about one specific train when the user clicks on it directly on the map or on the list of trains
 \end{itemize}
 
 \subsection{Link}
