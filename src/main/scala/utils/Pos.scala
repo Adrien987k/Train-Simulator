@@ -14,7 +14,7 @@ class Pos(private var _x: Double, private var _y: Double) extends Comparable[Pos
     (pos.y - y) * (pos.y - y))
   }
 
-  def inRange(pos : Pos, range : Int) : Boolean = {
+  def inRange(pos : Pos, range : Double) : Boolean = {
     dist(pos) <= range
   }
 

@@ -11,6 +11,7 @@ object OneTrainInformationPanel extends GUIComponent {
 
   override def make(): Node = {
     panel.center = defaultPanel
+    panel.style = "-fx-background-color: lightGreen"
     panel
   }
 

@@ -1,6 +1,6 @@
 package interface
 
-import engine.ItemType
+import engine.{ItemType, Shop}
 
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.control.{Button, ButtonBar}
@@ -18,7 +18,8 @@ object ItemsButtonBar extends GUIComponent {
     var itemButtons : ListBuffer[Button] = ListBuffer.empty
 
     for (item <- ItemType.values) {
-      val itemButton = new Button(item.toString)
+      val itemButton = new Button(item.toString + " " + Shop.price(item) + "$" +
+        (item match {case ItemType.RAIL => " per KM" case _ => ""}))
       itemButton.onAction = _ => {
         select(item)
       }

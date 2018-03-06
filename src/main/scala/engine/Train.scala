@@ -7,11 +7,13 @@ abstract class Train(company: Company, _pos : Pos) extends Item(company : Compan
   val DEFAULT_SPEED = 1
   val DEFAULT_SIZE = 50
   val DEFAULT_MAX_WEIGHT = 1000
+  val DEFAULT_PASSENGER_CAPACITY = 500
 
   var dir : Dir = new Dir(0, 0)
   var speed : Double = DEFAULT_SPEED
   var size : Int = DEFAULT_SIZE
   var maxWeight : Int = DEFAULT_MAX_WEIGHT
+  var passengerCapacity: Int = DEFAULT_PASSENGER_CAPACITY
 
   var nbPassenger = 0
 

@@ -16,7 +16,7 @@ class BasicTown(pos : Pos, name : String) extends Town(pos : Pos, name : String)
     counter += 1
     if (counter == UpdateRate.TOWN_UPDATE) {
       counter = 0
-      val traveler = proportionTraveler * population / 100
+      val traveler = (proportionTraveler * population / 100).toInt
       if (traveler != 0)
         sendPeopleToNeighbours(traveler)
 

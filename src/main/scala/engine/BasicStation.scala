@@ -49,7 +49,16 @@ class BasicStation(company: Company, _pos : Pos, town : Town) extends Station(co
           return false
         }
         val train = trains.remove(0)
-        load(train, objective, nbPassenger)
+        var realPassenger = 0
+        var waiters = 0
+        if (train.passengerCapacity < nbPassenger) {
+          realPassenger = train.passengerCapacity
+          waiters = nbPassenger - train.passengerCapacity
+        } else {
+          realPassenger = nbPassenger
+        }
+        if (waiters > 0) waitingPassengers += ((objective, waiters))
+        load(train, objective, realPassenger)
         val success = train.putOnRail(rail)
         if (success) {
           company.money += nbPassenger * rail.length * company.ticketPricePerKm

@@ -21,6 +21,8 @@ object AllTrainsInformationPanel extends GUIComponent {
     trainButtonsBox.setFillWidth(true)
     panel.fitToWidth = true
     panel.content = trainButtonsBox
+    trainButtonsBox.style = "-fx-background-color: paleGoldenRode"
+    panel.style = "-fx-background-color: paleGoldenRode"
     panel
   }
 

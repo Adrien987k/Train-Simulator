@@ -1,7 +1,5 @@
 package interface
 
-import java.text.SimpleDateFormat
-
 import engine.World
 
 import scalafx.scene.control.Label
@@ -15,19 +13,21 @@ object GlobalInformationPanel extends GUIComponent {
   val mainLabel = new Label("Global Information\n")
   val timeLabel = new Label()
   val moneyLabel = new Label("money : 0")
+  val ticketPriceLabel = new Label("Ticket price per Km : ")
   val warningLabel = new Label()
   val nbTrainLabel = new Label("trains : 0")
   val totalPopulationLabel = new Label
 
   def make(): VBox = {
-    panel.children = List(mainLabel, timeLabel, moneyLabel, nbTrainLabel, totalPopulationLabel)
+    panel.children = List(mainLabel, timeLabel, moneyLabel, ticketPriceLabel, nbTrainLabel, totalPopulationLabel)
+    panel.style = "-fx-background-color: cornFlowerBlue"
     panel
   }
 
   def update(time: Long): Unit = {
-    val hourFormat = new SimpleDateFormat("HH:mm")
-    timeLabel.text = hourFormat.format(time / (1e3 * 4))
+    timeLabel.text = World.timer.time()
     moneyLabel.text = "Money : " + World.company.money.toInt
+    ticketPriceLabel.text = "Ticket price per Km : " + World.company.ticketPricePerKm
     nbTrainLabel.text = "Trains : " + World.company.trains.size
     totalPopulationLabel.text = "Population : " + World.totalPopulation
   }

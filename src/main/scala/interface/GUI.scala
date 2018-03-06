@@ -25,6 +25,7 @@ object GUI extends JFXApp {
       root = rootPane
     }
   }
+  stage.fullScreen = true
 
   World.init()
 
@@ -68,16 +69,18 @@ object GUI extends JFXApp {
 
 
     rightSplit.orientation = Orientation.Vertical
-    val trainsPane = AllTrainsInformationPanel.make()
-    val oneTrainPane = OneTrainInformationPanel.make()
+    val allTrainPane = new BorderPane
+    allTrainPane.center = AllTrainsInformationPanel.make()
+    val oneTrainPane = new BorderPane
+    oneTrainPane.center = OneTrainInformationPanel.make()
 
-    rightSplit.items ++= List(trainsPane, oneTrainPane)
+    rightSplit.items ++= List(allTrainPane, oneTrainPane)
 
     val centralSplit = new SplitPane
     centralSplit.orientation = Orientation.Horizontal
     centralSplit.setDividerPositions(0.15, 0.85)
-    centralSplit.items ++= List(leftSplit, WorldCanvas.make(), rightSplit)
 
+    centralSplit.items ++= List(leftSplit, WorldCanvas.make(), rightSplit)
     centralSplit.requestFocus()
     centralSplit
   }

@@ -35,6 +35,8 @@ object WorldCanvas extends Observer with GUIComponent {
   def make(): Node = {
     val scrollPane = new ScrollPane
     scrollPane.content = canvas
+    canvas.width <== scrollPane.width
+    canvas.height <== scrollPane.height
     scrollPane
   }
 

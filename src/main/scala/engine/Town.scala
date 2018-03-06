@@ -8,7 +8,7 @@ abstract class Town(_pos : Pos, _name : String) extends Updatable {
 
   val MAX_POPULATION = 1000000
   val MIN_POPULATION = 10
-  val DEFAULT_PROPORTION_TRAVELER = 5
+  val DEFAULT_PROPORTION_TRAVELER = 0.1
 
   var station : Option[Station] = None
   var offer : Offer = new Offer
@@ -17,7 +17,7 @@ abstract class Town(_pos : Pos, _name : String) extends Updatable {
   var population : Int = MIN_POPULATION +
       new Random().nextInt(MAX_POPULATION + 1 - MIN_POPULATION)
 
-  var proportionTraveler : Int = DEFAULT_PROPORTION_TRAVELER
+  var proportionTraveler : Double = DEFAULT_PROPORTION_TRAVELER
 
   def pos: Pos = _pos
   def name : String = _name

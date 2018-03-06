@@ -9,7 +9,7 @@ import scalafx.collections.ObservableBuffer
 
 class Company extends Observable {
 
-  var money = 100000.0
+  var money = 20000.0
   var ticketPricePerKm = 0.01
 
   val trains : ObservableBuffer[Train] = ObservableBuffer.empty
@@ -25,6 +25,7 @@ class Company extends Observable {
       case None => return
     }
     try {
+      var quantity = 0
       if (!canBuy(itemType)) throw new CannotBuildItemException("Not enough money")
       (itemType, elem) match {
         case (ItemType.STATION, town : Town) =>
@@ -40,6 +41,8 @@ class Company extends Observable {
               if (railAlreadyExist(station, town.station.get))
                 throw new CannotBuildItemException("This rail already exists")
               lastStation = None
+              quantity = station.pos.dist(town.station.get.pos).toInt
+              if (!canBuy(itemType, quantity)) throw new CannotBuildItemException("Not enough money")
               buildRail(station, town.station.get)
               addChange(new CreationChange(station.pos, town.station.get.pos, ItemType.RAIL))
             case None =>
@@ -48,7 +51,7 @@ class Company extends Observable {
           }
         case _ => return
       }
-      buy(itemType)
+      buy(itemType, quantity)
       ItemsButtonBar.select()
     } catch {
       case e : CannotBuildItemException =>
@@ -76,13 +79,13 @@ class Company extends Observable {
       | rail.stationB == stationA && rail.stationA == stationB)
   }
 
-  private def canBuy(itemType: ItemType.Value) : Boolean = {
-    val price = Shop.price(itemType)
+  private def canBuy(itemType: ItemType.Value, quantity : Int = 1) : Boolean = {
+    val price = Shop.price(itemType, quantity)
     money - price >= 0
   }
 
-  def buy(itemType: ItemType.Value): Unit = {
-    val price = Shop.price(itemType)
+  def buy(itemType: ItemType.Value, quantity : Int = 1): Unit = {
+    val price = Shop.price(itemType, quantity)
     if (money - price < 0)
       throw new CannotBuildItemException("Not enough money")
     else {

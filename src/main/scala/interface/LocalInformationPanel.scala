@@ -10,9 +10,11 @@ import scalafx.scene.layout.BorderPane
 object LocalInformationPanel extends GUIComponent {
 
   private val localInformationPane: BorderPane = new BorderPane
-  private val noInfoLabel = new Label("No element selected")
+  private val noInfoLabel = new Label("No town selected")
 
   def make() : Node = {
+    localInformationPane.style = "-fx-background-color: lightCoral"
+    localInformationPane.center = noInfoLabel
     localInformationPane
   }
 

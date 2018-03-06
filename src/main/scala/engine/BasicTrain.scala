@@ -75,9 +75,10 @@ class BasicTrain(company: Company, _pos : Pos) extends Train(company: Company, _
     val speedLabel = new Label("Speed : " + speed)
     val sizeLabel = new Label("Size : " + size)
     val maxWeightLabel = new Label("Max weight : " + maxWeight)
+    val maxPassengerLabel = new Label("Max passengers : " + passengerCapacity)
     val nbPassengerLabel = new Label("Passengers : " + nbPassenger)
     val posLabel = new Label("Position : " + pos)
-    panel.children = List(speedLabel, sizeLabel, maxWeightLabel, nbPassengerLabel, posLabel)
+    panel.children = List(speedLabel, sizeLabel, maxWeightLabel, maxPassengerLabel, nbPassengerLabel, posLabel)
     val goalStationLabel = new Label("Goal station : ")
     if (goalStation.nonEmpty)
       goalStationLabel.text = "Goal station : " + goalStation.get.town.name
