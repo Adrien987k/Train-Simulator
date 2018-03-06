@@ -1,0 +1,80 @@
+\documentclass{article}
+
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[francais]{babel}
+
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{graphicx}
+
+\title{Project Programmation 2 : Report part 1}
+\author{Adrien \bsc{Bardes}, Enguerrand \bsc{Dezerces}}
+\date{March 6, 2018}
+                  
+\begin{document}
+
+\maketitle
+
+\section{The game}
+When the game starts, towns are generated at random positions and with a random number of citizen. The player is in charge of a train company and he can do the following actions :
+\begin{itemize}
+	\item Build a station in a town (there can be no more than one station per town)
+	\item Build a rail between two town having a station
+	\item Build a train in a town having a station
+\end
+Each of these action cost money
+The player can also click on a town or a rail in order to get extras information about it
+The player has access to the list of the trains and can click on one of the element of the list to get extra info about the train
+
+\section{Architecture of the project}
+
+The project is divided in 4 packages : 
+\begin{itemize}
+	\item engine : the core of the game where the logic is executed
+	\item interface : All the classes used for the graphical user interface
+	\item link : Utility classes in order to make the link between the engine and the interface
+	\item utils : Utility classes that can be used everywhere in the project
+\end
+
+\subsection{Engine}
+The towns graph is contained in the object World, each node is an instance of the abstract class Town, and each edge is an instance of the class Rail.
+The game progress by tick, at each tick, the world state is updated and the changes are sent to the interface.
+The world contains instance of the class Company.
+The rails and the trains belongs to the company. 
+For now there is only one company, owned by the player.
+When a town is updated, it generate a percentage of passengers which are sent to the neighbors towns, in function of the number of available trains.
+The town contains an instance of the abstract class Station. 
+The station manage the available trains. 
+When there is no train available for a specific destination, the station keep in memory the number of waiting passengers for this destination. 
+When a station try to send passenger to a destination, it take the first train available for this destination and it load it with the passengers.
+When a train is updated, it check its destination and check if it is arrived. 
+If so, it called a method unload of the class station, on itself. 
+If not, it moves toward its destination.
+
+\subsection{Interface}
+The interface use the ScalaFX library.
+It is divided in objects, each object manage a specific part of the interface.
+GUI is the main object, it is also the main class, indeed it extends JFXApp (a scalaFX class) therefore it is launch first.
+The other components are
+\begin{itemize}
+	\item ItemsButtonsBar
+	\item AllTrainsInformationPanel
+	\item GlobalInformationPanel
+	\item LocalInformationPanel
+	\item OneTrainInformationPanel
+\end
+
+\subsection{Link}
+
+\subsection{Utils}
+
+\section{Shortcomings}
+
+\end{document}
+
+
+
+
