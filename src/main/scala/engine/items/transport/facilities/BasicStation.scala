@@ -1,5 +1,9 @@
-package engine
+package engine.items.transport.facilities
 
+import engine.items.transport.roads.Rail
+import engine.items.transport.vehicules.{BasicTrain, Train}
+import engine.world.Company
+import engine.world.towns.Town
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer

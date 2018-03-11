@@ -1,6 +1,7 @@
 package interface
 
-import engine.{ItemType, World}
+import engine.items.ItemType
+import engine.world.World
 import link.{Change, CreationChange, Observer}
 import utils.Pos
 

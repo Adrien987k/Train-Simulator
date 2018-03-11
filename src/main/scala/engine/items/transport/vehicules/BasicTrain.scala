@@ -1,5 +1,10 @@
-package engine
+package engine.items.transport.vehicules
 
+import engine._
+import engine.items.transport.facilities.Station
+import engine.items.transport.roads.Rail
+import engine.world.towns.Town
+import engine.world.{Company, World}
 import interface.WorldCanvas
 import utils.Pos
 

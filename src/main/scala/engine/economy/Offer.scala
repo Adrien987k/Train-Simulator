@@ -1,8 +1,4 @@
-package engine
-
-import engine.Resources.Resource
-
-import scala.collection.mutable
+package engine.economy
 
 /* NOT USED YET */
 class Offer {

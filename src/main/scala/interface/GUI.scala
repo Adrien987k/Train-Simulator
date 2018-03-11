@@ -1,33 +1,33 @@
 package interface
 
-import engine.{Town, World}
+import engine.world.World
+import engine.world.towns.Town
 
 import scala.collection.mutable.ListBuffer
-import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.geometry.Orientation
 import scalafx.scene.{Node, Scene}
 import scalafx.scene.layout._
 import scalafx.Includes._
-import scalafx.animation.AnimationTimer
 import scalafx.event.ActionEvent
 import scalafx.scene.control._
 
-object GUI extends JFXApp {
+object GUI {
 
-  stage = new PrimaryStage {
-    title = "Train simulator"
-    scene = new Scene(1200, 700) {
-      val rootPane = new BorderPane
-      rootPane.top = makeMenu()
-      rootPane.center = makeCentralPain()
-      rootPane.bottom = ItemsButtonBar.make()
-      root = rootPane
+  def makePrimaryStage(): PrimaryStage = {
+    val stage = new PrimaryStage {
+      title = "Train simulator"
+      scene = new Scene(1200, 700) {
+        val rootPane = new BorderPane
+        rootPane.top = makeMenu()
+        rootPane.center = makeCentralPain()
+        rootPane.bottom = ItemsButtonBar.make()
+        root = rootPane
+      }
     }
+    stage.fullScreen = true
+    stage
   }
-  stage.fullScreen = true
-
-  World.init()
 
   private def makeMenu(): MenuBar = {
     val menuBar = new MenuBar
@@ -86,22 +86,15 @@ object GUI extends JFXApp {
   }
 
   def restart(): Unit = {
-    WorldCanvas.restart()
+    GlobalInformationPanel.restart()
     LocalInformationPanel.restart()
+    OneTrainInformationPanel.restart()
+    AllTrainsInformationPanel.restart()
+    ItemsButtonBar.restart()
   }
-
-  private var lastTime = 0L
 
   def initWorldCanvas(towns: ListBuffer[Town]): Unit = {
     WorldCanvas.initWorld(towns.map(town => town.pos).toList)
-
-    val timer = AnimationTimer { time =>
-      World.update()
-      GlobalInformationPanel.update(time)
-      WorldCanvas.update()
-      lastTime = time
-    }
-    timer.start()
   }
 
 }

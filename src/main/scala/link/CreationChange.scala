@@ -1,6 +1,6 @@
 package link
 
-import engine.ItemType
+import engine.items.ItemType
 import utils.Pos
 
 class CreationChange(_pos1: Pos, _pos2: Pos, _itemType: ItemType.Value) extends Change {

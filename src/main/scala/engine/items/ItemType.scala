@@ -1,4 +1,4 @@
-package engine
+package engine.items
 
 object ItemType extends Enumeration {
 

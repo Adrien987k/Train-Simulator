@@ -1,6 +1,7 @@
 package interface
 
-import engine.{Train, World}
+import engine.items.transport.vehicules.Train
+import engine.world.World
 
 import scala.collection.mutable
 import scalafx.Includes._
@@ -15,7 +16,7 @@ object AllTrainsInformationPanel extends GUIComponent {
   val panel = new ScrollPane()
   val trainButtonsBox = new VBox()
 
-  val trainButtonsMap : mutable.Map[Train, Button] = mutable.Map.empty
+  var trainButtonsMap : mutable.Map[Train, Button] = mutable.Map.empty
 
   def make(): Node = {
     trainButtonsBox.setFillWidth(true)
@@ -24,6 +25,10 @@ object AllTrainsInformationPanel extends GUIComponent {
     trainButtonsBox.style = "-fx-background-color: moccasin"
     panel.style = "-fx-background-color: moccasin"
     panel
+  }
+
+  def restart(): Unit = {
+    trainButtonsMap = mutable.Map.empty
   }
 
   World.company.trains.onChange(

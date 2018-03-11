@@ -1,6 +1,6 @@
 package interface
 
-import engine.World
+import engine.world.World
 
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
@@ -24,7 +24,11 @@ object GlobalInformationPanel extends GUIComponent {
     panel
   }
 
-  def update(time: Long): Unit = {
+  def restart(): Unit = {
+
+  }
+
+  def update(): Unit = {
     timeLabel.text = World.timer.time()
     moneyLabel.text = "Money : " + World.company.money.toInt
     ticketPriceLabel.text = "Ticket price per Km : " + World.company.ticketPricePerKm

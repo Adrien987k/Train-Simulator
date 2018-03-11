@@ -1,5 +1,11 @@
-package engine
+package engine.items.transport.facilities
 
+import engine.Updatable
+import engine.items.Item
+import engine.items.transport.roads.Rail
+import engine.items.transport.vehicules.Train
+import engine.world.Company
+import engine.world.towns.Town
 import utils.Pos
 
 import scala.collection.mutable

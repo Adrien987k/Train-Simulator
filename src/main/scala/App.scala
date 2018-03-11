@@ -1,10 +1,12 @@
-import engine.World
 
-object App {
+import interface.GUI
 
-  def main(args: Array[String]): Unit = {
-    //World.init
-  }
+import scalafx.application.JFXApp
 
+object App extends JFXApp {
+
+  stage = GUI.makePrimaryStage()
+
+  val game = new Game
 
 }

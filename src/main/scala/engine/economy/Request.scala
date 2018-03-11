@@ -1,8 +1,4 @@
-package engine
-
-import engine.Resources.Resource
-
-import scala.collection.mutable.ArrayBuffer
+package engine.economy
 
 /* NOT USED YET */
 class Request {

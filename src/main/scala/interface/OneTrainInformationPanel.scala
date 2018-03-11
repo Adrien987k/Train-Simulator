@@ -15,6 +15,10 @@ object OneTrainInformationPanel extends GUIComponent {
     panel
   }
 
+  override def restart(): Unit = {
+    panel.center = defaultPanel
+  }
+
   def addPanel(newPanel : Node): Unit = {
     panel.center = newPanel
   }

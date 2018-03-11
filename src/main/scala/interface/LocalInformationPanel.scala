@@ -1,6 +1,7 @@
 package interface
 
-import engine.{Train, World}
+import engine.items.transport.vehicules.Train
+import engine.world.World
 import utils.Pos
 
 import scalafx.scene.Node

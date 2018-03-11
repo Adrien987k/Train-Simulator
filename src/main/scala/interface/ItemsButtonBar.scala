@@ -1,6 +1,7 @@
 package interface
 
-import engine.{ItemType, Shop}
+import engine.items.ItemType
+import engine.world.Shop
 
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.control.{Button, ButtonBar}
@@ -28,6 +29,10 @@ object ItemsButtonBar extends GUIComponent {
 
     bar.buttons = itemButtons
     bar
+  }
+
+  override def restart(): Unit = {
+    select()
   }
 
 }

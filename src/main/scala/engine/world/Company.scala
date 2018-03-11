@@ -1,5 +1,11 @@
-package engine
+package engine.world
 
+import engine.exceptions.CannotBuildItemException
+import engine.items.ItemType
+import engine.items.transport.facilities.Station
+import engine.items.transport.roads.{BasicRail, Rail}
+import engine.items.transport.vehicules.Train
+import engine.world.towns.Town
 import interface.{GlobalInformationPanel, ItemsButtonBar}
 import link.{CreationChange, Observable}
 import utils.Pos
@@ -7,7 +13,7 @@ import utils.Pos
 import scala.collection.mutable.ListBuffer
 import scalafx.collections.ObservableBuffer
 
-class Company extends Observable {
+abstract class Company extends Observable {
 
   var money = 20000.0
   var ticketPricePerKm = 0.01

@@ -1,10 +1,16 @@
-package engine
+package engine.items.transport.vehicules
 
+import engine.Updatable
+import engine.items.Item
+import engine.items.transport.facilities.Station
+import engine.items.transport.roads.Rail
+import engine.world.Company
+import engine.world.towns.Town
 import utils.{Dir, Pos}
 
 abstract class Train(company: Company, _pos : Pos) extends Item(company : Company) with Updatable {
 
-  val DEFAULT_SPEED = 1
+  val DEFAULT_SPEED = 2
   val DEFAULT_SIZE = 50
   val DEFAULT_MAX_WEIGHT = 1000
   val DEFAULT_PASSENGER_CAPACITY = 500

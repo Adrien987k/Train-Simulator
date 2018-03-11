@@ -1,4 +1,10 @@
-package engine
+package engine.items.transport.roads
+
+import engine.Updatable
+import engine.items.Item
+import engine.items.transport.facilities.Station
+import engine.items.transport.vehicules.Train
+import engine.world.Company
 
 import scala.collection.mutable.ArrayBuffer
 

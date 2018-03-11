@@ -6,4 +6,6 @@ trait GUIComponent {
 
   def make(): Node
 
+  def restart()
+
 }

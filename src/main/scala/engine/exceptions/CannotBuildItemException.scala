@@ -1,4 +1,4 @@
-package engine
+package engine.exceptions
 
 object CannotBuildItemException {
   def unapply(e: CannotBuildItemException): Option[(String,Throwable)]
