@@ -1,6 +1,6 @@
 package interface
 
-import engine.world.World
+import logic.world.World
 
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox

@@ -1,4 +1,4 @@
-import engine.world.World
+import logic.world.World
 
 class Game {
 

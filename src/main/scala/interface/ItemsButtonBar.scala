@@ -1,7 +1,7 @@
 package interface
 
-import engine.items.ItemType
-import engine.world.Shop
+import logic.items.ItemType
+import logic.world.Shop
 
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.control.{Button, ButtonBar}

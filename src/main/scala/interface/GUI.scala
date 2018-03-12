@@ -1,7 +1,7 @@
 package interface
 
-import engine.world.World
-import engine.world.towns.Town
+import logic.world.World
+import logic.world.towns.Town
 
 import scala.collection.mutable.ListBuffer
 import scalafx.application.JFXApp.PrimaryStage
