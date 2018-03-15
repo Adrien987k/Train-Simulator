@@ -1,6 +1,7 @@
 package logic.items.transport.vehicules
 
-import logic.{Updatable, UpdateRate}
+import logic.exceptions.ImpossibleActionException
+import logic.{PointUpdatable, UpdateRate}
 import logic.items.Item
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.roads.Road
@@ -10,17 +11,21 @@ import utils.{Dir, Pos}
 
 import scala.collection.mutable.ListBuffer
 
-abstract class Vehicle(company: Company, engine : Engine, private var _pos : Pos) extends Item(company) with Updatable {
+abstract class Vehicle
+(val company : Company,
+ val engine : Engine,
+ val carriages : ListBuffer[Carriage],
+ var currentTransportFacility : Option[TransportFacility])
+extends Item(company) with PointUpdatable {
 
-  super.updateRate_=(UpdateRate.TRAIN_UPDATE)
+  updateRate(UpdateRate.TRAIN_UPDATE)
 
-  def pos : Pos = _pos
-  def pos_= (value : Pos) : Unit = _pos = value
-  def pos_= (x : Double, y : Double) : Unit = _pos = new Pos(x, y)
+  pos = currentTransportFacility match {
+    case Some(tf) => tf.pos
+    case None => new Pos(0, 0)
+  }
 
   var dir : Dir = new Dir(0, 0)
-
-  var carriages : ListBuffer[Carriage] = ListBuffer.empty
 
   /* The next facility to reach */
   var goalTransportFacility : Option[TransportFacility] = None
@@ -45,14 +50,13 @@ abstract class Vehicle(company: Company, engine : Engine, private var _pos : Pos
     }
   }
 
-  def setObjective[T <: TransportFacility]
-  (transportFacility : T, from : Pos) : Unit = {
+  def setObjective(transportFacility : TransportFacility) : Unit = {
     if (goalTransportFacility.nonEmpty) return
 
     goalTransportFacility = Some(transportFacility)
 
-    dir.x = transportFacility.pos.x - from.x
-    dir.y = transportFacility.pos.y - from.y
+    dir.x = transportFacility.pos.x - pos.x
+    dir.y = transportFacility.pos.y - pos.y
     dir.normalize()
   }
 
@@ -64,16 +68,16 @@ abstract class Vehicle(company: Company, engine : Engine, private var _pos : Pos
     destination = Some(town)
   }
 
-  def putOnRoad[R <: Road](road : R) : Boolean = {
-    //TODO Change to EXCP
-    if (road.isFull) return false
+  def putOnRoad(road : Road) : Unit = {
+    if (road.isFull) throw new ImpossibleActionException("Road is full")
     currentRoad match {
-      case Some(_) => return false
+      case Some(_) =>
+        throw new ImpossibleActionException("Train already in a road")
       case None =>
+        currentTransportFacility = None
         road.addVehicle(this)
         currentRoad = Some(road)
     }
-    true
   }
 
   def removeFromRoad() : Unit = {
@@ -83,6 +87,42 @@ abstract class Vehicle(company: Company, engine : Engine, private var _pos : Pos
         currentRoad = None
       case None =>
     }
+  }
+
+  def addCarriage(carriage: Carriage) : Unit = {
+    carriages += carriage
+  }
+
+  /**
+    * @param nbPassenger The number of passenger to load
+    * @return The number of loaded passenger
+    */
+  def loadPassenger(nbPassenger : Int) : Int = {
+    var remainingPassenger = nbPassenger
+    carriages.foreach {
+      case passengerCarriage : PassengerCarriage =>
+        if (remainingPassenger > 0) {
+          remainingPassenger -=
+            passengerCarriage.loadPassenger(remainingPassenger)
+        }
+      case _ =>
+    }
+    nbPassenger - remainingPassenger
+  }
+
+  /**
+    * Empty the train of its passengers
+    *
+    * @return The number of passenger in the train
+    */
+  def unloadPassenger() : Int = {
+    carriages.foldLeft(0)((total, carriage) => {
+      carriage match {
+        case passengerCarriage : PassengerCarriage =>
+          total + passengerCarriage.unloadPassenger()
+        case _ => total
+      }
+    })
   }
 
 }

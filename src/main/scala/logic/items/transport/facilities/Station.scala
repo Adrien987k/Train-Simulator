@@ -18,7 +18,7 @@ abstract class Station
   }
 
   def buildTrain() : Boolean = {
-    val train = new BasicTrain(company, pos.copy())
+    val train = new BasicTrain(company, this)
     addVehicle(train)
   }
 

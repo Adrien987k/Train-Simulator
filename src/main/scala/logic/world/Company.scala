@@ -2,9 +2,9 @@ package logic.world
 
 import logic.exceptions.CannotBuildItemException
 import logic.items.ItemType
-import logic.items.transport.facilities.Station
-import logic.items.transport.roads.{BasicRail, Rail}
-import logic.items.transport.vehicules.Train
+import logic.items.transport.facilities.{Station, TransportFacility}
+import logic.items.transport.roads.{BasicRail, Road}
+import logic.items.transport.vehicules.{Train, Vehicle}
 import logic.world.towns.Town
 import interface.{GlobalInformationPanel, ItemsButtonBar}
 import link.{CreationChange, Observable}
@@ -18,8 +18,8 @@ abstract class Company extends Observable {
   var money = 20000.0
   var ticketPricePerKm = 0.01
 
-  val trains : ObservableBuffer[Train] = ObservableBuffer.empty
-  val rails :  ListBuffer[Rail] = ListBuffer.empty
+  val vehicles : ObservableBuffer[Vehicle] = ObservableBuffer.empty
+  val roads :  ListBuffer[Road] = ListBuffer.empty
 
   private var lastStation : Option[Station] = None
   private var selectedTrain: Option[Train] = None
@@ -44,7 +44,7 @@ abstract class Company extends Observable {
           lastStation match {
             case Some(station) =>
               if (station == town.station.get) return
-              if (railAlreadyExist(station, town.station.get))
+              if (roadAlreadyExist(station, town.station.get))
                 throw new CannotBuildItemException("This rail already exists")
               lastStation = None
               quantity = station.pos.dist(town.station.get.pos).toInt
@@ -80,12 +80,17 @@ abstract class Company extends Observable {
     )
   }
 
-  private def railAlreadyExist(stationA : Station, stationB : Station) : Boolean = {
-    rails.exists(rail => rail.stationA == stationA && rail.stationB == stationB
-      | rail.stationB == stationA && rail.stationA == stationB)
+  /**
+    * @return True if a road already exist between [transportFacilityA] and [transportFacilityB]
+    */
+  private def roadAlreadyExist(transportFacilityA : TransportFacility, transportFacilityB : TransportFacility) : Boolean = {
+    roads.exists(road =>
+      road.transportFacilityA == transportFacilityA && road.transportFacilityB == transportFacilityB
+      ||
+      road.transportFacilityB == transportFacilityA && road.transportFacilityA == transportFacilityB)
   }
 
-  private def canBuy(itemType: ItemType.Value, quantity : Int = 1) : Boolean = {
+  private def canBuy(itemType : ItemType.Value, quantity : Int = 1) : Boolean = {
     val price = Shop.price(itemType, quantity)
     money - price >= 0
   }
@@ -101,7 +106,7 @@ abstract class Company extends Observable {
 
   def buildRail(stationA : Station, stationB : Station): Unit = {
     val rail = new BasicRail(this, stationA, stationB)
-    rails += rail
+    roads += rail
     stationA.addRail(rail)
     stationB.addRail(rail)
   }

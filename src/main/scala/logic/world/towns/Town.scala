@@ -1,6 +1,6 @@
 package logic.world.towns
 
-import logic.{Updatable, UpdateRate}
+import logic.{PointUpdatable, Updatable, UpdateRate}
 import logic.economy.{Offer, Request}
 import logic.exceptions.CannotBuildItemException
 import logic.items.transport.facilities.{BasicStation, Station}
@@ -9,9 +9,10 @@ import utils.Pos
 
 import scala.util.Random
 
-abstract class Town(_pos : Pos, _name : String) extends Updatable {
+abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
-  updateRate_=(UpdateRate.TOWN_UPDATE)
+  updateRate(UpdateRate.TOWN_UPDATE)
+  pos = _pos
 
   private val rand = new Random()
 
@@ -28,7 +29,6 @@ abstract class Town(_pos : Pos, _name : String) extends Updatable {
 
   var proportionTraveler : Double = DEFAULT_PROPORTION_TRAVELER
 
-  def pos: Pos = _pos
   def name : String = _name
   def hasStation : Boolean = station.nonEmpty
 

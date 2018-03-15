@@ -1,9 +1,10 @@
 package logic.items.transport.facilities
 
-import logic.{Updatable, UpdateRate}
+import logic.exceptions.{CannotSendPassengerException, ImpossibleActionException}
+import logic.{PointUpdatable, Updatable, UpdateRate}
 import logic.items.Item
 import logic.items.transport.roads.Road
-import logic.items.transport.vehicules.{BasicTrain, Vehicle}
+import logic.items.transport.vehicules.{BasicTrain, Train, Vehicle}
 import logic.world.Company
 import logic.world.towns.Town
 import utils.Pos
@@ -13,15 +14,12 @@ import scala.collection.mutable.ListBuffer
 
 abstract class TransportFacility
 (val company : Company,
- private var _pos : Pos,
+ _pos : Pos,
  val town : Town)
-  extends Item(company) with Updatable {
+  extends Item(company) with PointUpdatable {
 
-  updateRate_=(1)
-
-  def pos: Pos = _pos
-  def pos_= (value : Pos) : Unit = _pos = value
-  def pos_= (x : Double, y : Double) : Unit = _pos = new Pos(x, y)
+  updateRate(1)
+  pos = _pos
 
   val DEFAULT_CAPACITY = 5
 
@@ -39,7 +37,7 @@ abstract class TransportFacility
   def addVehicle(vehicle : Vehicle) : Boolean = {
     if (isFull) return false
     //TODO Add vehicle to company
-    //company.trains += vehicle
+    company.vehicles += vehicle
     vehicles += vehicle
     true
   }
@@ -53,6 +51,9 @@ abstract class TransportFacility
     }
   }
 
+  /**
+    * @return All the neighbours off this transport facility
+    */
   def neighbours() : ListBuffer[TransportFacility] = {
     val neighbourList : ListBuffer[TransportFacility] = ListBuffer.empty
     for (road <- roads) {
@@ -66,65 +67,85 @@ abstract class TransportFacility
 
   override def step(): Unit = {
     super.step()
-    for ((station, nbPassenger) <- waitingPassengers) {
-      val success = sendPassenger(station, nbPassenger)
-      if (success) waitingPassengers -= station
+
+    for ((transportFacility, nbPassenger) <- waitingPassengers) {
+      sendPassenger(transportFacility, nbPassenger)
     }
   }
 
-  def sendPassenger(objective : TransportFacility, nbPassenger : Int) : Boolean = {
-    if (vehicles.isEmpty) {
-      waitingPassengers += ((objective, nbPassenger))
-      return false
-    }
-    getRoadTo(objective) match {
-      case Some(road) =>
-        if (road.nbVehicle == road.DEFAULT_CAPACITY) {
-          waitingPassengers += ((objective, nbPassenger))
-          return false
-        }
-        val vehicle = vehicles.remove(0)
-        var realPassenger = 50
-        var waiters = 0
-        /*if (train.passengerCapacity < nbPassenger) {
-          realPassenger = train.passengerCapacity
-          waiters = nbPassenger - train.passengerCapacity
-        } else {
-          realPassenger = nbPassenger
-        }*/
-        //TODO Take into account passengers carriages
-        if (waiters > 0) waitingPassengers += ((objective, waiters))
-        load(vehicle, objective, realPassenger)
-        val success = vehicle.putOnRoad(road)
-        if (success) {
-          company.money += nbPassenger * road.length * company.ticketPricePerKm
-        } else {
-          unload(vehicle)
-          return false
-        }
-      case None =>
+  /**
+    * Try to send @nbPassenger to @objective
+    *
+    * @param objective The transport facility objective
+    * @param nbPassenger The number of passenger to send
+    */
+  def sendPassenger(objective : TransportFacility, nbPassenger : Int) : Unit = {
+    try {
+      if (vehicles.isEmpty) {
+        throw new CannotSendPassengerException(nbPassenger)
+      }
+      getRoadTo(objective) match {
+        case Some(road) =>
+          if (road.nbVehicle == road.DEFAULT_CAPACITY) {
+            throw new CannotSendPassengerException(nbPassenger)
+          }
+          val vehicle = vehicles.remove(0)
+          val loadedPassenger = load(vehicle, objective, nbPassenger)
+          try {
+            vehicle.putOnRoad(road)
+          } catch {
+            case ImpossibleActionException(_) =>
+              unload(vehicle)
+              throw new CannotSendPassengerException(nbPassenger)
+          }
+          company.money += loadedPassenger * road.length * company.ticketPricePerKm
+        case None =>
+          throw new CannotSendPassengerException(nbPassenger)
+      }
+    } catch {
+      case e : CannotSendPassengerException =>
+        val nbPassenger = Integer.parseInt(e.getMessage)
         waitingPassengers += ((objective, nbPassenger))
-        return false
+        return
     }
-    true
+    waitingPassengers -= objective
   }
 
+  /**
+    * @return The transport Facility neighbour of the one in parameter if it exists
+    */
   def getRoadTo(transportFacility: TransportFacility) : Option[Road] = {
     roads.find(road => road.transportFacilityA == transportFacility
       || road.transportFacilityB == transportFacility)
   }
 
-  def load(vehicle : Vehicle, objective : TransportFacility, nbPassenger : Int) : Unit = {
-    town.population -= nbPassenger
-    vehicle.setObjective(objective, pos)
-    //TODO Unload passenger carriage
-    //vehicle.nbPassenger = nbPassenger
+  /**
+    * @param vehicle The vehicle to load
+    * @param objective The objective of this vehicle
+    * @param nbPassenger The number of passenger to load
+    * @return The number of loaded passenger
+    */
+  def load(vehicle: Vehicle, objective : TransportFacility, nbPassenger : Int) : Int = {
+    var loadedPassenger = vehicle.loadPassenger(nbPassenger)
+
+    val remainingPassenger = nbPassenger - loadedPassenger
+    if (remainingPassenger > 0) waitingPassengers += ((objective, remainingPassenger))
+
+    town.population -= loadedPassenger
+
+    vehicle.setObjective(objective)
+
+    loadedPassenger
   }
 
-  def unload(vehicle : Vehicle) : Unit = {
-    //town.population += vehicle.nbPassenger
+  /**
+    * @param vehicle The vehicle to unload
+    */
+  def unload(vehicle: Vehicle) : Unit = {
     vehicle.unsetObjective()
-    //vehicle.nbPassenger = 0
+
+    town.population += vehicle.unloadPassenger()
+
     vehicles += vehicle
   }
 

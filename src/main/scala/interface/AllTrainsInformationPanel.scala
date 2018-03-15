@@ -31,13 +31,16 @@ object AllTrainsInformationPanel extends GUIComponent {
     trainButtonsMap = mutable.Map.empty
   }
 
-  World.company.trains.onChange(
+  World.company.vehicles.onChange(
     (_, changes) =>
       changes.foreach {
         case Add(_, added) =>
-          added.foreach(addTrainButton)
+          println("TODO")
+          //TODO Change to vehicle
+          //added.foreach(addTrainButton)
         case Remove(_, removed) =>
-          removed.foreach(removeTrainButton)
+          println("TODO")
+          //removed.foreach(removeTrainButton)
         case _ =>
       }
   )

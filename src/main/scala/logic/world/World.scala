@@ -47,10 +47,10 @@ object World extends Observable {
     for (town <- towns) {
       town.step()
     }
-    for (train <- company.trains) {
+    for (train <- company.vehicles) {
       train.step()
     }
-    company.trains.foreach(train => addChange(new CreationChange(train.pos, null, ItemType.TRAIN)))
+    company.vehicles.foreach(train => addChange(new CreationChange(train.pos, null, ItemType.TRAIN)))
     notifyObservers()
   }
 
@@ -65,9 +65,10 @@ object World extends Observable {
   def updatableAt(pos : Pos): Option[Updatable] = {
     val town = towns.find(town => town.pos.inRange(pos, WorldCanvas.TOWN_RADIUS * 1.7))
     if (town.nonEmpty) return town
-    val train = company.trains.find(train => train.pos.inRange(pos, WorldCanvas.TRAIN_RADIUS))
+    val train = company.vehicles.find(train => train.pos.inRange(pos, WorldCanvas.TRAIN_RADIUS))
     if (train.nonEmpty) return train
-    company.rails.find(rail => pos.inLineRange(rail.stationA.pos, rail.stationB.pos, 10))
+    company.roads.find(road =>
+      pos.inLineRange(road.transportFacilityA.pos, road.transportFacilityB.pos, 10))
   }
 
 

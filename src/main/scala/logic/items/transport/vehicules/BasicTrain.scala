@@ -1,17 +1,28 @@
 package logic.items.transport.vehicules
 
 import logic.world.{Company, World}
-import interface.WorldCanvas
+import interface.{GlobalInformationPanel, WorldCanvas}
+import logic.items.transport.facilities.Station
 import utils.Pos
 
+import scala.collection.mutable.ListBuffer
 import scalafx.Includes._
 import scalafx.event.ActionEvent
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.VBox
 
-class BasicTrain(company: Company, _pos : Pos)
-  extends Train(company, new DieselEngine, _pos) {
+//TODO Train factory
+object BasicTrain {
+  def makeBasicCarriage() : ListBuffer[Carriage] = {
+    ListBuffer(new PassengerCarriage(3.0, 1000.0, 500))
+  }
+}
+
+class BasicTrain
+(company : Company,
+ station : Station)
+  extends Train(company, new DieselEngine, BasicTrain.makeBasicCarriage(), station) {
 
   override def propertyPane(): Node = {
     val panel = new VBox()

@@ -1,0 +1,11 @@
+
+FUTURE
++ Add new Types of vehicle, TF, roads
++ Evolve buildings system
+
+URGENT
++ Vehicle factory (levels)
++ Vehicle store in towns
++ Path finding
++ Unify ItemType with GUI item types
++ Updatable system

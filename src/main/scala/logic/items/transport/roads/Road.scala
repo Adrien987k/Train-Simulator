@@ -1,11 +1,9 @@
 package logic.items.transport.roads
 
-import logic.Updatable
 import logic.items.Item
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.vehicules.Vehicle
-import logic.world.Company
-import utils.Pos
+import logic.world.{Company, LineUpdatable}
 
 import scala.collection.mutable.ListBuffer
 
@@ -13,7 +11,7 @@ abstract class Road
 (val company : Company,
  val transportFacilityA: TransportFacility,
  val transportFacilityB: TransportFacility)
-  extends Item(company) with Updatable {
+  extends Item(company) with LineUpdatable {
 
   val DEFAULT_CAPACITY = 3
 
@@ -22,8 +20,6 @@ abstract class Road
   val vehicles : ListBuffer[Vehicle] = ListBuffer.empty
 
   val length : Double = transportFacilityA.pos.dist(transportFacilityB.pos)
-
-  override def pos: Pos = transportFacilityA.pos
 
   override def step(): Unit = {}
 

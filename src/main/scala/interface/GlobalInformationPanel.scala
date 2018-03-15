@@ -32,7 +32,7 @@ object GlobalInformationPanel extends GUIComponent {
     timeLabel.text = World.timer.time()
     moneyLabel.text = "Money : " + World.company.money.toInt
     ticketPriceLabel.text = "Ticket price per Km : " + World.company.ticketPricePerKm
-    nbTrainLabel.text = "Trains : " + World.company.trains.size
+    nbTrainLabel.text = "Trains : " + World.company.vehicles.size
     totalPopulationLabel.text = "Population : " + World.totalPopulation
   }
 

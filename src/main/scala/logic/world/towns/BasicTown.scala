@@ -1,17 +1,12 @@
 package logic.world.towns
 
-import logic._
-import logic.exceptions.CannotBuildItemException
-import logic.items.transport.facilities.{BasicStation, Station}
-import logic.world.World
 import utils.Pos
 
-import scala.util.Random
 import scalafx.scene.Node
 import scalafx.scene.control.Label
 import scalafx.scene.layout.{BorderPane, VBox}
 
-class BasicTown(pos : Pos, name : String) extends Town(pos : Pos, name : String) {
+class BasicTown(pos : Pos, name : String) extends Town(pos, name) {
 
   override def explore(): Unit = {
 
