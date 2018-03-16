@@ -1,7 +1,7 @@
 package interface
 
+import game.Game
 import logic.items.transport.vehicules.Train
-import logic.world.World
 
 import scala.collection.mutable
 import scalafx.Includes._
@@ -31,7 +31,7 @@ object AllTrainsInformationPanel extends GUIComponent {
     trainButtonsMap = mutable.Map.empty
   }
 
-  World.company.vehicles.onChange(
+  Game.world.company.vehicles.onChange(
     (_, changes) =>
       changes.foreach {
         case Add(_, added) =>

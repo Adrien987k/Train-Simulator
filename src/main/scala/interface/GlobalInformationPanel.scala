@@ -1,6 +1,6 @@
 package interface
 
-import logic.world.World
+import game.Game
 
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
@@ -29,11 +29,11 @@ object GlobalInformationPanel extends GUIComponent {
   }
 
   def update(): Unit = {
-    timeLabel.text = World.timer.time()
-    moneyLabel.text = "Money : " + World.company.money.toInt
-    ticketPriceLabel.text = "Ticket price per Km : " + World.company.ticketPricePerKm
-    nbTrainLabel.text = "Trains : " + World.company.vehicles.size
-    totalPopulationLabel.text = "Population : " + World.totalPopulation
+    timeLabel.text = Game.world.timer.time()
+    moneyLabel.text = "Money : " + Game.world.company.money.toInt
+    ticketPriceLabel.text = "Ticket price per Km : " + Game.world.company.ticketPricePerKm
+    nbTrainLabel.text = "Trains : " + Game.world.company.vehicles.size
+    totalPopulationLabel.text = "Population : " + Game.world.totalPopulation
   }
 
   def displayWarningMessage(message : String): Unit = {

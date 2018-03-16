@@ -1,6 +1,6 @@
 package interface
 
-import logic.world.World
+import game.Game
 import logic.world.towns.Town
 
 import scala.collection.mutable.ListBuffer
@@ -40,7 +40,7 @@ object GUI {
     menuBar.menus = List(mapMenu)
 
     newGameItem.onAction = (_ : ActionEvent) => {
-      World.newGame()
+      Game.world.newGame()
     }
 
     saveItem.onAction = (_ : ActionEvent) => {

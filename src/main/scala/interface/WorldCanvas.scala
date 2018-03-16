@@ -1,7 +1,7 @@
 package interface
 
+import game.Game
 import logic.items.ItemTypes
-import logic.world.World
 import link.{Change, CreationChange, Observer}
 import utils.Pos
 
@@ -24,7 +24,7 @@ object WorldCanvas extends Observer with GUIComponent {
   val TOWN_RADIUS = 10
   val TRAIN_RADIUS = 5
 
-  var canvas = new Canvas(World.MAP_WIDTH, World.MAP_HEIGHT)
+  var canvas = new Canvas(Game.world.MAP_WIDTH, Game.world.MAP_HEIGHT)
   var gc: GraphicsContext = canvas.graphicsContext2D
   var items: ListBuffer[Item] = ListBuffer.empty
   var selectedItem: Option[Item] = None
@@ -59,10 +59,10 @@ object WorldCanvas extends Observer with GUIComponent {
       lastPosClicked = new Pos(event.x, event.y)
       if (ItemsButtonBar.selected != null)
         ItemsButtonBar.selected match {
-          case Some(item) => World.company.tryPlace(item, lastPosClicked)
+          case Some(item) => Game.world.company.tryPlace(item, lastPosClicked)
           case None =>
             if (destinationChoice) {
-              World.company.setTrainDestination(lastPosClicked)
+              Game.world.company.setTrainDestination(lastPosClicked)
               destinationChoice = false
             }
             else LocalInformationPanel.displayElementInfoAt(lastPosClicked)
@@ -88,8 +88,8 @@ object WorldCanvas extends Observer with GUIComponent {
       if (!newItemSelected) selectedItem = None
     }
 
-    this.register(World)
-    this.register(World.company)
+    this.register(Game.world)
+    this.register(Game.world.company)
 
     gc.fill = Color.Red
     townsPositions.foreach(pos => {
@@ -163,7 +163,7 @@ object WorldCanvas extends Observer with GUIComponent {
             }
           case ItemTypes.RAIL =>
             items += RAIL(cch.pos1, cch.pos2)
-          case ItemTypes.TRAIN =>
+          case ItemTypes.DIESEL_TRAIN =>
             items += TRAIN(cch.pos1)
         }
     }

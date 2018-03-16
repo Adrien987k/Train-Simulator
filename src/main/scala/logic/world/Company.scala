@@ -1,5 +1,6 @@
 package logic.world
 
+import game.Game
 import logic.exceptions.CannotBuildItemException
 import logic.items.ItemTypes
 import logic.items.transport.facilities.{Station, TransportFacility}
@@ -8,12 +9,13 @@ import logic.items.transport.vehicules.{Train, Vehicle}
 import logic.world.towns.Town
 import interface.{GlobalInformationPanel, ItemsButtonBar}
 import link.{CreationChange, Observable}
+import logic.items.ItemTypes.ItemType
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
 import scalafx.collections.ObservableBuffer
 
-abstract class Company extends Observable {
+abstract class Company(world : World) extends Observable {
 
   var money = 20000.0
   var ticketPricePerKm = 0.01
@@ -24,9 +26,9 @@ abstract class Company extends Observable {
   private var lastStation : Option[Station] = None
   private var selectedTrain: Option[Train] = None
 
-  def tryPlace(itemType: ItemTypes.Value, pos : Pos): Unit = {
+  def tryPlace(itemType: ItemType, pos : Pos): Unit = {
     GlobalInformationPanel.removeWarningMessage()
-    val elem = World.updatableAt(pos) match {
+    val elem = world.updatableAt(pos) match {
       case Some(e) => e
       case None => return
     }
@@ -37,7 +39,7 @@ abstract class Company extends Observable {
         case (ItemTypes.STATION, town : Town) =>
           town.buildStation()
           addChange(new CreationChange(town.pos, null, ItemTypes.STATION))
-        case (ItemTypes.TRAIN, town : Town) =>
+        case (ItemTypes.DIESEL_TRAIN, town : Town) =>
           town.buildTrain()
         case (ItemTypes.RAIL, town : Town) =>
           if (!town.hasStation) throw new CannotBuildItemException("This town does not have a station")
@@ -72,7 +74,7 @@ abstract class Company extends Observable {
 
   def setTrainDestination(pos : Pos): Unit = {
     selectedTrain.foreach(train =>
-      World.updatableAt(pos) match {
+      world.updatableAt(pos) match {
         case Some(town : Town) =>
           train.setDestination(town)
         case _ =>
@@ -90,12 +92,12 @@ abstract class Company extends Observable {
       road.transportFacilityB == transportFacilityA && road.transportFacilityA == transportFacilityB)
   }
 
-  private def canBuy(itemType : ItemTypes.Value, quantity : Int = 1) : Boolean = {
+  private def canBuy(itemType : ItemType, quantity : Int = 1) : Boolean = {
     val price = Shop.price(itemType, quantity)
     money - price >= 0
   }
 
-  def buy(itemType: ItemTypes.Value, quantity : Int = 1): Unit = {
+  def buy(itemType: ItemType, quantity : Int = 1): Unit = {
     val price = Shop.price(itemType, quantity)
     if (money - price < 0)
       throw new CannotBuildItemException("Not enough money")

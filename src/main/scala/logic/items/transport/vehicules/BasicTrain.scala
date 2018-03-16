@@ -1,12 +1,12 @@
 package logic.items.transport.vehicules
 
-import logic.world.{Company, World}
-import interface.{GlobalInformationPanel, WorldCanvas}
+import game.Game
+import logic.world.Company
+import interface.WorldCanvas
 import logic.items.transport.facilities.Station
-import utils.Pos
 
-import scala.collection.mutable.ListBuffer
 import scalafx.Includes._
+import scala.collection.mutable.ListBuffer
 import scalafx.event.ActionEvent
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
@@ -33,7 +33,7 @@ class BasicTrain
     panel.children.add(goalStationLabel)
     val chooseDestPanel = new Button("Choose destination")
     chooseDestPanel.onAction = (_ : ActionEvent) => {
-      World.company.selectTrain(this)
+      Game.world.company.selectTrain(this)
       WorldCanvas.activeDestinationChoice()
     }
     panel.children.add(chooseDestPanel)

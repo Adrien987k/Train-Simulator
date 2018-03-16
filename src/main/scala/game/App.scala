@@ -1,3 +1,4 @@
+package game
 
 import interface.GUI
 
@@ -5,8 +6,11 @@ import scalafx.application.JFXApp
 
 object App extends JFXApp {
 
+  Game.makeWorld()
+
   stage = GUI.makePrimaryStage()
 
-  val game = new Game
+  Game.start()
+
 
 }

@@ -1,5 +1,6 @@
 package interface
 
+import game.Game
 import logic.items.transport.vehicules.Train
 import logic.world.World
 import utils.Pos
@@ -24,7 +25,7 @@ object LocalInformationPanel extends GUIComponent {
   }
 
   def displayElementInfoAt(pos : Pos): Unit = {
-    World.updatableAt(pos) match {
+    Game.world.updatableAt(pos) match {
       case Some(train : Train) =>
         OneTrainInformationPanel.addPanel(train.propertyPane())
         WorldCanvas.selectTrain(train.pos)

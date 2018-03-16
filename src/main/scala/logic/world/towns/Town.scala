@@ -1,5 +1,6 @@
 package logic.world.towns
 
+import game.Game
 import logic.{PointUpdatable, Updatable, UpdateRate}
 import logic.economy.{Offer, Request}
 import logic.exceptions.CannotBuildItemException
@@ -47,7 +48,7 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     station match {
       case Some(_) =>
         throw new CannotBuildItemException("This town already have a station")
-      case None => station = Some(new BasicStation(World.company, pos, this))
+      case None => station = Some(new BasicStation(Game.world.company, pos, this))
     }
   }
 

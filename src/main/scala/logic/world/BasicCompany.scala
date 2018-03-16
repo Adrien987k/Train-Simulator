@@ -1,5 +1,5 @@
 package logic.world
 
-class BasicCompany extends Company {
+class BasicCompany(world : World) extends Company(world) {
 
 }

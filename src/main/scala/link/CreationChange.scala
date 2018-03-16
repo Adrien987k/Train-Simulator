@@ -1,15 +1,15 @@
 package link
 
-import logic.items.ItemTypes
+import logic.items.ItemTypes.ItemType
 import utils.Pos
 
-class CreationChange(_pos1: Pos, _pos2: Pos, _itemType: ItemTypes.Value) extends Change {
+class CreationChange(_pos1: Pos, _pos2: Pos, _itemType: ItemType) extends Change {
 
   def pos1: Pos = _pos1
   def pos2: Pos = _pos2
-  def itemType: ItemTypes.Value = _itemType
+  def itemType: ItemType = _itemType
 
-  def this(pos: Pos, itemType: ItemTypes.Value) = {
+  def this(pos: Pos, itemType: ItemType) = {
     this(pos, null, itemType)
   }
 

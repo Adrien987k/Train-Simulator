@@ -125,4 +125,17 @@ extends Item(company) with PointUpdatable {
     })
   }
 
+  /**
+    * @return The total number of passenger in the train
+    */
+  def nbPassenger() : Int = {
+    carriages.foldLeft(0)((total, carriage) => {
+      carriage match {
+        case passengerCarriage : PassengerCarriage =>
+          total + passengerCarriage.nbPassenger
+        case _ => total
+      }
+    })
+  }
+
 }

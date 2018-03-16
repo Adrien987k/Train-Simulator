@@ -11,7 +11,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scalafx.animation.AnimationTimer
 
-object World extends Observable {
+class World() extends Observable {
 
   val MAP_WIDTH = 700
   val MAP_HEIGHT = 700
@@ -19,7 +19,7 @@ object World extends Observable {
   val INIT_NB_TOWNS = 10
 
   var towns: ListBuffer[Town] = ListBuffer.empty
-  var company: Company = new BasicCompany
+  var company: Company = new BasicCompany(this)
 
   var timer: Timer = new Timer
 
@@ -32,6 +32,10 @@ object World extends Observable {
       towns += new BasicTown(new Pos(x, y), "Town " + i)
     }
 
+  }
+
+  def start() : Unit = {
+    println("DEBUG")
     GUI.initWorldCanvas(towns)
 
     val timer = AnimationTimer { _ =>
@@ -50,16 +54,17 @@ object World extends Observable {
     for (train <- company.vehicles) {
       train.step()
     }
-    company.vehicles.foreach(train => addChange(new CreationChange(train.pos, null, ItemTypes.TRAIN)))
+    company.vehicles.foreach(train => addChange(new CreationChange(train.pos, null, ItemTypes.DIESEL_TRAIN)))
     notifyObservers()
   }
 
   def newGame(): Unit = {
     towns = ListBuffer.empty
-    company = new BasicCompany
+    company = new BasicCompany(this)
     timer.restart()
     GUI.restart()
     init()
+    start()
   }
 
   def updatableAt(pos : Pos): Option[Updatable] = {
@@ -74,9 +79,8 @@ object World extends Observable {
 
   def totalPopulation(): Int = {
     val inTowns = towns.foldLeft(0)((total, town) => total + town.population + town.nbWaitingPassengers)
-    //TODO Take carriage into account
-    //val inTrains = company.trains.foldLeft(0)((total, train) => total + train.nbPassenger)
-    inTowns //+ inTrains
+    val inTrains = company.vehicles.foldLeft(0)((total, vehicle) => total + vehicle.nbPassenger())
+    inTowns + inTrains
   }
 
 }
