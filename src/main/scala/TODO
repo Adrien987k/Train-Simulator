@@ -5,7 +5,9 @@ FUTURE
 
 URGENT
 + Vehicle factory (levels)
++ Unify ItemType with GUI item types
 + Vehicle store in towns
 + Path finding
-+ Unify ItemType with GUI item types
 + Updatable system
++ Design
++ Change Timer and AnimationTimer

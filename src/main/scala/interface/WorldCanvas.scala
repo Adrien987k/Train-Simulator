@@ -1,6 +1,6 @@
 package interface
 
-import logic.items.ItemType
+import logic.items.ItemTypes
 import logic.world.World
 import link.{Change, CreationChange, Observer}
 import utils.Pos
@@ -152,7 +152,7 @@ object WorldCanvas extends Observer with GUIComponent {
     changes.foreach {
       case cch: CreationChange =>
         cch.itemType match {
-          case ItemType.STATION =>
+          case ItemTypes.STATION =>
             items = items.map {
               case town: TOWN =>
                 if (town.pos1.equals(cch.pos1)) {
@@ -161,9 +161,9 @@ object WorldCanvas extends Observer with GUIComponent {
                 else town
               case o => o
             }
-          case ItemType.RAIL =>
+          case ItemTypes.RAIL =>
             items += RAIL(cch.pos1, cch.pos2)
-          case ItemType.TRAIN =>
+          case ItemTypes.TRAIN =>
             items += TRAIN(cch.pos1)
         }
     }

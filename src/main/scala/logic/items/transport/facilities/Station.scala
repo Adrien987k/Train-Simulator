@@ -1,8 +1,9 @@
 package logic.items.transport.facilities
 
 import logic.Updatable
+import logic.items.ItemTypes.DIESEL_TRAIN
 import logic.items.transport.roads.Rail
-import logic.items.transport.vehicules.BasicTrain
+import logic.items.transport.vehicules.VehicleFactory
 import logic.world.Company
 import logic.world.towns.Town
 import utils.Pos
@@ -18,7 +19,7 @@ abstract class Station
   }
 
   def buildTrain() : Boolean = {
-    val train = new BasicTrain(company, this)
+    val train = VehicleFactory.makeTrain(DIESEL_TRAIN, company, this)
     addVehicle(train)
   }
 

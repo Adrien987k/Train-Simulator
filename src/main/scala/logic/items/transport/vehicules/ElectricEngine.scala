@@ -1,6 +1,10 @@
 package logic.items.transport.vehicules
 
-class ElectricEngine extends Engine(3.0, 10000.0, 50000.0) {
+class ElectricEngine
+(maxSpeed: Double,
+ maxWeight: Double,
+ maxTractiveEffort: Double)
+  extends Engine(maxSpeed, maxWeight, maxTractiveEffort) {
 
   override def tractiveEffort(weight: Double): Double = {
     if (weight < 1000) return maxWeight

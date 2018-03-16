@@ -1,6 +1,6 @@
 package interface
 
-import logic.items.ItemType
+import logic.items.ItemTypes
 import logic.world.Shop
 
 import scala.collection.mutable.ListBuffer
@@ -8,9 +8,9 @@ import scalafx.scene.control.{Button, ButtonBar}
 
 object ItemsButtonBar extends GUIComponent {
 
-  var selected:Option[ItemType.Value] = None
+  var selected:Option[ItemTypes.Value] = None
 
-  def select(itemType: ItemType.Value = null): Unit = {
+  def select(itemType: ItemTypes.Value = null): Unit = {
     selected = Option(itemType)
   }
 
@@ -18,9 +18,9 @@ object ItemsButtonBar extends GUIComponent {
     val bar : ButtonBar = new ButtonBar
     var itemButtons : ListBuffer[Button] = ListBuffer.empty
 
-    for (item <- ItemType.values) {
+    for (item <- ItemTypes.values) {
       val itemButton = new Button(item.toString + " " + Shop.price(item) + "$" +
-        (item match {case ItemType.RAIL => " per KM" case _ => ""}))
+        (item match {case ItemTypes.RAIL => " per KM" case _ => ""}))
       itemButton.onAction = _ => {
         select(item)
       }

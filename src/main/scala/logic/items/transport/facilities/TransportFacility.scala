@@ -1,10 +1,10 @@
 package logic.items.transport.facilities
 
 import logic.exceptions.{CannotSendPassengerException, ImpossibleActionException}
-import logic.{PointUpdatable, Updatable, UpdateRate}
+import logic.PointUpdatable
 import logic.items.Item
 import logic.items.transport.roads.Road
-import logic.items.transport.vehicules.{BasicTrain, Train, Vehicle}
+import logic.items.transport.vehicules.Vehicle
 import logic.world.Company
 import logic.world.towns.Town
 import utils.Pos

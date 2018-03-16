@@ -1,7 +1,7 @@
 package logic.world
 
 import logic.Updatable
-import logic.items.ItemType
+import logic.items.ItemTypes
 import logic.world.towns.{BasicTown, Town}
 import interface.{GUI, GlobalInformationPanel, WorldCanvas}
 import link.{CreationChange, Observable}
@@ -50,7 +50,7 @@ object World extends Observable {
     for (train <- company.vehicles) {
       train.step()
     }
-    company.vehicles.foreach(train => addChange(new CreationChange(train.pos, null, ItemType.TRAIN)))
+    company.vehicles.foreach(train => addChange(new CreationChange(train.pos, null, ItemTypes.TRAIN)))
     notifyObservers()
   }
 

@@ -1,7 +1,7 @@
 package logic.world
 
 import logic.exceptions.CannotBuildItemException
-import logic.items.ItemType
+import logic.items.ItemTypes
 import logic.items.transport.facilities.{Station, TransportFacility}
 import logic.items.transport.roads.{BasicRail, Road}
 import logic.items.transport.vehicules.{Train, Vehicle}
@@ -24,7 +24,7 @@ abstract class Company extends Observable {
   private var lastStation : Option[Station] = None
   private var selectedTrain: Option[Train] = None
 
-  def tryPlace(itemType: ItemType.Value, pos : Pos): Unit = {
+  def tryPlace(itemType: ItemTypes.Value, pos : Pos): Unit = {
     GlobalInformationPanel.removeWarningMessage()
     val elem = World.updatableAt(pos) match {
       case Some(e) => e
@@ -34,12 +34,12 @@ abstract class Company extends Observable {
       var quantity = 0
       if (!canBuy(itemType)) throw new CannotBuildItemException("Not enough money")
       (itemType, elem) match {
-        case (ItemType.STATION, town : Town) =>
+        case (ItemTypes.STATION, town : Town) =>
           town.buildStation()
-          addChange(new CreationChange(town.pos, null, ItemType.STATION))
-        case (ItemType.TRAIN, town : Town) =>
+          addChange(new CreationChange(town.pos, null, ItemTypes.STATION))
+        case (ItemTypes.TRAIN, town : Town) =>
           town.buildTrain()
-        case (ItemType.RAIL, town : Town) =>
+        case (ItemTypes.RAIL, town : Town) =>
           if (!town.hasStation) throw new CannotBuildItemException("This town does not have a station")
           lastStation match {
             case Some(station) =>
@@ -50,7 +50,7 @@ abstract class Company extends Observable {
               quantity = station.pos.dist(town.station.get.pos).toInt
               if (!canBuy(itemType, quantity)) throw new CannotBuildItemException("Not enough money")
               buildRail(station, town.station.get)
-              addChange(new CreationChange(station.pos, town.station.get.pos, ItemType.RAIL))
+              addChange(new CreationChange(station.pos, town.station.get.pos, ItemTypes.RAIL))
             case None =>
               lastStation = Some(town.station.get)
               return
@@ -90,12 +90,12 @@ abstract class Company extends Observable {
       road.transportFacilityB == transportFacilityA && road.transportFacilityA == transportFacilityB)
   }
 
-  private def canBuy(itemType : ItemType.Value, quantity : Int = 1) : Boolean = {
+  private def canBuy(itemType : ItemTypes.Value, quantity : Int = 1) : Boolean = {
     val price = Shop.price(itemType, quantity)
     money - price >= 0
   }
 
-  def buy(itemType: ItemType.Value, quantity : Int = 1): Unit = {
+  def buy(itemType: ItemTypes.Value, quantity : Int = 1): Unit = {
     val price = Shop.price(itemType, quantity)
     if (money - price < 0)
       throw new CannotBuildItemException("Not enough money")

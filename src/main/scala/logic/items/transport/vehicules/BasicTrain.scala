@@ -12,17 +12,12 @@ import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.VBox
 
-//TODO Train factory
-object BasicTrain {
-  def makeBasicCarriage() : ListBuffer[Carriage] = {
-    ListBuffer(new PassengerCarriage(3.0, 1000.0, 500))
-  }
-}
-
 class BasicTrain
 (company : Company,
- station : Station)
-  extends Train(company, new DieselEngine, BasicTrain.makeBasicCarriage(), station) {
+ station : Station,
+ engine : Engine,
+ carriages : ListBuffer[Carriage])
+  extends Train(company, engine, carriages, station) {
 
   override def propertyPane(): Node = {
     val panel = new VBox()
