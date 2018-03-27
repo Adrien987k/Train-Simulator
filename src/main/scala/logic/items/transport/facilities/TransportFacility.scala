@@ -3,23 +3,22 @@ package logic.items.transport.facilities
 import logic.exceptions.{CannotSendPassengerException, ImpossibleActionException}
 import logic.PointUpdatable
 import logic.items.Item
+import logic.items.ItemTypes.VehicleType
 import logic.items.transport.roads.Road
-import logic.items.transport.vehicules.Vehicle
+import logic.items.transport.vehicules.{Vehicle, VehicleFactory}
 import logic.world.Company
 import logic.world.towns.Town
-import utils.Pos
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 abstract class TransportFacility
 (val company : Company,
- _pos : Pos,
  val town : Town)
   extends Item(company) with PointUpdatable {
 
   updateRate(1)
-  pos = _pos
+  pos = town.pos
 
   val DEFAULT_CAPACITY = 5
 
@@ -32,6 +31,11 @@ abstract class TransportFacility
 
   def addRoad(road : Road) : Unit = {
     roads += road
+  }
+
+  def buildVehicle(vehicleType : VehicleType) : Unit = {
+    val vehicle = VehicleFactory.makeVehicle(vehicleType, company, this)
+    addVehicle(vehicle)
   }
 
   def addVehicle(vehicle : Vehicle) : Boolean = {

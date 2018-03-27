@@ -10,12 +10,13 @@ abstract class Train
 (override val company: Company,
  override val engine : Engine,
  override val carriages : ListBuffer[Carriage],
- val station : Station)
-  extends Vehicle(company, engine, carriages, Some(station)) {
+ val initialStation : Station)
+  extends Vehicle(company, engine, carriages, Some(initialStation)) {
 
+  /*
   def setObjective(station : Station) : Unit = {
     super.setObjective(station)
-  }
+  }*/
 
   def putOnRail(rail : Rail) : Unit = {
     super.putOnRoad(rail)

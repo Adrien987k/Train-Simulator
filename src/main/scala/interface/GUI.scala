@@ -91,6 +91,7 @@ object GUI {
     OneTrainInformationPanel.restart()
     AllTrainsInformationPanel.restart()
     ItemsButtonBar.restart()
+    WorldCanvas.restart()
   }
 
   def initWorldCanvas(towns: ListBuffer[Town]): Unit = {

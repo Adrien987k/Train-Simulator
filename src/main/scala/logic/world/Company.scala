@@ -9,7 +9,7 @@ import logic.items.transport.vehicules.{Train, Vehicle}
 import logic.world.towns.Town
 import interface.{GlobalInformationPanel, ItemsButtonBar}
 import link.{CreationChange, Observable}
-import logic.items.ItemTypes.ItemType
+import logic.items.ItemTypes.{DIESEL_TRAIN, ItemType, RAIL, STATION}
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
@@ -24,7 +24,13 @@ abstract class Company(world : World) extends Observable {
   val roads :  ListBuffer[Road] = ListBuffer.empty
 
   private var lastStation : Option[Station] = None
-  private var selectedTrain: Option[Train] = None
+  private var selectedTrain : Option[Train] = None
+
+  def step() : Unit = {
+    vehicles.foreach(_.step())
+    vehicles.foreach(vehicle => addChange(new CreationChange(vehicle.pos, null, ItemTypes.DIESEL_TRAIN)))
+    notifyObservers()
+  }
 
   def tryPlace(itemType: ItemType, pos : Pos): Unit = {
     GlobalInformationPanel.removeWarningMessage()
@@ -32,16 +38,17 @@ abstract class Company(world : World) extends Observable {
       case Some(e) => e
       case None => return
     }
+    //TODO complete pattern matching
     try {
       var quantity = 0
       if (!canBuy(itemType)) throw new CannotBuildItemException("Not enough money")
       (itemType, elem) match {
-        case (ItemTypes.STATION, town : Town) =>
-          town.buildStation()
+        case (STATION, town : Town) =>
+          town.buildTransportFacility(STATION)
           addChange(new CreationChange(town.pos, null, ItemTypes.STATION))
-        case (ItemTypes.DIESEL_TRAIN, town : Town) =>
-          town.buildTrain()
-        case (ItemTypes.RAIL, town : Town) =>
+        case (DIESEL_TRAIN, town : Town) =>
+          town.buildVehicle(DIESEL_TRAIN)
+        case (RAIL, town : Town) =>
           if (!town.hasStation) throw new CannotBuildItemException("This town does not have a station")
           lastStation match {
             case Some(station) =>

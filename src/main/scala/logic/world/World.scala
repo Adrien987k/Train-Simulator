@@ -35,7 +35,7 @@ class World() extends Observable {
   }
 
   def start() : Unit = {
-    println("DEBUG")
+    init()
     GUI.initWorldCanvas(towns)
 
     val timer = AnimationTimer { _ =>
@@ -51,10 +51,6 @@ class World() extends Observable {
     for (town <- towns) {
       town.step()
     }
-    for (train <- company.vehicles) {
-      train.step()
-    }
-    company.vehicles.foreach(train => addChange(new CreationChange(train.pos, null, ItemTypes.DIESEL_TRAIN)))
     notifyObservers()
   }
 
@@ -63,7 +59,6 @@ class World() extends Observable {
     company = new BasicCompany(this)
     timer.restart()
     GUI.restart()
-    init()
     start()
   }
 

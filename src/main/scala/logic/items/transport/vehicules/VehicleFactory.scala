@@ -1,8 +1,8 @@
 package logic.items.transport.vehicules
 
 import logic.economy.ResourcesTypes
-import logic.items.ItemTypes.{DIESEL_TRAIN, ELECTRIC_TRAIN, VehicleType}
-import logic.items.transport.facilities.Station
+import logic.items.ItemTypes.{BOEING, DIESEL_TRAIN, ELECTRIC_TRAIN, VehicleType}
+import logic.items.transport.facilities.{Airport, Station, TransportFacility}
 import logic.items.transport.vehicules.VehicleComponentType._
 import logic.world.Company
 
@@ -30,22 +30,28 @@ private object VehicleComponentFactory {
 
 object VehicleFactory {
 
-  def makeTrain
+  def makeVehicle
     (vehicleType : VehicleType,
      company : Company,
-     station : Station) : Vehicle = {
+     transportFacility : TransportFacility) : Vehicle = {
 
     vehicleType match {
 
       case DIESEL_TRAIN =>
-        new BasicTrain(company, station,
+        new BasicTrain(company, transportFacility.asInstanceOf[Station],
           VehicleComponentFactory.makeEngine(DIESEL_ENGINE),
           ListBuffer(VehicleComponentFactory.makePassengerCarriage()))
 
       case ELECTRIC_TRAIN =>
-        new BasicTrain(company, station,
+        new BasicTrain(company, transportFacility.asInstanceOf[Station],
         VehicleComponentFactory.makeEngine(ELECTRIC_ENGINE),
         ListBuffer(VehicleComponentFactory.makePassengerCarriage()))
+
+        //TODO Add boeing + concorde + plane engine and carriages
+        /*
+      case BOEING =>
+        new BasicPlane(company, transportFacility.asInstanceOf[Airport],
+          VehicleComponentFactory.makeEngine()) */
     }
   }
 
