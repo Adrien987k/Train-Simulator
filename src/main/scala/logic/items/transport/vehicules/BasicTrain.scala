@@ -21,16 +21,17 @@ class BasicTrain
 
   override def propertyPane(): Node = {
     val panel = new VBox()
-    val speedLabel = new Label("Speed : " + engine.speed)
+    val speedLabel = new Label("Max Speed : " + engine.maxSpeed)
     //val maxWeightLabel = new Label("Max weight : " + maxWeight)
-    //val maxPassengerLabel = new Label("Max passengers : " + passengerCapacity)
-    //val nbPassengerLabel = new Label("Passengers : " + nbPassenger)
+    val maxPassengerLabel = new Label("Passengers capacity : " + passengerCapacity)
+    val nbPassengerLabel = new Label("Passengers : " + nbPassenger)
     val posLabel = new Label("Position : " + pos)
-    panel.children = List(speedLabel, posLabel)
+    panel.children = List(speedLabel, posLabel, maxPassengerLabel, nbPassengerLabel)
     val goalStationLabel = new Label("Goal station : ")
-    if (goalTransportFacility.nonEmpty)
+    if (goalTransportFacility.nonEmpty) {
       goalStationLabel.text = "Goal station : " + goalTransportFacility.get.town.name
-    panel.children.add(goalStationLabel)
+      panel.children.add(goalStationLabel)
+    }
     val chooseDestPanel = new Button("Choose destination")
     chooseDestPanel.onAction = (_ : ActionEvent) => {
       Game.world.company.selectTrain(this)

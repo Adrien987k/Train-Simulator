@@ -31,10 +31,10 @@ object GUI {
 
   private def makeMenu(): MenuBar = {
     val menuBar = new MenuBar
-    val mapMenu = new Menu("Map")
+    val mapMenu = new Menu("Game")
     val newGameItem = new MenuItem("New Game")
     val saveItem = new MenuItem("Save Map")
-    val loadItem = new MenuItem("Save Map")
+    val loadItem = new MenuItem("Load Map")
     val exitItem = new MenuItem("Exit")
     mapMenu.items = List(newGameItem, saveItem, loadItem, new SeparatorMenuItem(), exitItem)
     menuBar.menus = List(mapMenu)

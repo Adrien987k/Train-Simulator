@@ -25,11 +25,11 @@ object ItemTypes {
   case object AIRPORT extends TransportFacilityType("Airport")
 
   def items() : List[ItemType] = {
-    List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, LINE, STATION)
+    List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, LINE, STATION, AIRPORT)
   }
 
   def onSaleItems() : List[ItemType] = {
-    List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, STATION)
+    List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, STATION, AIRPORT)
   }
 
 }

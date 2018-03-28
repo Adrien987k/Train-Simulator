@@ -29,7 +29,7 @@ object GlobalInformationPanel extends GUIComponent {
   }
 
   def update(): Unit = {
-    timeLabel.text = Game.world.timer.time()
+    timeLabel.text = Game.world.gameDateTime.time()
     moneyLabel.text = "Money : " + Game.world.company.money.toInt
     ticketPriceLabel.text = "Ticket price per Km : " + Game.world.company.ticketPricePerKm
     nbTrainLabel.text = "Trains : " + Game.world.company.vehicles.size

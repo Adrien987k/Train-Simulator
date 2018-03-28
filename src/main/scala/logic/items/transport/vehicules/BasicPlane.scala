@@ -20,7 +20,7 @@ class BasicPlane
 
   override def propertyPane(): Node = {
     val panel = new VBox()
-    val speedLabel = new Label("Speed : " + engine.speed)
+    val speedLabel = new Label("Max Speed : " + engine.maxSpeed)
     //val maxWeightLabel = new Label("Max weight : " + maxWeight)
     //val maxPassengerLabel = new Label("Max passengers : " + passengerCapacity)
     //val nbPassengerLabel = new Label("Passengers : " + nbPassenger)

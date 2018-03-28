@@ -21,7 +21,7 @@ extends Item(company) with PointUpdatable {
   updateRate(UpdateRate.TRAIN_UPDATE)
 
   pos = currentTransportFacility match {
-    case Some(tf) => tf.pos
+    case Some(tf) => tf.pos.copy()
     case None => new Pos(0, 0)
   }
 
@@ -39,13 +39,13 @@ extends Item(company) with PointUpdatable {
     if(!super.step()) return false
 
     goalTransportFacility match {
-      case Some(station) =>
-        if (pos.inRange(station.pos, 10)) {
+      case Some(transportFacility) =>
+        if (pos.inRange(transportFacility.pos, 10)) {
           removeFromRoad()
-          station.unload(this)
+          transportFacility.unload(this)
         } else {
-          pos.x += dir.x * engine.speed
-          pos.y += dir.y * engine.speed
+          pos.x += dir.x * engine.maxSpeed
+          pos.y += dir.y * engine.maxSpeed
         }
       case None =>
     }
@@ -136,6 +136,19 @@ extends Item(company) with PointUpdatable {
       carriage match {
         case passengerCarriage : PassengerCarriage =>
           total + passengerCarriage.nbPassenger
+        case _ => total
+      }
+    })
+  }
+
+  /**
+    * @return The total passenger capacity of this train
+    */
+  def passengerCapacity() : Int = {
+    carriages.foldLeft(0)((total, carriage) => {
+      carriage match {
+        case passengerCarriage : PassengerCarriage =>
+          total + passengerCarriage.maxCapacity
         case _ => total
       }
     })

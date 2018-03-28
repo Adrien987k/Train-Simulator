@@ -57,16 +57,18 @@ object WorldCanvas extends Observer with GUIComponent {
   def initWorld(townsPositions : List[Pos]): Unit = {
     canvas.onMouseClicked = (event: MouseEvent) => {
       lastPosClicked = new Pos(event.x, event.y)
-      if (ItemsButtonBar.selected != null)
+      if (ItemsButtonBar.buildMode) {
         ItemsButtonBar.selected match {
           case Some(item) => Game.world.company.tryPlace(item, lastPosClicked)
-          case None =>
-            if (destinationChoice) {
-              Game.world.company.setTrainDestination(lastPosClicked)
-              destinationChoice = false
-            }
-            else LocalInformationPanel.displayElementInfoAt(lastPosClicked)
+          case _ =>
         }
+      } else {
+        if (destinationChoice) {
+          Game.world.company.setTrainDestination(lastPosClicked)
+          destinationChoice = false
+        }
+        else LocalInformationPanel.displayElementInfoAt(lastPosClicked)
+      }
     }
 
     canvas.onMouseMoved = (event: MouseEvent) => {
@@ -98,7 +100,7 @@ object WorldCanvas extends Observer with GUIComponent {
     })
   }
 
-  def update(): Unit = {
+  def update() : Unit = {
     gc.fill = Color.White
     gc.fillRect(0, 0, canvas.width(), canvas.height())
     gc.stroke = Color.Black
@@ -154,7 +156,7 @@ object WorldCanvas extends Observer with GUIComponent {
         cch.itemType match {
           case ItemTypes.STATION =>
             items = items.map {
-              case town: TOWN =>
+              case town : TOWN =>
                 if (town.pos1.equals(cch.pos1)) {
                   TOWN(town.pos1, 1)
                 }

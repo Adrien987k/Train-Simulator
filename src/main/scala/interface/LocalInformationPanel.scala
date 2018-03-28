@@ -30,7 +30,7 @@ object LocalInformationPanel extends GUIComponent {
         OneVehicleInformationPanel.addPanel(train.propertyPane())
         WorldCanvas.selectTrain(train.pos)
       case Some(e) => localInformationPane.center = e.propertyPane()
-      case None => localInformationPane.center = noInfoLabel
+      case None =>
     }
   }
 

@@ -6,8 +6,6 @@ abstract class Engine
  val maxTractiveEffort : Double)
   extends VehicleComponent(maxSpeed, maxWeight) {
 
-  var speed = 0
-
   def tractiveEffort(weight : Double) : Double
 
 }

@@ -27,8 +27,7 @@ abstract class Company(world : World) extends Observable {
 
   def step() : Unit = {
     vehicles.foreach(_.step())
-    //TODO In World Canvas observe the vehicles buffer
-    //vehicles.foreach(vehicle => addChange(new CreationChange(vehicle.pos, null, ItemTypes.DIESEL_TRAIN)))
+    vehicles.foreach(vehicle => addChange(new CreationChange(vehicle.pos, null, ItemTypes.DIESEL_TRAIN)))
 
     notifyObservers()
   }
@@ -72,7 +71,6 @@ abstract class Company(world : World) extends Observable {
         case _ => return
       }
       buy(itemType, quantity)
-      ItemsButtonBar.select()
     } catch {
       case e : CannotBuildItemException =>
         GlobalInformationPanel.displayWarningMessage(e.getMessage)

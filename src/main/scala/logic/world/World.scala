@@ -4,7 +4,7 @@ import logic.Updatable
 import logic.world.towns.{BasicTown, Town}
 import interface.{GUI, GlobalInformationPanel, WorldCanvas}
 import link.Observable
-import utils.{Pos, Timer}
+import utils.{Pos, GameDateTime}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -17,12 +17,12 @@ class World() extends Observable {
 
   val INIT_NB_TOWNS = 10
 
-  var towns: ListBuffer[Town] = ListBuffer.empty
-  var company: Company = new BasicCompany(this)
+  var towns : ListBuffer[Town] = ListBuffer.empty
+  var company : Company = new BasicCompany(this)
 
-  var timer: Timer = new Timer
+  var gameDateTime : GameDateTime = new GameDateTime
 
-  def init(): Unit = {
+  def init() : Unit = {
     val rand = new Random
     val areaWidth = MAP_WIDTH / INIT_NB_TOWNS
     for (i <- 0 to INIT_NB_TOWNS) {
@@ -38,15 +38,19 @@ class World() extends Observable {
     GUI.initWorldCanvas(towns)
 
     val timer = AnimationTimer { _ =>
+    //while (true) {
       update()
       GlobalInformationPanel.update()
       WorldCanvas.update()
+
+      //Thread.sleep(50)
     }
+
     timer.start()
   }
 
-  def update(): Unit = {
-    timer.update()
+  def update() : Unit = {
+    gameDateTime.update()
 
     company.step()
     towns.foreach(_.step())
@@ -54,15 +58,15 @@ class World() extends Observable {
     notifyObservers()
   }
 
-  def newGame(): Unit = {
+  def newGame() : Unit = {
     towns = ListBuffer.empty
     company = new BasicCompany(this)
-    timer.restart()
+    gameDateTime.restart()
     GUI.restart()
     start()
   }
 
-  def updatableAt(pos : Pos): Option[Updatable] = {
+  def updatableAt(pos : Pos) : Option[Updatable] = {
     val town = towns.find(town => town.pos.inRange(pos, WorldCanvas.TOWN_RADIUS * 1.7))
     if (town.nonEmpty) return town
     val train = company.vehicles.find(train => train.pos.inRange(pos, WorldCanvas.TRAIN_RADIUS))
@@ -72,7 +76,7 @@ class World() extends Observable {
   }
 
 
-  def totalPopulation(): Int = {
+  def totalPopulation() : Int = {
     val inTowns = towns.foldLeft(0)((total, town) => total + town.population + town.nbWaitingPassengers)
     val inTrains = company.vehicles.foldLeft(0)((total, vehicle) => total + vehicle.nbPassenger())
     inTowns + inTrains

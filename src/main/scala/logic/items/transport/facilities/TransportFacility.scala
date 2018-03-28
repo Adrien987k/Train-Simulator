@@ -40,7 +40,6 @@ abstract class TransportFacility
 
     company.addVehicle(vehicle)
     vehicles += vehicle
-    println("Vehicle built")
   }
 
   def isFull : Boolean = vehicles.lengthCompare(capacity) == 0

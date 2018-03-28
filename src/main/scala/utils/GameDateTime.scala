@@ -1,6 +1,6 @@
 package utils
 
-class Timer {
+class GameDateTime {
 
   var minutes = 0
   var hours = 0
