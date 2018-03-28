@@ -10,12 +10,13 @@ trait Updatable {
   def updateRate() : Int = _updateRate
   def updateRate(value : Int) : Unit = _updateRate = value
 
-  def step() : Unit = {
+  def step() : Boolean = {
     counter += 1
     if (counter < _updateRate) {
-      return
+      return false
     }
     counter = 0
+    true
   }
 
   def propertyPane(): Node

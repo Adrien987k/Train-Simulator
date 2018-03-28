@@ -70,9 +70,9 @@ object GUI {
 
     rightSplit.orientation = Orientation.Vertical
     val allTrainPane = new BorderPane
-    allTrainPane.center = AllTrainsInformationPanel.make()
+    allTrainPane.center = AllVehiclesInformationPanel.make()
     val oneTrainPane = new BorderPane
-    oneTrainPane.center = OneTrainInformationPanel.make()
+    oneTrainPane.center = OneVehicleInformationPanel.make()
 
     rightSplit.items ++= List(allTrainPane, oneTrainPane)
 
@@ -88,8 +88,8 @@ object GUI {
   def restart(): Unit = {
     GlobalInformationPanel.restart()
     LocalInformationPanel.restart()
-    OneTrainInformationPanel.restart()
-    AllTrainsInformationPanel.restart()
+    OneVehicleInformationPanel.restart()
+    AllVehiclesInformationPanel.restart()
     ItemsButtonBar.restart()
     WorldCanvas.restart()
   }

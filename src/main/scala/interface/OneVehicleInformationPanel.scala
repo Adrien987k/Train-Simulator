@@ -3,10 +3,10 @@ import scalafx.scene.Node
 import scalafx.scene.control.Label
 import scalafx.scene.layout.BorderPane
 
-object OneTrainInformationPanel extends GUIComponent {
+object OneVehicleInformationPanel extends GUIComponent {
 
 
-  val defaultPanel : Node = new Label("No train selected")
+  val defaultPanel : Node = new Label("No vehicle selected")
   var panel : BorderPane = new BorderPane
 
   override def make(): Node = {

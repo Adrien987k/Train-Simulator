@@ -35,8 +35,9 @@ extends Item(company) with PointUpdatable {
 
   var currentRoad : Option[Road] = None
 
-  override def step(): Unit = {
-    super.step()
+  override def step(): Boolean = {
+    if(!super.step()) return false
+
     goalTransportFacility match {
       case Some(station) =>
         if (pos.inRange(station.pos, 10)) {
@@ -48,6 +49,8 @@ extends Item(company) with PointUpdatable {
         }
       case None =>
     }
+
+    true
   }
 
   def setObjective(transportFacility : TransportFacility) : Unit = {

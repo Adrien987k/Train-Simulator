@@ -1,6 +1,6 @@
 package logic.items.transport.facilities
 
-import logic.exceptions.{CannotSendPassengerException, ImpossibleActionException}
+import logic.exceptions.{CannotBuildItemException, CannotSendPassengerException, ImpossibleActionException}
 import logic.PointUpdatable
 import logic.items.Item
 import logic.items.ItemTypes.VehicleType
@@ -34,16 +34,13 @@ abstract class TransportFacility
   }
 
   def buildVehicle(vehicleType : VehicleType) : Unit = {
-    val vehicle = VehicleFactory.makeVehicle(vehicleType, company, this)
-    addVehicle(vehicle)
-  }
+    if (isFull) throw new CannotBuildItemException("This facility is full")
 
-  def addVehicle(vehicle : Vehicle) : Boolean = {
-    if (isFull) return false
-    //TODO Add vehicle to company
-    company.vehicles += vehicle
+    val vehicle = VehicleFactory.makeVehicle(vehicleType, company, this)
+
+    company.addVehicle(vehicle)
     vehicles += vehicle
-    true
+    println("Vehicle built")
   }
 
   def isFull : Boolean = vehicles.lengthCompare(capacity) == 0
@@ -69,12 +66,14 @@ abstract class TransportFacility
 
   def nbNeighbours() : Int = roads.size
 
-  override def step(): Unit = {
-    super.step()
+  override def step() : Boolean = {
+    if(!super.step()) return false
 
     for ((transportFacility, nbPassenger) <- waitingPassengers) {
       sendPassenger(transportFacility, nbPassenger)
     }
+
+    true
   }
 
   /**

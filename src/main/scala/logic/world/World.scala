@@ -1,10 +1,9 @@
 package logic.world
 
 import logic.Updatable
-import logic.items.ItemTypes
 import logic.world.towns.{BasicTown, Town}
 import interface.{GUI, GlobalInformationPanel, WorldCanvas}
-import link.{CreationChange, Observable}
+import link.Observable
 import utils.{Pos, Timer}
 
 import scala.collection.mutable.ListBuffer
@@ -48,9 +47,10 @@ class World() extends Observable {
 
   def update(): Unit = {
     timer.update()
-    for (town <- towns) {
-      town.step()
-    }
+
+    company.step()
+    towns.foreach(_.step())
+
     notifyObservers()
   }
 

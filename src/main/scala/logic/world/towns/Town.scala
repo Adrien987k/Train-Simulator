@@ -36,13 +36,17 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
   def hasStation : Boolean = station.nonEmpty
   def hasAirport : Boolean = airport.nonEmpty
 
-  override def step(): Unit = {
+  override def step() : Boolean = {
+    if(!super.step()) return false
+
     val traveler = (proportionTraveler * population / 100).toInt
     if (traveler != 0)
       sendPeopleToNeighbours(traveler)
 
     station.foreach(_.step())
     airport.foreach(_.step())
+
+    true
   }
 
   /**
@@ -95,9 +99,9 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     }
   }
 
-  def sendPeopleToNeighbours(nbPassenger : Int) : Unit = {
-    val (nbNeighbour, neighbours) = station match {
-      case Some(st) => st.nbNeighbours() -> st.neighbours()
+  private def sendPeopleToNeighboursBy(nbPassenger : Int, tfOpt : Option[TransportFacility]) : Unit = {
+    val (nbNeighbour, neighbours) = tfOpt match {
+      case Some(tf) => tf.nbNeighbours() -> tf.neighbours()
       case None => return
     }
 
@@ -105,29 +109,52 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
 
     val nbPersonPerNeighbour = nbPassenger / nbNeighbour
     val nbPersonPerNeighbourRest = nbPassenger % nbNeighbour
-    val availableTrains = station.get.availableTrains()
+    val availableVehicles = tfOpt.get.availableVehicles
 
-    if (availableTrains < nbNeighbour) {
+    if (availableVehicles < nbNeighbour) {
       val randPos = rand.nextInt(nbNeighbour)
-      for (i <- 1 to availableTrains) {
-        //TODO Change station to TransportFacility
-        //sendPeople(neighbours((randPos + i) % nbNeighbour), nbPersonPerNeighbour)
+      for (i <- 1 to availableVehicles) {
+        sendPeople(tfOpt, neighbours((randPos + i) % nbNeighbour), nbPersonPerNeighbour)
       }
     } else {
       neighbours.foreach(neighbourStation =>
-        println("TODO")
-        //sendPeople(neighbourStation, nbPersonPerNeighbour)
+        sendPeople(tfOpt, neighbourStation, nbPersonPerNeighbour)
       )
     }
 
     if (nbPersonPerNeighbourRest > 0) {
       val randNeigh = rand.nextInt(nbNeighbour)
-      //sendPeople(neighbours(randNeigh), nbPersonPerNeighbourRest)
+      sendPeople(tfOpt, neighbours(randNeigh), nbPersonPerNeighbourRest)
     }
   }
 
-  def sendPeople(to : Station, nbPassenger : Int) : Unit =
-    station.foreach(_.sendPassenger(to, nbPassenger))
+  private def sendPeople(from : Option[TransportFacility], to : TransportFacility, nbPassenger : Int) : Unit = {
+    println("SEND")
+    from.foreach(_.sendPassenger(to, nbPassenger))
+  }
+
+  /**
+    * Try to send as much as possible passengers to all the neighbours
+    *
+    * @param nbPassenger The number of passenger to send
+    */
+  def sendPeopleToNeighbours(nbPassenger : Int) : Unit = {
+    var toStation = 0
+    var toAirport = 0
+
+    if (nbPassenger % 2 == 0) {
+      toStation = nbPassenger / 2
+      toAirport = nbPassenger / 2
+    } else {
+      toAirport = nbPassenger / 2
+      toStation = (nbPassenger / 2) + 1
+    }
+
+    sendPeopleToNeighboursBy(toStation, station)
+    sendPeopleToNeighboursBy(toAirport, airport)
+  }
+
+
 
   def explore()
   def produce()

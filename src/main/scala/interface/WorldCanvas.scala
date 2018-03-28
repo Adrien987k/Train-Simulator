@@ -150,7 +150,7 @@ object WorldCanvas extends Observer with GUIComponent {
 
   override def notifyChange(changes: ListBuffer[Change]): Unit = {
     changes.foreach {
-      case cch: CreationChange =>
+      case cch : CreationChange =>
         cch.itemType match {
           case ItemTypes.STATION =>
             items = items.map {

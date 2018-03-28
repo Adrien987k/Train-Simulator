@@ -1,6 +1,5 @@
 package logic.world
 
-import game.Game
 import logic.exceptions.CannotBuildItemException
 import logic.items.ItemTypes
 import logic.items.transport.facilities.{Station, TransportFacility}
@@ -28,8 +27,14 @@ abstract class Company(world : World) extends Observable {
 
   def step() : Unit = {
     vehicles.foreach(_.step())
-    vehicles.foreach(vehicle => addChange(new CreationChange(vehicle.pos, null, ItemTypes.DIESEL_TRAIN)))
+    //TODO In World Canvas observe the vehicles buffer
+    //vehicles.foreach(vehicle => addChange(new CreationChange(vehicle.pos, null, ItemTypes.DIESEL_TRAIN)))
+
     notifyObservers()
+  }
+
+  def addVehicle(vehicle : Vehicle) : Unit = {
+    vehicles += vehicle
   }
 
   def tryPlace(itemType: ItemType, pos : Pos): Unit = {

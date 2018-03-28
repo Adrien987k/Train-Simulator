@@ -21,7 +21,7 @@ abstract class Road
 
   val length : Double = transportFacilityA.pos.dist(transportFacilityB.pos)
 
-  override def step(): Unit = {}
+  override def step() : Boolean = { false }
 
   def nbVehicle : Int = vehicles.size
   def isFull : Boolean = capacity == vehicles.size

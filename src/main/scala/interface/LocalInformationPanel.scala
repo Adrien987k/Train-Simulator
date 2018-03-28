@@ -27,7 +27,7 @@ object LocalInformationPanel extends GUIComponent {
   def displayElementInfoAt(pos : Pos): Unit = {
     Game.world.updatableAt(pos) match {
       case Some(train : Train) =>
-        OneTrainInformationPanel.addPanel(train.propertyPane())
+        OneVehicleInformationPanel.addPanel(train.propertyPane())
         WorldCanvas.selectTrain(train.pos)
       case Some(e) => localInformationPane.center = e.propertyPane()
       case None => localInformationPane.center = noInfoLabel
