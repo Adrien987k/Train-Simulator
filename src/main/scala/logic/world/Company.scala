@@ -1,14 +1,15 @@
 package logic.world
 
 import logic.exceptions.CannotBuildItemException
-import logic.items.ItemTypes
-import logic.items.transport.facilities.{Station, TransportFacility}
-import logic.items.transport.roads.{BasicRail, Road}
+import logic.items.{Item, ItemTypes}
+import logic.items.transport.facilities.{Airport, Station, TransportFacility}
+import logic.items.transport.roads.{BasicLine, BasicRail, Line, Road}
 import logic.items.transport.vehicules.{Train, Vehicle}
 import logic.world.towns.Town
-import interface.{GlobalInformationPanel, ItemsButtonBar}
+import interface.GlobalInformationPanel
 import link.{CreationChange, Observable}
-import logic.items.ItemTypes.{DIESEL_TRAIN, ItemType, RAIL, STATION}
+import logic.Updatable
+import logic.items.ItemTypes._
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
@@ -20,6 +21,7 @@ abstract class Company(world : World) extends Observable {
   var ticketPricePerKm = 0.01
 
   val vehicles : ObservableBuffer[Vehicle] = ObservableBuffer.empty
+  val transportFacilities : ListBuffer[TransportFacility] = ListBuffer.empty
   val roads :  ListBuffer[Road] = ListBuffer.empty
 
   private var lastStation : Option[Station] = None
@@ -36,46 +38,59 @@ abstract class Company(world : World) extends Observable {
     vehicles += vehicle
   }
 
-  def tryPlace(itemType: ItemType, pos : Pos): Unit = {
+  def addTransportFacility(transportFacility : TransportFacility) : Unit = {
+    transportFacilities += transportFacility
+  }
+
+  /**
+    * Try to add to this company an element of type [itemType] at the position [pos]
+    *
+    * @param itemType The type of element to add
+    * @param pos The position where to add it
+    */
+  def tryPlace(itemType : ItemType, pos : Pos) : Unit = {
     GlobalInformationPanel.removeWarningMessage()
-    val elem = world.updatableAt(pos) match {
-      case Some(e) => e
+    val updatable = world.updatableAt(pos) match {
+      case Some(upd) => upd
       case None => return
     }
-    //TODO complete pattern matching
     try {
-      var quantity = 0
-      if (!canBuy(itemType)) throw new CannotBuildItemException("Not enough money")
-      (itemType, elem) match {
-        case (STATION, town : Town) =>
-          town.buildTransportFacility(STATION)
-          addChange(new CreationChange(town.pos, null, ItemTypes.STATION))
-        case (DIESEL_TRAIN, town : Town) =>
-          town.buildVehicle(DIESEL_TRAIN)
-        case (RAIL, town : Town) =>
-          if (!town.hasStation) throw new CannotBuildItemException("This town does not have a station")
-          lastStation match {
-            case Some(station) =>
-              if (station == town.station.get) return
-              if (roadAlreadyExist(station, town.station.get))
-                throw new CannotBuildItemException("This rail already exists")
-              lastStation = None
-              quantity = station.pos.dist(town.station.get.pos).toInt
-              if (!canBuy(itemType, quantity)) throw new CannotBuildItemException("Not enough money")
-              buildRail(station, town.station.get)
-              addChange(new CreationChange(station.pos, town.station.get.pos, ItemTypes.RAIL))
-            case None =>
-              lastStation = Some(town.station.get)
-              return
-          }
-        case _ => return
-      }
-      buy(itemType, quantity)
+      place(itemType, updatable)
     } catch {
-      case e : CannotBuildItemException =>
-        GlobalInformationPanel.displayWarningMessage(e.getMessage)
+    case e : CannotBuildItemException =>
+      GlobalInformationPanel.displayWarningMessage(e.getMessage)
     }
     notifyObservers()
+  }
+
+  private def place(itemType : ItemType, updatable : Updatable) : Unit = {
+    var quantity = 0
+    if (!canBuy(itemType)) throw new CannotBuildItemException("Not enough money")
+    (itemType, updatable) match {
+      case (tfType : TransportFacilityType, town : Town) =>
+        town.buildTransportFacility(tfType)
+        addChange(new CreationChange(town.pos, null, tfType))
+      case (vehicleType : VehicleType, town : Town) =>
+        town.buildVehicle(vehicleType)
+      case (RAIL, town : Town) =>
+        if (!town.hasStation) throw new CannotBuildItemException("This town does not have a station")
+        lastStation match {
+          case Some(station) =>
+            if (station == town.station.get) return
+            if (roadAlreadyExist(station, town.station.get))
+            throw new CannotBuildItemException("This rail already exists")
+            lastStation = None
+            quantity = station.pos.dist(town.station.get.pos).toInt
+            if (!canBuy(itemType, quantity)) throw new CannotBuildItemException("Not enough money")
+            buildRoad(RAIL, station, town.station.get)
+            addChange(new CreationChange(station.pos, town.station.get.pos, ItemTypes.RAIL))
+          case None =>
+            lastStation = Some(town.station.get)
+            return
+        }
+      case _ => return
+    }
+    buy(itemType, quantity)
   }
 
   def selectTrain(train : Train): Unit = {
@@ -116,11 +131,29 @@ abstract class Company(world : World) extends Observable {
     }
   }
 
-  def buildRail(stationA : Station, stationB : Station): Unit = {
-    val rail = new BasicRail(this, stationA, stationB)
-    roads += rail
-    stationA.addRail(rail)
-    stationB.addRail(rail)
+  /**
+    * Build a new road of type [roadType] between [transportFacilityA] and [transportFacilityB]
+    *
+    * @param roadType The type of road
+    * @param transportFacilityA The first facility to connect
+    * @param transportFacilityB The second facility to connect
+    */
+  def buildRoad(roadType : RoadType, transportFacilityA : TransportFacility, transportFacilityB : TransportFacility) : Unit = {
+    val road = roadType match {
+      case RAIL => new BasicRail(this, transportFacilityA.asInstanceOf[Station], transportFacilityB.asInstanceOf[Station])
+      case LINE => new BasicLine(this, transportFacilityA.asInstanceOf[Airport], transportFacilityB.asInstanceOf[Airport])
+    }
+    roads += road
+
+    transportFacilityA.addRoad(road)
+    transportFacilityB.addRoad(road)
+  }
+
+  /**
+    * @return The list of all airport of this company
+    */
+  def getAirports : ListBuffer[Airport] = {
+    transportFacilities.filter(_.isInstanceOf[Airport]).asInstanceOf[ListBuffer[Airport]]
   }
 
 }

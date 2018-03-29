@@ -66,12 +66,14 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     * @param tfType the transportFacility type
     */
   def buildTransportFacility(tfType : TransportFacilityType) : Unit = {
-    def buildInternal(tf : Option[TransportFacility], itemNameForError : String) : TransportFacility = {
-      tf match {
+    def buildInternal(tfOpt : Option[TransportFacility], itemNameForError : String) : TransportFacility = {
+      tfOpt match {
         case Some(_) =>
           throw new CannotBuildItemException("This town already have a " + itemNameForError)
         case None =>
-          TransportFacilityFactory.make(tfType, Game.world.company, this)
+          val tf = TransportFacilityFactory.make(tfType, Game.world.company, this)
+          Game.world.company.addTransportFacility(tf)
+          tf
       }
     }
     tfType match {
