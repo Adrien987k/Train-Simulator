@@ -22,6 +22,7 @@ object ItemsButtonBar extends GUIComponent {
   }
   def make(): ButtonBar = {
     val buildModeButton = new Button("Game mode")
+
     buildModeButton.font = Font.font(null, FontWeight.Bold, 18)
     buildModeButton.setStyle("-fx-background-color: lightCoral")
     buildModeButton.onAction = _ => {

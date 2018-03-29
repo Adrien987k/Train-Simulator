@@ -1,14 +1,15 @@
 package logic.items.transport.facilities
 import logic.Updatable
-import logic.items.ItemTypes.{LINE, PlaneType}
+import logic.items.ItemTypes.{LINE, PlaneType, TransportFacilityType}
 import logic.items.transport.roads.Line
 import logic.world.Company
 import logic.world.towns.Town
 
 abstract class Airport
-(company : Company,
-town : Town)
-extends TransportFacility(company, town) with Updatable {
+(override val transportFacilityType : TransportFacilityType,
+ override val company : Company,
+ override val town : Town)
+extends TransportFacility(transportFacilityType, company, town) with Updatable {
 
   company.getAirports.foreach(airport =>
     company.buildRoad(LINE, this, airport)

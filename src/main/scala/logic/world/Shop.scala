@@ -8,8 +8,10 @@ object Shop {
     item match {
       case DIESEL_TRAIN => 200
       case ELECTRIC_TRAIN => 300
-      case STATION => 1000
-      case AIRPORT => 3000
+      case BOEING => 800
+      case CONCORDE => 2000
+      case STATION => 2000
+      case AIRPORT => 5000
       case RAIL => 1
     }
   }

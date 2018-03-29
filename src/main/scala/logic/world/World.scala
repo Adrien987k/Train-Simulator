@@ -38,12 +38,11 @@ class World() extends Observable {
     GUI.initWorldCanvas(towns)
 
     val timer = AnimationTimer { _ =>
-    //while (true) {
       update()
       GlobalInformationPanel.update()
       WorldCanvas.update()
 
-      //Thread.sleep(50)
+      Thread.sleep(50)
     }
 
     timer.start()

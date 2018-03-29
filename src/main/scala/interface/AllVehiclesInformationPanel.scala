@@ -52,18 +52,20 @@ object AllVehiclesInformationPanel extends GUIComponent {
   }
 
   def addVehicleButton(vehicle : Vehicle): Unit = {
-    //TODO put the right type
-    val vehicleButton = new Button("Train " + nbVehicle)
     nbVehicle += 1
+
+    val vehicleButton = new Button(vehicle.vehicleType.name + nbVehicle)
     vehicleButton.maxWidth = Double.MaxValue
+
     vehicleButton.onAction = (_ : ActionEvent) => {
       keyForValue(vehicleButton) match {
-        case Some(t) =>
-          OneVehicleInformationPanel.addPanel(t.propertyPane())
-          WorldCanvas.selectTrain(t.pos)
+        case Some(vehicleFromButton) =>
+          OneVehicleInformationPanel.addPanel(vehicleFromButton.propertyPane())
+          WorldCanvas.selectTrain(vehicleFromButton)
         case None =>
       }
     }
+
     vehicleButtonsMap.+=((vehicle, vehicleButton))
     vehicleButtonsBox.children.add(vehicleButton)
   }

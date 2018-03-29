@@ -29,7 +29,7 @@ object ItemTypes {
   }
 
   def onSaleItems() : List[ItemType] = {
-    List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, STATION, AIRPORT)
+    List(BOEING, CONCORDE, DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, STATION, AIRPORT)
   }
 
 }

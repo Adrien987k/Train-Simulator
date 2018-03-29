@@ -1,5 +1,6 @@
 package logic.items.transport.roads
 
+import logic.items.ItemTypes.RoadType
 import logic.items.transport.facilities.Station
 import logic.world.Company
 
@@ -8,10 +9,12 @@ import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 
 class BasicRail
-(override val company: Company,
+(override val roadType : RoadType,
+ override val company: Company,
  override val stationA : Station,
- override val stationB : Station)
-  extends Rail(company, stationA , stationB) {
+ override val stationB : Station,
+ override val speedLimit : Double)
+  extends Rail(roadType, company, stationA , stationB, speedLimit) {
 
   override def propertyPane(): Node = {
     val panel = new VBox()

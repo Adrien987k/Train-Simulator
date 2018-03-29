@@ -5,10 +5,10 @@ FUTURE
 
 URGENT
 + Vehicle factory (levels)
-+ Unify ItemType with GUI item types
 + Path finding
 + Updatable system
 + Design
-+ Change AnimationTimer
++ Change AnimationTimer + Adjust update rates
 + Change attributes to Properties
 + Display airport/planes (In world canvas)
++ Vehicle consumption

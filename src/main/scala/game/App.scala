@@ -12,5 +12,4 @@ object App extends JFXApp {
 
   Game.start()
 
-
 }

@@ -1,15 +1,18 @@
 package logic.items.transport.roads
 
 import logic.Updatable
+import logic.items.ItemTypes.RoadType
 import logic.items.transport.facilities.Station
 import logic.items.transport.vehicules.Train
 import logic.world.Company
 
 abstract class Rail
-(override val company: Company,
+(override val roadType : RoadType,
+ override val company: Company,
  val stationA : Station,
- val stationB : Station)
-  extends Road(company, stationA, stationB) with Updatable {
+ val stationB : Station,
+ override val speedLimit : Double)
+  extends Road(roadType, company, stationA, stationB, speedLimit) with Updatable {
 
   def nbTrain : Int = super.nbVehicle
 

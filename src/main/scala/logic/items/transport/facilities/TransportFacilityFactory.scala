@@ -8,8 +8,8 @@ object TransportFacilityFactory {
 
   def make(tfType : TransportFacilityType, company : Company, town : Town) : TransportFacility = {
     tfType match {
-      case STATION => new BasicStation(company, town)
-      case AIRPORT => new BasicAirport(company, town)
+      case STATION => new BasicStation(STATION, company, town)
+      case AIRPORT => new BasicAirport(AIRPORT, company, town)
     }
   }
 

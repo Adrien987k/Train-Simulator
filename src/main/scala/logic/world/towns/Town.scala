@@ -131,7 +131,6 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
   }
 
   private def sendPeople(from : Option[TransportFacility], to : TransportFacility, nbPassenger : Int) : Unit = {
-    println("SEND")
     from.foreach(_.sendPassenger(to, nbPassenger))
   }
 
@@ -156,7 +155,22 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     sendPeopleToNeighboursBy(toAirport, airport)
   }
 
+  /**
+    * @return The transport facility associate with the type [transportFacilityType]
+    */
+  def transportFacilityOfType(transportFacilityType : TransportFacilityType) : Option[TransportFacility] = {
+    transportFacilityType match {
+      case STATION => station
+      case AIRPORT => airport
+    }
+  }
 
+  def transportFacilityForVehicleType(vehicleType : VehicleType) : Option[TransportFacility] = {
+    vehicleType match {
+      case _ : TrainType => station
+      case _ : PlaneType => airport
+    }
+  }
 
   def explore()
   def produce()

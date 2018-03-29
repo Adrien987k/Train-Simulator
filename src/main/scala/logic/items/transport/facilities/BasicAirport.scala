@@ -1,5 +1,6 @@
 package logic.items.transport.facilities
 
+import logic.items.ItemTypes.TransportFacilityType
 import logic.world.Company
 import logic.world.towns.Town
 
@@ -8,9 +9,10 @@ import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 
 class BasicAirport
-(company : Company,
- town : Town)
-  extends Airport(company : Company, town : Town) {
+(override val transportFacilityType : TransportFacilityType,
+ override val company : Company,
+ override val town : Town)
+  extends Airport(transportFacilityType, company : Company, town : Town) {
 
   override def propertyPane(): Node = {
     val panel = new VBox()

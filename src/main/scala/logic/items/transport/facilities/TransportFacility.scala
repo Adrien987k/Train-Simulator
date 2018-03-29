@@ -3,7 +3,7 @@ package logic.items.transport.facilities
 import logic.exceptions.{CannotBuildItemException, CannotSendPassengerException, ImpossibleActionException}
 import logic.PointUpdatable
 import logic.items.Item
-import logic.items.ItemTypes.VehicleType
+import logic.items.ItemTypes.{TransportFacilityType, VehicleType}
 import logic.items.transport.roads.Road
 import logic.items.transport.vehicules.{Vehicle, VehicleFactory}
 import logic.world.Company
@@ -13,9 +13,10 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 abstract class TransportFacility
-(val company : Company,
+(val transportFacilityType: TransportFacilityType,
+ val company : Company,
  val town : Town)
-  extends Item(company) with PointUpdatable {
+  extends Item(transportFacilityType, company) with PointUpdatable {
 
   updateRate(1)
   pos = town.pos
@@ -86,12 +87,19 @@ abstract class TransportFacility
       if (vehicles.isEmpty) {
         throw new CannotSendPassengerException(nbPassenger)
       }
+
       getRoadTo(objective) match {
         case Some(road) =>
           if (road.nbVehicle == road.DEFAULT_CAPACITY) {
             throw new CannotSendPassengerException(nbPassenger)
           }
-          val vehicle = vehicles.remove(0)
+
+          val vehicleOpt = availableVehicle()
+          if (vehicleOpt.isEmpty)
+            throw new CannotSendPassengerException(nbPassenger)
+
+          val vehicle = vehicleOpt.get
+
           val loadedPassenger = load(vehicle, objective, nbPassenger)
           try {
             vehicle.putOnRoad(road)
@@ -101,6 +109,7 @@ abstract class TransportFacility
               throw new CannotSendPassengerException(nbPassenger)
           }
           company.money += loadedPassenger * road.length * company.ticketPricePerKm
+
         case None =>
           throw new CannotSendPassengerException(nbPassenger)
       }
@@ -110,7 +119,19 @@ abstract class TransportFacility
         waitingPassengers += ((objective, nbPassenger))
         return
     }
+
     waitingPassengers -= objective
+  }
+
+  /**
+    * @return One available vehicle
+    */
+  private def availableVehicle() : Option[Vehicle] = {
+    val vehicleOpt = vehicles.find(_.destination.isEmpty)
+
+    if (vehicleOpt.nonEmpty) vehicles -= vehicleOpt.get
+
+    vehicleOpt
   }
 
   /**

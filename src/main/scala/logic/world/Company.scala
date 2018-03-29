@@ -1,10 +1,10 @@
 package logic.world
 
 import logic.exceptions.CannotBuildItemException
-import logic.items.{Item, ItemTypes}
+import logic.items.ItemTypes
 import logic.items.transport.facilities.{Airport, Station, TransportFacility}
-import logic.items.transport.roads.{BasicLine, BasicRail, Line, Road}
-import logic.items.transport.vehicules.{Train, Vehicle}
+import logic.items.transport.roads.{BasicLine, BasicRail, Road}
+import logic.items.transport.vehicules.Vehicle
 import logic.world.towns.Town
 import interface.GlobalInformationPanel
 import link.{CreationChange, Observable}
@@ -17,7 +17,7 @@ import scalafx.collections.ObservableBuffer
 
 abstract class Company(world : World) extends Observable {
 
-  var money = 20000.0
+  var money = 2000000.0
   var ticketPricePerKm = 0.01
 
   val vehicles : ObservableBuffer[Vehicle] = ObservableBuffer.empty
@@ -25,11 +25,10 @@ abstract class Company(world : World) extends Observable {
   val roads :  ListBuffer[Road] = ListBuffer.empty
 
   private var lastStation : Option[Station] = None
-  private var selectedTrain : Option[Train] = None
+  private var selectedVehicle : Option[Vehicle] = None
 
   def step() : Unit = {
     vehicles.foreach(_.step())
-    vehicles.foreach(vehicle => addChange(new CreationChange(vehicle.pos, null, ItemTypes.DIESEL_TRAIN)))
 
     notifyObservers()
   }
@@ -93,12 +92,12 @@ abstract class Company(world : World) extends Observable {
     buy(itemType, quantity)
   }
 
-  def selectTrain(train : Train): Unit = {
-    selectedTrain = Some(train)
+  def selectVehicle(vehicle : Vehicle): Unit = {
+    selectedVehicle = Some(vehicle)
   }
 
   def setTrainDestination(pos : Pos): Unit = {
-    selectedTrain.foreach(train =>
+    selectedVehicle.foreach(train =>
       world.updatableAt(pos) match {
         case Some(town : Town) =>
           train.setDestination(town)
@@ -140,8 +139,16 @@ abstract class Company(world : World) extends Observable {
     */
   def buildRoad(roadType : RoadType, transportFacilityA : TransportFacility, transportFacilityB : TransportFacility) : Unit = {
     val road = roadType match {
-      case RAIL => new BasicRail(this, transportFacilityA.asInstanceOf[Station], transportFacilityB.asInstanceOf[Station])
-      case LINE => new BasicLine(this, transportFacilityA.asInstanceOf[Airport], transportFacilityB.asInstanceOf[Airport])
+      case RAIL =>
+        new BasicRail(RAIL, this,
+          transportFacilityA.asInstanceOf[Station],
+          transportFacilityB.asInstanceOf[Station],
+          10.0)
+
+      case LINE =>
+        new BasicLine(LINE, this,
+          transportFacilityA.asInstanceOf[Airport],
+          transportFacilityB.asInstanceOf[Airport])
     }
     roads += road
 
@@ -154,6 +161,12 @@ abstract class Company(world : World) extends Observable {
     */
   def getAirports : ListBuffer[Airport] = {
     transportFacilities.filter(_.isInstanceOf[Airport]).asInstanceOf[ListBuffer[Airport]]
+  }
+
+  def indicateNextObjective(vehicle : Vehicle) : Unit = {
+    if (vehicle.destination.isEmpty) return
+
+    //TODO A* + set the next station to this vehicle
   }
 
 }

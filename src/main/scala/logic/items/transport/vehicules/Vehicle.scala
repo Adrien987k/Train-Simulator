@@ -3,6 +3,7 @@ package logic.items.transport.vehicules
 import logic.exceptions.ImpossibleActionException
 import logic.{PointUpdatable, UpdateRate}
 import logic.items.Item
+import logic.items.ItemTypes.VehicleType
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.roads.Road
 import logic.world.Company
@@ -12,11 +13,12 @@ import utils.{Dir, Pos}
 import scala.collection.mutable.ListBuffer
 
 abstract class Vehicle
-(val company : Company,
+(val vehicleType : VehicleType,
+ val company : Company,
  val engine : Engine,
  val carriages : ListBuffer[Carriage],
  var currentTransportFacility : Option[TransportFacility])
-extends Item(company) with PointUpdatable {
+extends Item(vehicleType, company) with PointUpdatable {
 
   updateRate(UpdateRate.TRAIN_UPDATE)
 
@@ -31,26 +33,60 @@ extends Item(company) with PointUpdatable {
   var goalTransportFacility : Option[TransportFacility] = None
 
   /* The final town to reach */
-  var destination : Option[Town] = None
+  var destination : Option[TransportFacility] = None
 
   var currentRoad : Option[Road] = None
 
-  override def step(): Boolean = {
+  var fuelLevel = 0
+
+  override def step() : Boolean = {
     if(!super.step()) return false
 
     goalTransportFacility match {
       case Some(transportFacility) =>
         if (pos.inRange(transportFacility.pos, 10)) {
+
+          if (destination.nonEmpty && transportFacility == destination.get)
+            destination = None
+
           removeFromRoad()
           transportFacility.unload(this)
         } else {
-          pos.x += dir.x * engine.maxSpeed
-          pos.y += dir.y * engine.maxSpeed
+          val speed = currentSpeed()
+          pos.x += dir.x * speed
+          pos.y += dir.y * speed
+
+          //TODO consume()
         }
       case None =>
     }
 
     true
+  }
+
+  def currentSpeed() : Double = {
+    var speed = engine.tractiveEffort(totalWeight)
+
+    if (currentRoad.nonEmpty && speed > currentRoad.get.speedLimit)
+      speed = currentRoad.get.speedLimit
+
+    speed
+  }
+
+  def totalWeight : Double = {
+    carriages.foldLeft(0.0)((total, carriage) =>
+      total + carriage.maxWeight
+    )
+  }
+
+  def consume() : Unit = {
+    fuelLevel -= 10
+
+    if (fuelLevel <= 0) crash()
+  }
+
+  def crash() : Unit = {
+
   }
 
   def setObjective(transportFacility : TransportFacility) : Unit = {
@@ -68,7 +104,7 @@ extends Item(company) with PointUpdatable {
   }
 
   def setDestination(town : Town) : Unit = {
-    destination = Some(town)
+    destination = town.transportFacilityForVehicleType(vehicleType)
   }
 
   def putOnRoad(road : Road) : Unit = {

@@ -1,8 +1,8 @@
 package logic.items.transport.vehicules
 
 class PassengerCarriage
-(val maxSpeed : Double,
- val maxWeight : Double,
+(override val maxSpeed : Double,
+ override val maxWeight : Double,
  val maxCapacity : Int)
 extends Carriage(maxSpeed, maxWeight) {
 

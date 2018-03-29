@@ -1,6 +1,7 @@
 package logic.items.transport.roads
 
 import logic.items.Item
+import logic.items.ItemTypes.RoadType
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.vehicules.Vehicle
 import logic.world.{Company, LineUpdatable}
@@ -8,10 +9,12 @@ import logic.world.{Company, LineUpdatable}
 import scala.collection.mutable.ListBuffer
 
 abstract class Road
-(val company : Company,
+(val roadType: RoadType,
+ val company : Company,
  val transportFacilityA: TransportFacility,
- val transportFacilityB: TransportFacility)
-  extends Item(company) with LineUpdatable {
+ val transportFacilityB: TransportFacility,
+ val speedLimit : Double)
+  extends Item(roadType, company) with LineUpdatable {
 
   val DEFAULT_CAPACITY = 3
 

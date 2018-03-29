@@ -12,11 +12,12 @@ object RoadFactory {
                transportFacilityB : TransportFacility) : Road = {
     roadType match {
       case RAIL =>
-        new BasicRail(company,
+        new BasicRail(RAIL, company,
                       transportFacilityA.asInstanceOf[Station],
-                      transportFacilityB.asInstanceOf[Station])
+                      transportFacilityB.asInstanceOf[Station],
+                      10.0)
       case LINE =>
-        new BasicLine(company,
+        new BasicLine(LINE, company,
           transportFacilityA.asInstanceOf[Airport],
           transportFacilityB.asInstanceOf[Airport])
     }

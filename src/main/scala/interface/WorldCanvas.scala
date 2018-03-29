@@ -3,6 +3,7 @@ package interface
 import game.Game
 import logic.items.ItemTypes
 import link.{Change, CreationChange, Observer}
+import logic.items.transport.vehicules.Vehicle
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
@@ -17,7 +18,6 @@ sealed abstract class Item(pos1 : Pos) { }
 
 case class TOWN(pos1 : Pos, level : Int) extends Item(pos1 : Pos)
 case class RAIL(pos1 : Pos, pos2 : Pos) extends Item(pos1 : Pos)
-case class TRAIN(pos1 : Pos) extends Item(pos1 : Pos)
 
 object WorldCanvas extends Observer with GUIComponent {
 
@@ -25,10 +25,13 @@ object WorldCanvas extends Observer with GUIComponent {
   val TRAIN_RADIUS = 5
 
   var canvas = new Canvas(Game.world.MAP_WIDTH, Game.world.MAP_HEIGHT)
-  var gc: GraphicsContext = canvas.graphicsContext2D
-  var items: ListBuffer[Item] = ListBuffer.empty
-  var selectedItem: Option[Item] = None
-  var selectedTrain: Option[TRAIN] = None
+  var gc : GraphicsContext = canvas.graphicsContext2D
+
+  var items : ListBuffer[Item] = ListBuffer.empty
+
+  var selectedItem : Option[Item] = None
+  var selectedVehicle : Option[Vehicle] = None
+
   var destinationChoice = false
 
   var lastPosClicked = new Pos(0,0)
@@ -46,15 +49,15 @@ object WorldCanvas extends Observer with GUIComponent {
     selectedItem = None
   }
 
-  def selectTrain(pos : Pos): Unit = {
-    selectedTrain = Some(TRAIN(pos))
+  def selectTrain(vehicle : Vehicle) : Unit = {
+    selectedVehicle = Some(vehicle)
   }
 
   def activeDestinationChoice(): Unit = {
     destinationChoice = true
   }
 
-  def initWorld(townsPositions : List[Pos]): Unit = {
+  def initWorld(townsPositions : List[Pos]) : Unit = {
     canvas.onMouseClicked = (event: MouseEvent) => {
       lastPosClicked = new Pos(event.x, event.y)
       if (ItemsButtonBar.buildMode) {
@@ -105,68 +108,82 @@ object WorldCanvas extends Observer with GUIComponent {
     gc.fillRect(0, 0, canvas.width(), canvas.height())
     gc.stroke = Color.Black
     gc.lineWidth = 3
+
     items.foreach {
       case town: TOWN =>
         gc.fill = if (town.level == 0) Color.Red else Color.Green
         gc.fillOval(town.pos1.x - TOWN_RADIUS, town.pos1.y - TOWN_RADIUS, TOWN_RADIUS * 2, TOWN_RADIUS * 2)
+
       case rail: RAIL =>
         if (selectedItem.nonEmpty) {
           selectedItem.get match {
             case srail: RAIL =>
               if (!srail.pos1.equals(rail.pos1) || !srail.pos2.equals(rail.pos2))
                 gc.strokeLine(rail.pos1.x, rail.pos1.y, rail.pos2.x, rail.pos2.y)
+
             case _ =>
               gc.strokeLine(rail.pos1.x, rail.pos1.y, rail.pos2.x, rail.pos2.y)
           }
         } else {
           gc.strokeLine(rail.pos1.x, rail.pos1.y, rail.pos2.x, rail.pos2.y)
         }
-      case train: TRAIN =>
-        gc.fill = Color.Blue
-        gc.fillRect(train.pos1.x - TRAIN_RADIUS, train.pos1.y - TRAIN_RADIUS, TRAIN_RADIUS * 2, TRAIN_RADIUS * 2)
     }
+
     if (selectedItem.nonEmpty) {
       selectedItem.get match {
         case town : TOWN =>
           if (destinationChoice) gc.stroke = Color.BlueViolet
           gc.strokeRect(town.pos1.x - TOWN_RADIUS * 1.25, town.pos1.y - TOWN_RADIUS * 1.25, TOWN_RADIUS * 2.5, TOWN_RADIUS * 2.5)
+
         case rail : RAIL =>
           gc.lineWidth = 10
           gc.stroke = Color.Gold
           gc.strokeLine(rail.pos1.x, rail.pos1.y, rail.pos2.x, rail.pos2.y)
+
         case _ =>
       }
     }
-    if (selectedTrain.nonEmpty) {
-      val pos = selectedTrain.get.pos1
+
+    if (selectedVehicle.nonEmpty) {
+      val pos = selectedVehicle.get.pos
       gc.lineWidth = 3
       gc.stroke = Color.BlueViolet
       gc.strokeRect(pos.x - TOWN_RADIUS * 1.25, pos.y - TOWN_RADIUS * 1.25, TOWN_RADIUS * 2.5, TOWN_RADIUS * 2.5)
-
     }
-    items.filter(item => item match {
-      case _: TRAIN => false
-      case _ => true
-    })
+
+    displayVehicle()
   }
 
-  override def notifyChange(changes: ListBuffer[Change]): Unit = {
+  def displayVehicle() : Unit = {
+    Game.world.company.vehicles.foreach(vehicle => {
+      val style = ItemsStyle.ofVehicle(vehicle.vehicleType)
+
+      gc.fill = style.color
+      gc.fillRect(vehicle.pos.x - style.radius, vehicle.pos.y - style.radius,
+          style.radius * 2, style.radius * 2)
+      }
+    )
+  }
+
+  override def notifyChange(changes : ListBuffer[Change]) : Unit = {
     changes.foreach {
       case cch : CreationChange =>
         cch.itemType match {
-          case ItemTypes.STATION =>
+          case ItemTypes.STATION | ItemTypes.AIRPORT =>
             items = items.map {
               case town : TOWN =>
                 if (town.pos1.equals(cch.pos1)) {
                   TOWN(town.pos1, 1)
                 }
                 else town
+
               case o => o
             }
+
           case ItemTypes.RAIL =>
             items += RAIL(cch.pos1, cch.pos2)
-          case ItemTypes.DIESEL_TRAIN =>
-            items += TRAIN(cch.pos1)
+
+          case _ =>
         }
     }
   }

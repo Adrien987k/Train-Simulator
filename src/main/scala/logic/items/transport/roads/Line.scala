@@ -1,15 +1,17 @@
 package logic.items.transport.roads
 
 import logic.Updatable
+import logic.items.ItemTypes.RoadType
 import logic.items.transport.facilities.Airport
 import logic.items.transport.vehicules.Plane
 import logic.world.Company
 
 abstract class Line
-(override val company : Company,
+(override val roadType : RoadType,
+ override val company : Company,
  val airportA : Airport,
  val airportB : Airport)
-  extends Road(company, airportA, airportB) with Updatable {
+  extends Road(roadType, company, airportA, airportB, Double.MaxValue) with Updatable {
 
   def nbPlane : Int = super.nbVehicle
 
