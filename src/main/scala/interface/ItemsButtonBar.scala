@@ -17,10 +17,11 @@ object ItemsButtonBar extends GUIComponent {
 
   var buildMode = false
 
-  def select(itemType: ItemType = null): Unit = {
+  def select(itemType: ItemType = null) : Unit = {
     selected = Option(itemType)
   }
-  def make(): ButtonBar = {
+
+  override def make() : ButtonBar = {
     val buildModeButton = new Button("Game mode")
 
     buildModeButton.font = Font.font(null, FontWeight.Bold, 18)
@@ -60,8 +61,12 @@ object ItemsButtonBar extends GUIComponent {
     bar
   }
 
-  override def restart(): Unit = {
+  override def restart() : Unit = {
     select()
+  }
+
+  override def update() : Unit = {
+
   }
 
 }

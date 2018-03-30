@@ -8,4 +8,6 @@ trait GUIComponent {
 
   def restart()
 
+  def update()
+
 }

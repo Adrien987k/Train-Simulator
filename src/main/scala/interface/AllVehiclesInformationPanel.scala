@@ -29,8 +29,12 @@ object AllVehiclesInformationPanel extends GUIComponent {
     panel
   }
 
-  def restart(): Unit = {
+  override def restart() : Unit = {
     vehicleButtonsMap = mutable.Map.empty
+  }
+
+  override def update() : Unit = {
+
   }
 
   Game.world.company.vehicles.onChange(

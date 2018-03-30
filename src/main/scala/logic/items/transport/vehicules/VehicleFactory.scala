@@ -14,7 +14,7 @@ private object VehicleComponentFactory {
     engineType match {
       case DIESEL_ENGINE => new DieselEngine(5.0, 20000.0, 100000.0)
       case ELECTRIC_ENGINE => new ElectricEngine(3.0, 10000.0, 50000.0)
-      case KEROSENE_ENGINE => new DieselEngine(15.0, 30000.0, 100000.0)
+      case KEROSENE_ENGINE => new KeroseneEngine(15.0, 30000.0, 100000.0)
     }
   }
 

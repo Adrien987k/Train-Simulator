@@ -70,7 +70,7 @@ object WorldCanvas extends Observer with GUIComponent {
           Game.world.company.setTrainDestination(lastPosClicked)
           destinationChoice = false
         }
-        else LocalInformationPanel.displayElementInfoAt(lastPosClicked)
+        else LocalInformationPanel.selectUpdatableAt(lastPosClicked)
       }
     }
 

@@ -7,7 +7,7 @@ class DieselEngine
   extends Engine(maxSpeed, maxWeight, maxTractiveEffort) {
 
   override def tractiveEffort(weight : Double): Double = {
-    if (weight < 2000) return maxWeight
+    if (weight < 2000) return maxSpeed
     if (weight < 10000) 3.0
     else 1.5
   }

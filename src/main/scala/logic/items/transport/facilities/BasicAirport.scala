@@ -14,13 +14,24 @@ class BasicAirport
  override val town : Town)
   extends Airport(transportFacilityType, company : Company, town : Town) {
 
+  val panel = new VBox()
+
+  val airportLabel = new Label("=== Airport ===")
+  val capacityLabel = new Label()
+  val planesLabel = new Label()
+  val waitingPassengerLabel = new Label()
+
+  labels = List(airportLabel, capacityLabel, planesLabel, waitingPassengerLabel)
+
+  panel.children = labels
+
+  styleLabels()
+
   override def propertyPane(): Node = {
-    val panel = new VBox()
-    val airportLabel = new Label("=== Airport ===")
-    val capacityLabel = new Label("Capacity : " + capacity)
-    val planesLabel = new Label("Planes : " + availableVehicles)
-    val waitingPassengerLabel = new Label("Waiting passenger : " + nbWaitingPassengers())
-    panel.children = List(airportLabel, capacityLabel, planesLabel, waitingPassengerLabel)
+    capacityLabel.text = "Capacity : " + capacity
+    planesLabel.text = "Planes : " + availableVehicles
+    waitingPassengerLabel.text = "Waiting passenger : " + nbWaitingPassengers()
+
     panel
   }
 

@@ -94,6 +94,13 @@ object GUI {
     WorldCanvas.restart()
   }
 
+  def update() : Unit = {
+    GlobalInformationPanel.update()
+    LocalInformationPanel.update()
+
+    WorldCanvas.update()
+  }
+
   def initWorldCanvas(towns: ListBuffer[Town]): Unit = {
     WorldCanvas.initWorld(towns.map(town => town.pos).toList)
   }

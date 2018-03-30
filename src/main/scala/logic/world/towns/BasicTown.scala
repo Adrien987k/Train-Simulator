@@ -8,6 +8,29 @@ import scalafx.scene.layout.{BorderPane, VBox}
 
 class BasicTown(pos : Pos, name : String) extends Town(pos, name) {
 
+  val mainPane = new BorderPane
+
+  val panel = new VBox()
+
+  val nameLabel = new Label("=== " + name + " ===")
+  val hasStationLabel = new Label()
+  val populationLabel = new Label()
+  val propTravelerLabel = new Label()
+  val posLabel = new Label()
+
+  labels = List(nameLabel,
+    hasStationLabel,
+    populationLabel,
+    propTravelerLabel,
+    posLabel,
+    new Label("\n"))
+
+  styleLabels()
+
+  panel.children = labels
+
+  mainPane.top = panel
+
   override def explore(): Unit = {
 
   }
@@ -16,19 +39,11 @@ class BasicTown(pos : Pos, name : String) extends Town(pos, name) {
 
   }
 
-  override def propertyPane(): Node = {
-    val mainPane = new BorderPane
-    val panel = new VBox()
-    val nameLabel = new Label("=== " + name + " ===")
-    val hasStationLabel = new Label(if (hasStation) "This town has a station"
-    else "This does not have a station")
-    val populationLabel = new Label("Population : " + population)
-    val propTravelerLabel = new Label("Proportion of traveler : " + proportionTraveler)
-    val posLabel = new Label("position : " + pos)
-
-    panel.children = List(nameLabel, hasStationLabel, populationLabel, propTravelerLabel, posLabel, new Label("\n"))
-
-    mainPane.top = panel
+  override def propertyPane() : Node = {
+    hasStationLabel.text = if (hasStation) "This town has a station" else "This does not have a station"
+    populationLabel.text  = "Population : " + population
+    propTravelerLabel.text = "Proportion of traveler : " + proportionTraveler
+    posLabel.text = "position : " + pos
 
     if (hasStation)
       mainPane.center = station.get.propertyPane()

@@ -19,6 +19,10 @@ object OneVehicleInformationPanel extends GUIComponent {
     panel.center = defaultPanel
   }
 
+  override def update() : Unit = {
+
+  }
+
   def addPanel(newPanel : Node): Unit = {
     panel.center = newPanel
   }

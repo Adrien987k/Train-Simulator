@@ -1,8 +1,8 @@
 package interface
 
 import game.Game
-import logic.items.transport.vehicules.{Train, Vehicle}
-import logic.world.World
+import logic.Updatable
+import logic.items.transport.vehicules.Vehicle
 import utils.Pos
 
 import scalafx.scene.Node
@@ -11,8 +11,10 @@ import scalafx.scene.layout.BorderPane
 
 object LocalInformationPanel extends GUIComponent {
 
-  private val localInformationPane: BorderPane = new BorderPane
+  private val localInformationPane : BorderPane = new BorderPane
   private val noInfoLabel = new Label("No town selected")
+
+  private var currentUpdatable : Option[Updatable] = None
 
   def make() : Node = {
     localInformationPane.style = "-fx-background-color: lightCoral"
@@ -20,16 +22,28 @@ object LocalInformationPanel extends GUIComponent {
     localInformationPane
   }
 
-  def restart(): Unit = {
+  override def restart(): Unit = {
     localInformationPane.center = noInfoLabel
+    currentUpdatable = None
   }
 
-  def displayElementInfoAt(pos : Pos): Unit = {
+  override def update() : Unit = {
+    currentUpdatable match {
+      case Some(updatable) =>
+        localInformationPane.center = updatable.propertyPane()
+
+      case None => localInformationPane.center = noInfoLabel
+    }
+  }
+
+  def selectUpdatableAt(pos : Pos): Unit = {
     Game.world.updatableAt(pos) match {
       case Some(vehicle : Vehicle) =>
         OneVehicleInformationPanel.addPanel(vehicle.propertyPane())
         WorldCanvas.selectTrain(vehicle)
-      case Some(e) => localInformationPane.center = e.propertyPane()
+
+      case Some(updatable) => currentUpdatable = Some(updatable)
+
       case None =>
     }
   }

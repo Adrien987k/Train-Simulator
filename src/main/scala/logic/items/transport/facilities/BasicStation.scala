@@ -14,13 +14,24 @@ class BasicStation
  override val town : Town)
   extends Station(transportFacilityType, company : Company, town : Town) {
 
+  val panel = new VBox()
+
+  val stationLabel = new Label("=== Station ===")
+  val capacityLabel = new Label()
+  val trainsLabel = new Label()
+  val waitingPassengerLabel = new Label()
+
+  labels = List(stationLabel, capacityLabel, trainsLabel, waitingPassengerLabel)
+
+  panel.children = labels
+
+  styleLabels()
+
   override def propertyPane(): Node = {
-    val panel = new VBox()
-    val stationLabel = new Label("=== Station ===")
-    val capacityLabel = new Label("Capacity : " + capacity)
-    val trainsLabel = new Label("Trains : " + availableVehicles)
-    val waitingPassengerLabel = new Label("Waiting passenger : " + nbWaitingPassengers())
-    panel.children = List(stationLabel, capacityLabel, trainsLabel, waitingPassengerLabel)
+    capacityLabel.text = "Capacity : " + capacity
+    trainsLabel.text = "Trains : " + availableVehicles
+    waitingPassengerLabel.text = "Waiting passenger : " + nbWaitingPassengers()
+
     panel
   }
 

@@ -39,8 +39,8 @@ class World() extends Observable {
 
     val timer = AnimationTimer { _ =>
       update()
-      GlobalInformationPanel.update()
-      WorldCanvas.update()
+
+      GUI.update()
 
       Thread.sleep(50)
     }

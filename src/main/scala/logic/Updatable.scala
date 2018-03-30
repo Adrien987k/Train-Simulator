@@ -1,11 +1,15 @@
 package logic
 
 import scalafx.scene.Node
+import scalafx.scene.control.Label
+import scalafx.scene.text.{Font, FontWeight}
 
 trait Updatable {
 
   private var counter = 0
   private var _updateRate = 0
+
+  var labels : List[Label] = List.empty
 
   def updateRate() : Int = _updateRate
   def updateRate(value : Int) : Unit = _updateRate = value
@@ -19,5 +23,9 @@ trait Updatable {
     true
   }
 
-  def propertyPane(): Node
+  def propertyPane() : Node
+
+  def styleLabels() : Unit = {
+    labels.foreach(_.font = Font.font(null, FontWeight.Bold, 18))
+  }
 }

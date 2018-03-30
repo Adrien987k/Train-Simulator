@@ -2,9 +2,11 @@ package interface
 
 import game.Game
 
+import scala.collection.mutable.ListBuffer
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 import scalafx.scene.paint.Color
+import scalafx.scene.text.{Font, FontWeight}
 
 object GlobalInformationPanel extends GUIComponent {
 
@@ -18,8 +20,13 @@ object GlobalInformationPanel extends GUIComponent {
   val nbTrainLabel = new Label("trains : 0")
   val totalPopulationLabel = new Label
 
+  val labels : List[Label] = List(mainLabel, timeLabel, moneyLabel, ticketPriceLabel, nbTrainLabel, totalPopulationLabel)
+
   def make(): VBox = {
-    panel.children = List(mainLabel, timeLabel, moneyLabel, ticketPriceLabel, nbTrainLabel, totalPopulationLabel)
+    panel.children = labels
+
+    labels.foreach(_.font = Font.font(null, FontWeight.Bold, 18))
+
     panel.style = "-fx-background-color: cornFlowerBlue"
     panel
   }
