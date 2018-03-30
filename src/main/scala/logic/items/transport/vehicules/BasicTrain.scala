@@ -28,15 +28,19 @@ class BasicTrain
   val speedLabel = new Label()
   val maxPassengerLabel = new Label()
   val nbPassengerLabel = new Label()
+  val goalStationLabel = new Label()
   val posLabel = new Label()
 
-  labels = List(typeLabel, speedLabel, posLabel, maxPassengerLabel, nbPassengerLabel)
+  labels = List(typeLabel,
+  speedLabel,
+  posLabel,
+  maxPassengerLabel,
+  nbPassengerLabel,
+  goalStationLabel)
 
   panel.children = labels
 
   styleLabels()
-
-  val goalStationLabel = new Label("Goal station : ")
 
   val chooseDestPanel = new Button("Choose destination")
 

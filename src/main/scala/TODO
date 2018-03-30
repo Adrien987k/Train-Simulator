@@ -2,11 +2,9 @@
 FUTURE
 + Add new Types of vehicle, TF, roads
 + Evolve buildings system
++ Design
 
 URGENT
 + Vehicle factory (levels)
 + Path finding
-+ Design
-+ Change attributes to Properties
 + Vehicle consumption
-+ Correct interface problems

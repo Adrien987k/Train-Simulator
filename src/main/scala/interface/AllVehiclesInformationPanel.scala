@@ -10,6 +10,7 @@ import scalafx.event.ActionEvent
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, ScrollPane}
 import scalafx.scene.layout.VBox
+import scalafx.scene.text.{Font, FontWeight}
 
 object AllVehiclesInformationPanel extends GUIComponent {
 
@@ -22,9 +23,12 @@ object AllVehiclesInformationPanel extends GUIComponent {
 
   def make() : Node = {
     vehicleButtonsBox.setFillWidth(true)
+
     panel.fitToWidth = true
     panel.content = vehicleButtonsBox
+
     vehicleButtonsBox.style = "-fx-background-color: moccasin"
+
     panel.style = "-fx-background-color: moccasin"
     panel
   }
@@ -59,8 +63,9 @@ object AllVehiclesInformationPanel extends GUIComponent {
   def addVehicleButton(vehicle : Vehicle): Unit = {
     nbVehicle += 1
 
-    val vehicleButton = new Button(vehicle.vehicleType.name + nbVehicle)
+    val vehicleButton = new Button(vehicle.vehicleType.name + " " + nbVehicle)
     vehicleButton.maxWidth = Double.MaxValue
+    vehicleButton.font = Font.font(null, FontWeight.Bold, 18)
 
     vehicleButton.onAction = (_ : ActionEvent) => {
       keyForValue(vehicleButton) match {

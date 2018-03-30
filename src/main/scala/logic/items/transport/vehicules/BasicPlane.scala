@@ -27,15 +27,18 @@ class BasicPlane
   val maxPassengerLabel = new Label()
   val nbPassengerLabel = new Label()
   val posLabel = new Label()
+  val goalStationLabel = new Label()
 
-  labels = List(typeLabel, speedLabel, maxPassengerLabel, nbPassengerLabel, posLabel)
+  labels = List(typeLabel,
+  speedLabel,
+  maxPassengerLabel,
+  nbPassengerLabel,
+  posLabel,
+  goalStationLabel)
 
   panel.children = labels
 
   styleLabels()
-
-  val goalStationLabel = new Label("Goal station : ")
-  goalStationLabel.font = Font.font(null, FontWeight.Bold, 18)
 
   val chooseDestPanel = new Button("Choose destination")
 
@@ -47,7 +50,7 @@ class BasicPlane
     posLabel.text = "Position : " + pos
 
     if (goalTransportFacility.nonEmpty) {
-      goalStationLabel.text = "Goal station : " + goalTransportFacility.get.town.name
+      goalStationLabel.text = "Goal airport : " + goalTransportFacility.get.town.name
 
       if (!panel.children.contains(goalStationLabel))
         panel.children.add(goalStationLabel)
