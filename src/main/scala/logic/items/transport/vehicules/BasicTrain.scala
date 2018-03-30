@@ -12,6 +12,7 @@ import scalafx.event.ActionEvent
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.VBox
+import scalafx.scene.text.{Font, FontWeight}
 
 class BasicTrain
 (trainType : TrainType,
@@ -21,25 +22,47 @@ class BasicTrain
  carriages : ListBuffer[Carriage])
   extends Train(trainType, company, engine, carriages, station) {
 
+  val panel = new VBox()
+
+  val typeLabel = new Label(trainType.name)
+  val speedLabel = new Label()
+  val maxPassengerLabel = new Label()
+  val nbPassengerLabel = new Label()
+  val posLabel = new Label()
+
+  labels = List(typeLabel, speedLabel, posLabel, maxPassengerLabel, nbPassengerLabel)
+
+  panel.children = labels
+
+  styleLabels()
+
+  val goalStationLabel = new Label("Goal station : ")
+
+  val chooseDestPanel = new Button("Choose destination")
+
   override def propertyPane(): Node = {
-    val panel = new VBox()
-    val typeLabel = new Label(trainType.name)
-    val speedLabel = new Label("Max Speed : " + engine.maxSpeed)
-    val maxPassengerLabel = new Label("Passengers capacity : " + passengerCapacity)
-    val nbPassengerLabel = new Label("Passengers : " + nbPassenger)
-    val posLabel = new Label("Position : " + pos)
-    panel.children = List(typeLabel, speedLabel, posLabel, maxPassengerLabel, nbPassengerLabel)
-    val goalStationLabel = new Label("Goal station : ")
+    speedLabel.text = "Max Speed : " + engine.maxSpeed
+    maxPassengerLabel.text = "Passengers capacity : " + passengerCapacity
+    nbPassengerLabel.text = "Passengers : " + nbPassenger
+    posLabel.text = "Position : " + pos
+
     if (goalTransportFacility.nonEmpty) {
       goalStationLabel.text = "Goal station : " + goalTransportFacility.get.town.name
-      panel.children.add(goalStationLabel)
+
+      if (!panel.children.contains(goalStationLabel))
+        panel.children.add(goalStationLabel)
     }
-    val chooseDestPanel = new Button("Choose destination")
-    chooseDestPanel.onAction = (_ : ActionEvent) => {
+
+    chooseDestPanel.font = Font.font(null, FontWeight.Bold, 18)
+
+    chooseDestPanel.onAction = _ => {
       Game.world.company.selectVehicle(this)
       WorldCanvas.activeDestinationChoice()
     }
-    panel.children.add(chooseDestPanel)
+
+    if (!panel.children.contains(chooseDestPanel))
+      panel.children.add(chooseDestPanel)
+
     panel
   }
 

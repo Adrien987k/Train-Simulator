@@ -14,7 +14,7 @@ import scala.collection.mutable.ListBuffer
 
 abstract class TransportFacility
 (val transportFacilityType: TransportFacilityType,
- val company : Company,
+ override val company : Company,
  val town : Town)
   extends Item(transportFacilityType, company) with PointUpdatable {
 

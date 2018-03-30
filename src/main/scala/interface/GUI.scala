@@ -97,6 +97,7 @@ object GUI {
   def update() : Unit = {
     GlobalInformationPanel.update()
     LocalInformationPanel.update()
+    OneVehicleInformationPanel.update()
 
     WorldCanvas.update()
   }

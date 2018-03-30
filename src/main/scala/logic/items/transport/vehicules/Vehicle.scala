@@ -14,7 +14,7 @@ import scala.collection.mutable.ListBuffer
 
 abstract class Vehicle
 (val vehicleType : VehicleType,
- val company : Company,
+ override val company : Company,
  val engine : Engine,
  val carriages : ListBuffer[Carriage],
  var currentTransportFacility : Option[TransportFacility])

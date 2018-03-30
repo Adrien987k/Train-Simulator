@@ -26,6 +26,7 @@ object GlobalInformationPanel extends GUIComponent {
     panel.children = labels
 
     labels.foreach(_.font = Font.font(null, FontWeight.Bold, 18))
+    warningLabel.font = Font.font(null, FontWeight.ExtraBold, 18)
 
     panel.style = "-fx-background-color: cornFlowerBlue"
     panel

@@ -10,11 +10,14 @@ import scala.collection.mutable.ListBuffer
 
 abstract class Road
 (val roadType: RoadType,
- val company : Company,
+ override val company : Company,
  val transportFacilityA: TransportFacility,
  val transportFacilityB: TransportFacility,
  val speedLimit : Double)
   extends Item(roadType, company) with LineUpdatable {
+
+  posA = transportFacilityA.pos
+  posB = transportFacilityB.pos
 
   val DEFAULT_CAPACITY = 3
 

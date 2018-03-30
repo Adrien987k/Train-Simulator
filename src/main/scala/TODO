@@ -6,9 +6,7 @@ FUTURE
 URGENT
 + Vehicle factory (levels)
 + Path finding
-+ Updatable system
 + Design
-+ Change AnimationTimer + Adjust update rates
 + Change attributes to Properties
-+ Display airport/planes (In world canvas)
 + Vehicle consumption
++ Correct interface problems

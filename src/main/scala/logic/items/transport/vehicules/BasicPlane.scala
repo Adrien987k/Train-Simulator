@@ -4,13 +4,13 @@ import game.Game
 import logic.world.Company
 import interface.WorldCanvas
 import logic.items.ItemTypes.PlaneType
-import logic.items.transport.facilities.{Airport, Station}
+import logic.items.transport.facilities.Airport
 
 import scala.collection.mutable.ListBuffer
-import scalafx.event.ActionEvent
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.VBox
+import scalafx.scene.text.{Font, FontWeight}
 
 class BasicPlane
 (planeType : PlaneType,
@@ -20,29 +20,49 @@ class BasicPlane
  carriages : ListBuffer[Carriage])
   extends Plane(planeType, company, engine, carriages, airport) {
 
-  override def propertyPane(): Node = {
-    val panel = new VBox()
+  val panel = new VBox()
 
-    val typeLabel = new Label(planeType.name)
-    val speedLabel = new Label("Max Speed : " + engine.maxSpeed)
-    val maxPassengerLabel = new Label("Max passengers : " + passengerCapacity)
-    val nbPassengerLabel = new Label("Passengers : " + nbPassenger)
-    val posLabel = new Label("Position : " + pos)
+  val typeLabel = new Label(planeType.name)
+  val speedLabel = new Label()
+  val maxPassengerLabel = new Label()
+  val nbPassengerLabel = new Label()
+  val posLabel = new Label()
 
-    panel.children = List(typeLabel, speedLabel, maxPassengerLabel, nbPassengerLabel, posLabel)
+  labels = List(typeLabel, speedLabel, maxPassengerLabel, nbPassengerLabel, posLabel)
 
-    val goalStationLabel = new Label("Goal station : ")
-    if (goalTransportFacility.nonEmpty)
+  panel.children = labels
+
+  styleLabels()
+
+  val goalStationLabel = new Label("Goal station : ")
+  goalStationLabel.font = Font.font(null, FontWeight.Bold, 18)
+
+  val chooseDestPanel = new Button("Choose destination")
+
+  override def propertyPane() : Node = {
+    typeLabel.text = planeType.name
+    speedLabel.text = "Max Speed : " + engine.maxSpeed
+    maxPassengerLabel.text = "Max passengers : " + passengerCapacity
+    nbPassengerLabel.text = "Passengers : " + nbPassenger
+    posLabel.text = "Position : " + pos
+
+    if (goalTransportFacility.nonEmpty) {
       goalStationLabel.text = "Goal station : " + goalTransportFacility.get.town.name
-    panel.children.add(goalStationLabel)
-    val chooseDestPanel = new Button("Choose destination")
+
+      if (!panel.children.contains(goalStationLabel))
+        panel.children.add(goalStationLabel)
+    }
+
+    chooseDestPanel.font = Font.font(null, FontWeight.Bold, 18)
 
     chooseDestPanel.onAction = _ => {
       Game.world.company.selectVehicle(this)
       WorldCanvas.activeDestinationChoice()
     }
 
-    panel.children.add(chooseDestPanel)
+    if (!panel.children.contains(chooseDestPanel))
+      panel.children.add(chooseDestPanel)
+
     panel
   }
 

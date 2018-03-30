@@ -2,9 +2,9 @@ package logic.world
 
 import logic.Updatable
 import logic.world.towns.{BasicTown, Town}
-import interface.{GUI, GlobalInformationPanel, WorldCanvas}
+import interface.{GUI, GlobalInformationPanel, ItemsStyle, WorldCanvas}
 import link.Observable
-import utils.{Pos, GameDateTime}
+import utils.{GameDateTime, Pos}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -68,8 +68,11 @@ class World() extends Observable {
   def updatableAt(pos : Pos) : Option[Updatable] = {
     val town = towns.find(town => town.pos.inRange(pos, WorldCanvas.TOWN_RADIUS * 1.7))
     if (town.nonEmpty) return town
-    val train = company.vehicles.find(train => train.pos.inRange(pos, WorldCanvas.TRAIN_RADIUS))
-    if (train.nonEmpty) return train
+    val vehicle = company.vehicles.find(vehicle => {
+      val style = ItemsStyle.ofVehicle(vehicle.vehicleType)
+      vehicle.pos.inRange(pos, style.radius)
+    })
+    if (vehicle.nonEmpty) return vehicle
     company.roads.find(road =>
       pos.inLineRange(road.transportFacilityA.pos, road.transportFacilityB.pos, 10))
   }

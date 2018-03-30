@@ -8,6 +8,7 @@ import utils.Pos
 import scalafx.scene.Node
 import scalafx.scene.control.Label
 import scalafx.scene.layout.BorderPane
+import scalafx.scene.text.{Font, FontWeight}
 
 object LocalInformationPanel extends GUIComponent {
 
@@ -17,6 +18,8 @@ object LocalInformationPanel extends GUIComponent {
   private var currentUpdatable : Option[Updatable] = None
 
   def make() : Node = {
+    noInfoLabel.font = Font.font(null, FontWeight.Bold, 18)
+
     localInformationPane.style = "-fx-background-color: lightCoral"
     localInformationPane.center = noInfoLabel
     localInformationPane
@@ -39,7 +42,7 @@ object LocalInformationPanel extends GUIComponent {
   def selectUpdatableAt(pos : Pos): Unit = {
     Game.world.updatableAt(pos) match {
       case Some(vehicle : Vehicle) =>
-        OneVehicleInformationPanel.addPanel(vehicle.propertyPane())
+        OneVehicleInformationPanel.addCurrentVehicle(vehicle)
         WorldCanvas.selectTrain(vehicle)
 
       case Some(updatable) => currentUpdatable = Some(updatable)

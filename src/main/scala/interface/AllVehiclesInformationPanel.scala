@@ -14,13 +14,13 @@ import scalafx.scene.layout.VBox
 object AllVehiclesInformationPanel extends GUIComponent {
 
   val panel = new ScrollPane()
-  val vehicleButtonsBox = new VBox()
+  var vehicleButtonsBox = new VBox()
 
   var vehicleButtonsMap : mutable.Map[Vehicle, Button] = mutable.Map.empty
 
   var nbVehicle = 0
 
-  def make(): Node = {
+  def make() : Node = {
     vehicleButtonsBox.setFillWidth(true)
     panel.fitToWidth = true
     panel.content = vehicleButtonsBox
@@ -31,6 +31,7 @@ object AllVehiclesInformationPanel extends GUIComponent {
 
   override def restart() : Unit = {
     vehicleButtonsMap = mutable.Map.empty
+    vehicleButtonsBox.children.remove(0, vehicleButtonsBox.children.size())
   }
 
   override def update() : Unit = {
@@ -64,7 +65,7 @@ object AllVehiclesInformationPanel extends GUIComponent {
     vehicleButton.onAction = (_ : ActionEvent) => {
       keyForValue(vehicleButton) match {
         case Some(vehicleFromButton) =>
-          OneVehicleInformationPanel.addPanel(vehicleFromButton.propertyPane())
+          OneVehicleInformationPanel.addCurrentVehicle(vehicleFromButton)
           WorldCanvas.selectTrain(vehicleFromButton)
         case None =>
       }
