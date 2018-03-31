@@ -31,6 +31,10 @@ abstract class Road
     vehicles.foreach(vehicle => {
       if (vehicle.crashed) {
         vehicle.removeFromRoad()
+        vehicles -= vehicle
+
+        println("ROAD CRASHED")
+        company.destroyVehicle(vehicle)
       }
     })
 

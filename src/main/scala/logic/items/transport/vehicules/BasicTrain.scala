@@ -11,7 +11,7 @@ import scala.collection.mutable.ListBuffer
 import scalafx.event.ActionEvent
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
-import scalafx.scene.layout.VBox
+import scalafx.scene.layout.{BorderPane, VBox}
 import scalafx.scene.text.{Font, FontWeight}
 
 class BasicTrain
@@ -21,6 +21,8 @@ class BasicTrain
  engine : Engine,
  carriages : ListBuffer[Carriage])
   extends Train(trainType, company, engine, carriages, station) {
+
+  val pane = new BorderPane
 
   val panel = new VBox()
 
@@ -42,9 +44,11 @@ class BasicTrain
 
   styleLabels()
 
+  pane.top = panel
+
   val chooseDestPanel = new Button("Choose destination")
 
-  override def propertyPane(): Node = {
+  override def propertyPane() : Node = {
     speedLabel.text = "Max Speed : " + engine.maxSpeed
     maxPassengerLabel.text = "Passengers capacity : " + passengerCapacity
     nbPassengerLabel.text = "Passengers : " + nbPassenger
@@ -67,7 +71,9 @@ class BasicTrain
     if (!panel.children.contains(chooseDestPanel))
       panel.children.add(chooseDestPanel)
 
-    panel
+    pane.center = engine.propertyPane()
+
+    pane
   }
 
 }

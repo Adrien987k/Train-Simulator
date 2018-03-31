@@ -1,13 +1,11 @@
 package logic.world
 
 import logic.exceptions.CannotBuildItemException
-import logic.items.ItemTypes
 import logic.items.transport.facilities.{Airport, Station, TransportFacility}
 import logic.items.transport.roads.{BasicLine, BasicRail, Road}
 import logic.items.transport.vehicules.Vehicle
 import logic.world.towns.Town
-import interface.GlobalInformationPanel
-import link.{CreationChange, Observable}
+import interface.{GlobalInformationPanel, OneVehicleInformationPanel, WorldCanvas}
 import logic.Updatable
 import logic.items.ItemTypes._
 import utils.Pos
@@ -15,7 +13,7 @@ import utils.Pos
 import scala.collection.mutable.ListBuffer
 import scalafx.collections.ObservableBuffer
 
-abstract class Company(world : World) extends Observable {
+abstract class Company(world : World) {
 
   var money = 2000000.0
   var ticketPricePerKm = 0.01
@@ -29,16 +27,32 @@ abstract class Company(world : World) extends Observable {
 
   def step() : Unit = {
     vehicles.foreach(_.step())
-
-    notifyObservers()
+    roads.foreach(_.step())
   }
 
   def addVehicle(vehicle : Vehicle) : Unit = {
     vehicles += vehicle
   }
 
+  def destroyVehicle(vehicle : Vehicle) : Unit = {
+    if (vehicles.contains(vehicle))
+      vehicles -= vehicle
+
+    if (selectedVehicle.nonEmpty && selectedVehicle.get == vehicle)
+      selectedVehicle = None
+
+    OneVehicleInformationPanel.remove(vehicle)
+    WorldCanvas.removeIfSelected(vehicle)
+  }
+
   def addTransportFacility(transportFacility : TransportFacility) : Unit = {
     transportFacilities += transportFacility
+  }
+
+  def refillFuel(vehicle : Vehicle) : Unit = {
+    money -= Shop.fuelPrice(vehicle.engine.engineType)
+
+    vehicle.refillFuel()
   }
 
   /**
@@ -49,40 +63,50 @@ abstract class Company(world : World) extends Observable {
     */
   def tryPlace(itemType : ItemType, pos : Pos) : Unit = {
     GlobalInformationPanel.removeWarningMessage()
+
     val updatable = world.updatableAt(pos) match {
       case Some(upd) => upd
       case None => return
     }
+
     try {
       place(itemType, updatable)
     } catch {
-    case e : CannotBuildItemException =>
+      case e : CannotBuildItemException =>
       GlobalInformationPanel.displayWarningMessage(e.getMessage)
     }
-    notifyObservers()
   }
 
   private def place(itemType : ItemType, updatable : Updatable) : Unit = {
     var quantity = 0
+
     if (!canBuy(itemType)) throw new CannotBuildItemException("Not enough money")
+
     (itemType, updatable) match {
       case (tfType : TransportFacilityType, town : Town) =>
         town.buildTransportFacility(tfType)
-        addChange(new CreationChange(town.pos, null, tfType))
+
       case (vehicleType : VehicleType, town : Town) =>
         town.buildVehicle(vehicleType)
+
       case (RAIL, town : Town) =>
         if (!town.hasStation) throw new CannotBuildItemException("This town does not have a station")
+
         lastStation match {
           case Some(station) =>
             if (station == town.station.get) return
+
             if (roadAlreadyExist(station, town.station.get))
-            throw new CannotBuildItemException("This rail already exists")
+              throw new CannotBuildItemException("This rail already exists")
+
             lastStation = None
+
             quantity = station.pos.dist(town.station.get.pos).toInt
+
             if (!canBuy(itemType, quantity)) throw new CannotBuildItemException("Not enough money")
+
             buildRoad(RAIL, station, town.station.get)
-            addChange(new CreationChange(station.pos, town.station.get.pos, ItemTypes.RAIL))
+
           case None =>
             lastStation = Some(town.station.get)
             return

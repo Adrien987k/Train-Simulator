@@ -47,8 +47,10 @@ object AllVehiclesInformationPanel extends GUIComponent {
       changes.foreach {
         case Add(_, added) =>
           added.foreach(addVehicleButton)
+
         case Remove(_, removed) =>
           removed.foreach(removeTrainButton)
+
         case _ =>
       }
   )

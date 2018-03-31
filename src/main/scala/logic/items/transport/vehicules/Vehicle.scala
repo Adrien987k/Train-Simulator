@@ -44,12 +44,16 @@ extends Item(vehicleType, company) with PointUpdatable {
   override def step() : Boolean = {
     if(!super.step()) return false
 
+    if (crashed) return false
+
     goalTransportFacility match {
       case Some(transportFacility) =>
         if (pos.inRange(transportFacility.pos, 10)) {
 
           if (destination.nonEmpty && transportFacility == destination.get)
             destination = None
+
+          company.refillFuel(this)
 
           removeFromRoad()
           transportFacility.unload(this)
@@ -58,7 +62,7 @@ extends Item(vehicleType, company) with PointUpdatable {
           pos.x += dir.x * speed
           pos.y += dir.y * speed
 
-          //TODO consume()
+          consume()
         }
       case None =>
     }
@@ -93,6 +97,7 @@ extends Item(vehicleType, company) with PointUpdatable {
 
   def crash() : Unit = {
     //TODO GUI.crash(pos)
+    println("CRASH")
 
     _crashed = true
   }
@@ -136,7 +141,7 @@ extends Item(vehicleType, company) with PointUpdatable {
     }
   }
 
-  def addCarriage(carriage: Carriage) : Unit = {
+  def addCarriage(carriage : Carriage) : Unit = {
     carriages += carriage
   }
 

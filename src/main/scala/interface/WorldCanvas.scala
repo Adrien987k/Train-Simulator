@@ -2,7 +2,6 @@ package interface
 
 import game.Game
 import logic.items.Item
-import link.{Change, CreationChange, Observer}
 import logic.Updatable
 import logic.items.ItemTypes.{RoadType, VehicleType}
 import logic.items.transport.roads.Road
@@ -18,7 +17,7 @@ import scalafx.scene.control.ScrollPane
 import scalafx.scene.input.MouseEvent
 import scalafx.scene.paint.Color
 
-object WorldCanvas extends Observer with GUIComponent {
+object WorldCanvas extends GUIComponent {
 
   val TOWN_RADIUS = 10
 
@@ -34,7 +33,7 @@ object WorldCanvas extends Observer with GUIComponent {
 
   var lastPosClicked = new Pos(0,0)
 
-  def make(): Node = {
+  def make() : Node = {
     val scrollPane = new ScrollPane
     scrollPane.content = canvas
     canvas.width <== scrollPane.width
@@ -42,7 +41,7 @@ object WorldCanvas extends Observer with GUIComponent {
     scrollPane
   }
 
-  def restart(): Unit = {
+  def restart() : Unit = {
     items = ListBuffer.empty
     selectedUpdatable = None
     selectedVehicle = None
@@ -52,7 +51,7 @@ object WorldCanvas extends Observer with GUIComponent {
     selectedVehicle = Some(vehicle)
   }
 
-  def activeDestinationChoice(): Unit = {
+  def activeDestinationChoice() : Unit = {
     destinationChoice = true
   }
 
@@ -84,9 +83,6 @@ object WorldCanvas extends Observer with GUIComponent {
           selectedUpdatable = None
       }
     }
-
-    this.register(Game.world)
-    this.register(Game.world.company)
   }
 
   def displaySelection() : Unit = {
@@ -167,16 +163,9 @@ object WorldCanvas extends Observer with GUIComponent {
     )
   }
 
-  override def notifyChange(changes : ListBuffer[Change]) : Unit = {
-    changes.foreach {
-      case cch : CreationChange =>
-        cch.itemType match {
-
-          //case ItemTypes.RAIL =>
-            //items += RAIL(cch.pos1, cch.pos2)
-
-          case _ =>
-        }
-    }
+  def removeIfSelected(vehicle : Vehicle) : Unit = {
+    if (selectedVehicle.nonEmpty && selectedVehicle.get == vehicle)
+      selectedVehicle = None
   }
+
 }

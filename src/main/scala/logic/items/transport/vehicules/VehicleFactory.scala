@@ -12,9 +12,9 @@ private object VehicleComponentFactory {
 
   def makeEngine(engineType : VehicleComponentType.EngineType) : Engine = {
     engineType match {
-      case DIESEL_ENGINE => new DieselEngine(5.0, 20000.0, 100000.0, 5000.0)
-      case ELECTRIC_ENGINE => new ElectricEngine(3.0, 10000.0, 50000.0, 200000.0)
-      case KEROSENE_ENGINE => new KeroseneEngine(15.0, 30000.0, 100000.0, 10000000.0)
+      case DIESEL_ENGINE => new DieselEngine(engineType, 5.0, 3000.0, 100000.0, 50000.0)
+      case ELECTRIC_ENGINE => new ElectricEngine(engineType, 3.0, 10000.0, 50000.0, 1500.0)
+      case KEROSENE_ENGINE => new KeroseneEngine(engineType, 15.0, 30000.0, 100000.0, 2000000.0)
     }
   }
 

@@ -1,5 +1,4 @@
 package interface
-import interface.LocalInformationPanel.noInfoLabel
 import logic.items.transport.vehicules.Vehicle
 
 import scalafx.scene.Node
@@ -43,6 +42,11 @@ object OneVehicleInformationPanel extends GUIComponent {
 
   def removeCurrentVehicle() : Unit = {
     currentVehicle = None
+  }
+
+  def remove(vehicle : Vehicle) : Unit = {
+    if (currentVehicle.nonEmpty && currentVehicle.get == vehicle)
+      currentVehicle = None
   }
 
 }

@@ -9,7 +9,7 @@ import logic.items.transport.facilities.Airport
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
-import scalafx.scene.layout.VBox
+import scalafx.scene.layout.{BorderPane, VBox}
 import scalafx.scene.text.{Font, FontWeight}
 
 class BasicPlane
@@ -19,6 +19,8 @@ class BasicPlane
  engine : Engine,
  carriages : ListBuffer[Carriage])
   extends Plane(planeType, company, engine, carriages, airport) {
+
+  val pane = new BorderPane
 
   val panel = new VBox()
 
@@ -39,6 +41,8 @@ class BasicPlane
   panel.children = labels
 
   styleLabels()
+
+  pane.top = panel
 
   val chooseDestPanel = new Button("Choose destination")
 
@@ -66,7 +70,9 @@ class BasicPlane
     if (!panel.children.contains(chooseDestPanel))
       panel.children.add(chooseDestPanel)
 
-    panel
+    pane.center = engine.propertyPane()
+
+    pane
   }
 
 }
