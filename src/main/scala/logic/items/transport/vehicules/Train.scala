@@ -15,11 +15,6 @@ abstract class Train
  val initialStation : Station)
   extends Vehicle(trainType, company, engine, carriages, Some(initialStation)) {
 
-  /*
-  def setObjective(station : Station) : Unit = {
-    super.setObjective(station)
-  }*/
-
   def putOnRail(rail : Rail) : Unit = {
     super.putOnRoad(rail)
   }

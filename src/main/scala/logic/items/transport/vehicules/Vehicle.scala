@@ -20,7 +20,7 @@ abstract class Vehicle
  var currentTransportFacility : Option[TransportFacility])
 extends Item(vehicleType, company) with PointUpdatable {
 
-  updateRate(UpdateRate.TRAIN_UPDATE)
+  updateRate(UpdateRate.VEHICLE_UPDATE)
 
   pos = currentTransportFacility match {
     case Some(tf) => tf.pos.copy()
@@ -37,7 +37,9 @@ extends Item(vehicleType, company) with PointUpdatable {
 
   var currentRoad : Option[Road] = None
 
-  var fuelLevel = 0
+  private var _crashed = false
+
+  def crashed : Boolean = _crashed
 
   override def step() : Boolean = {
     if(!super.step()) return false
@@ -79,14 +81,20 @@ extends Item(vehicleType, company) with PointUpdatable {
     )
   }
 
-  def consume() : Unit = {
-    fuelLevel -= 10
+  def refillFuel() : Unit = {
+    engine.refillFuelLevel()
+  }
 
-    if (fuelLevel <= 0) crash()
+  def consume() : Unit = {
+    engine.consume(totalWeight)
+
+    if (engine.fuelLevel <= 0) crash()
   }
 
   def crash() : Unit = {
+    //TODO GUI.crash(pos)
 
+    _crashed = true
   }
 
   def setObjective(transportFacility : TransportFacility) : Unit = {

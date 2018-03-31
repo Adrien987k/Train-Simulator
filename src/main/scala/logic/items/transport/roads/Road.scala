@@ -27,7 +27,15 @@ abstract class Road
 
   val length : Double = transportFacilityA.pos.dist(transportFacilityB.pos)
 
-  override def step() : Boolean = { false }
+  override def step() : Boolean = {
+    vehicles.foreach(vehicle => {
+      if (vehicle.crashed) {
+        vehicle.removeFromRoad()
+      }
+    })
+
+    false
+  }
 
   def nbVehicle : Int = vehicles.size
   def isFull : Boolean = capacity == vehicles.size
