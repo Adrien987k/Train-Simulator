@@ -1,7 +1,7 @@
 package logic.world
 
 import logic.items.ItemTypes._
-import logic.items.transport.vehicules.VehicleComponentTypes.{DIESEL_ENGINE, ELECTRIC_ENGINE, EngineType, KEROSENE_ENGINE}
+import logic.items.transport.vehicules.components.VehicleComponentTypes._
 
 object Shop {
 
@@ -22,6 +22,14 @@ object Shop {
       case DIESEL_ENGINE => 20
       case ELECTRIC_ENGINE => 40
       case KEROSENE_ENGINE => 50
+    }
+  }
+
+  def evolutionPrice(vehicleComponentType : VehicleComponentType, level : Int) : Double = {
+    vehicleComponentType match {
+      case _ : EngineType => level * 100
+
+      case _  => 0
     }
   }
 

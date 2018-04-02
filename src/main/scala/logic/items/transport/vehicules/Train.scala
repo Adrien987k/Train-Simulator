@@ -3,6 +3,7 @@ package logic.items.transport.vehicules
 import logic.items.ItemTypes.TrainType
 import logic.items.transport.facilities.Station
 import logic.items.transport.roads.Rail
+import logic.items.transport.vehicules.components.{Carriage, Engine}
 import logic.world.Company
 
 import scala.collection.mutable.ListBuffer

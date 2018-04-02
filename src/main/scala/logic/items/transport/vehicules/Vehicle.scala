@@ -6,6 +6,7 @@ import logic.items.Item
 import logic.items.ItemTypes.VehicleType
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.roads.Road
+import logic.items.transport.vehicules.components.{Carriage, Engine, PassengerCarriage}
 import logic.world.Company
 import logic.world.towns.Town
 import utils.{Dir, Pos}
@@ -82,7 +83,7 @@ extends Item(vehicleType, company) with PointUpdatable {
 
   def totalWeight : Double = {
     carriages.foldLeft(0.0)((total, carriage) =>
-      total + carriage.maxWeight
+      total + carriage.weight
     )
   }
 

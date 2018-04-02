@@ -2,12 +2,13 @@ package logic.world
 
 import logic.exceptions.CannotBuildItemException
 import logic.items.transport.facilities.{Airport, Station, TransportFacility}
-import logic.items.transport.roads.{BasicLine, BasicRail, Road}
+import logic.items.transport.roads.{BasicLine, BasicRail, Road, RoadFactory}
 import logic.items.transport.vehicules.Vehicle
 import logic.world.towns.Town
 import interface.{GlobalInformationPanel, OneVehicleInformationPanel, WorldCanvas}
 import logic.Updatable
 import logic.items.ItemTypes._
+import logic.items.transport.vehicules.components.VehicleComponentTypes.VehicleComponentType
 import utils.Pos
 
 import scala.collection.mutable.ListBuffer
@@ -145,13 +146,25 @@ abstract class Company(world : World) {
     money - price >= 0
   }
 
-  def buy(itemType: ItemType, quantity : Int = 1): Unit = {
+  def buy(itemType : ItemType, quantity : Int = 1) : Unit = {
     val price = Shop.price(itemType, quantity)
     if (money - price < 0)
       throw new CannotBuildItemException("Not enough money")
-    else {
-      money -= price
-    }
+
+    money -= price
+  }
+
+  def canBuyEvolution(vehicleComponentType : VehicleComponentType, level : Int) : Boolean = {
+    val price = Shop.evolutionPrice(vehicleComponentType, level)
+    money - price >= 0
+  }
+
+  def buyEvolution(vehicleComponentType : VehicleComponentType, level : Int) : Unit = {
+    val price = Shop.evolutionPrice(vehicleComponentType, level)
+    if (money - price < 0)
+      throw new CannotBuildItemException("Not enough money to build evolution")
+
+    money -= price
   }
 
   /**
@@ -164,15 +177,10 @@ abstract class Company(world : World) {
   def buildRoad(roadType : RoadType, transportFacilityA : TransportFacility, transportFacilityB : TransportFacility) : Unit = {
     val road = roadType match {
       case RAIL =>
-        new BasicRail(RAIL, this,
-          transportFacilityA.asInstanceOf[Station],
-          transportFacilityB.asInstanceOf[Station],
-          10.0)
+        RoadFactory.makeRoad(RAIL, this, transportFacilityA, transportFacilityB)
 
       case LINE =>
-        new BasicLine(LINE, this,
-          transportFacilityA.asInstanceOf[Airport],
-          transportFacilityB.asInstanceOf[Airport])
+        RoadFactory.makeRoad(LINE, this, transportFacilityA, transportFacilityB)
     }
     roads += road
 

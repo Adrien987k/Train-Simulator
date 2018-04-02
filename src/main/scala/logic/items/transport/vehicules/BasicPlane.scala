@@ -5,6 +5,7 @@ import logic.world.Company
 import interface.WorldCanvas
 import logic.items.ItemTypes.PlaneType
 import logic.items.transport.facilities.Airport
+import logic.items.transport.vehicules.components.{Carriage, Engine}
 
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node

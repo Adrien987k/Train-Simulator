@@ -1,4 +1,4 @@
-package logic.items.transport.vehicules
+package logic.items.transport.vehicules.components
 
 object VehicleComponentTypes {
 

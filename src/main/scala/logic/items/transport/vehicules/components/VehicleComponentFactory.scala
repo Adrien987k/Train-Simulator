@@ -1,15 +1,16 @@
-package logic.items.transport.vehicules
+package logic.items.transport.vehicules.components
 
 import logic.economy.ResourcesTypes
 import logic.exceptions.AlreadyMaxLevelException
-import logic.items.transport.vehicules.VehicleComponentTypes._
+import logic.items.transport.vehicules.components.VehicleComponentTypes._
+import logic.world.Company
 
 object VehicleComponentFactory {
 
   val dieselEngineEvolutions = Map(
     1 -> List(5.0, 3000.0, 100000.0, 50000.0),
     2 -> List(6.0, 4000.0, 100000.0, 60000.0),
-    3 -> List(20.0, 5000.0, 120000.0, 70000.0)
+    3 -> List(7.0, 5000.0, 120000.0, 70000.0)
   )
 
   val electricEngineEvolutions = Map(
@@ -40,7 +41,6 @@ object VehicleComponentFactory {
 
     val stats = statsOpt.get
 
-    println("EVOLUTION")
     engine.level += 1
     engine.evolve(stats.head, stats(1), stats(2), stats(3))
   }
@@ -57,23 +57,23 @@ object VehicleComponentFactory {
     statsMap.get(level)
   }
 
-  def makeEngine(engineType : VehicleComponentTypes.EngineType) : Engine = {
+  def makeEngine(engineType : VehicleComponentTypes.EngineType, company : Company) : Engine = {
     val stats = getStatsList(engineType, 1).get
 
     engineType match {
-      case DIESEL_ENGINE => new DieselEngine(engineType, stats.head, stats(1), stats(2), stats(3))
-      case ELECTRIC_ENGINE => new ElectricEngine(engineType, stats.head, stats(1), stats(2), stats(3))
-      case KEROSENE_ENGINE => new KeroseneEngine(engineType, stats.head, stats(1), stats(2), stats(3))
+      case DIESEL_ENGINE => new DieselEngine(engineType, company, stats.head, stats(1), stats(2), stats(3))
+      case ELECTRIC_ENGINE => new ElectricEngine(engineType, company, stats.head, stats(1), stats(2), stats(3))
+      case KEROSENE_ENGINE => new KeroseneEngine(engineType, company, stats.head, stats(1), stats(2), stats(3))
     }
   }
 
-  def makePassengerCarriage(maxSpeed : Double, maxWeight : Double, maxCapacity : Int) : Carriage = {
-    new PassengerCarriage(maxSpeed, maxWeight, maxCapacity)
+  def makePassengerCarriage(company : Company, maxSpeed : Double, maxWeight : Double, maxCapacity : Int) : Carriage = {
+    new PassengerCarriage(company, maxSpeed, maxWeight, maxCapacity)
   }
 
   def makeResourceCarriage[R <: ResourcesTypes.ResourceType]
-  (resourceType : ResourcesTypes.ResourceType) : ResourceCarriage[R] = {
-    new ResourceCarriage[R](5.0, 5000.0)
+  (resourceType : ResourcesTypes.ResourceType, company : Company) : ResourceCarriage[R] = {
+    new ResourceCarriage[R](company, 5.0, 5000.0)
   }
 
 }

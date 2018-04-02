@@ -1,12 +1,14 @@
-package logic.items.transport.vehicules
+package logic.items.transport.vehicules.components
 
-import logic.items.transport.vehicules.VehicleComponentTypes.PASSENGER_CARRIAGE
+import logic.items.transport.vehicules.components.VehicleComponentTypes.PASSENGER_CARRIAGE
+import logic.world.Company
 
 class PassengerCarriage
-(maxSpeed : Double,
- maxWeight : Double,
+(override val company : Company,
+ _maxSpeed : Double,
+ _weight : Double,
  var maxCapacity : Int)
-extends Carriage(PASSENGER_CARRIAGE, maxSpeed, maxWeight) {
+extends Carriage(PASSENGER_CARRIAGE, company, _maxSpeed, _weight) {
 
   var nbPassenger = 0
 
@@ -22,9 +24,9 @@ extends Carriage(PASSENGER_CARRIAGE, maxSpeed, maxWeight) {
   }
 
   private def evolve(newMaxSpeed : Double,
-                      newMaxWeight : Double,
-                      newMaxCapacity : Int) : Unit = {
-    super.evolve(newMaxSpeed, newMaxWeight)
+                     newWeight : Double,
+                     newMaxCapacity : Int) : Unit = {
+    super.evolve(newMaxSpeed, newWeight)
 
     maxCapacity = if (newMaxCapacity == NO_CHANGE) maxCapacity else newMaxCapacity
   }

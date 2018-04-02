@@ -1,7 +1,8 @@
-package logic.items.transport.vehicules
+package logic.items.transport.vehicules.components
 
 import logic.exceptions.AlreadyMaxLevelException
-import logic.items.transport.vehicules.VehicleComponentTypes.EngineType
+import logic.items.transport.vehicules.components.VehicleComponentTypes.EngineType
+import logic.world.Company
 
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
@@ -11,13 +12,17 @@ import scalafx.scene.text.{Font, FontWeight}
 
 abstract class Engine
 (val engineType : EngineType,
- maxSpeed : Double,
- maxWeight : Double,
- var maxTractiveEffort : Double,
- var maxFuelLevel : Double)
-  extends VehicleComponent(engineType, maxSpeed, maxWeight) {
+ override val company : Company,
+ _maxSpeed : Double,
+ _weight : Double,
+ private var _maxTractiveEffort : Double,
+ private var _maxFuelLevel : Double)
+  extends VehicleComponent(engineType, company, _maxSpeed, _weight) {
 
   private var _fuelLevel : Double = maxFuelLevel
+
+  def maxTractiveEffort : Double = _maxTractiveEffort
+  def maxFuelLevel : Double = _maxFuelLevel
 
   def fuelLevel : Double = _fuelLevel
 
@@ -29,7 +34,6 @@ abstract class Engine
     _fuelLevel -= consumption(weight)
   }
 
-
   def tractiveEffort(weight : Double) : Double
 
   def consumption(weight : Double) : Double
@@ -40,8 +44,8 @@ abstract class Engine
              newMaxFuelLevel : Double) : Unit = {
     super.evolve(newMaxSpeed, newMaxWeight)
 
-    maxFuelLevel = if (newMaxFuelLevel == NO_CHANGE) maxFuelLevel else newMaxFuelLevel
-    maxTractiveEffort = if (newMaxTractiveEffort == NO_CHANGE) maxTractiveEffort else newMaxTractiveEffort
+    _maxFuelLevel = if (newMaxFuelLevel == NO_CHANGE) maxFuelLevel else newMaxFuelLevel
+    _maxTractiveEffort = if (newMaxTractiveEffort == NO_CHANGE) maxTractiveEffort else newMaxTractiveEffort
   }
 
   override def step(): Boolean = { false }
