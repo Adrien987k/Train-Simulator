@@ -1,9 +1,11 @@
 
 FUTURE
 + Add new Types of vehicle, TF, roads
-+ Evolve buildings system
+  (Trucks/Ships)
 + Design
 
 URGENT
-+ Town/TF/Vehicle evolution
++ Town/TF evolution
++ Display levels
++ Merge ItemType and componentType
 + Path finding
