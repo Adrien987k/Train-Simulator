@@ -1,33 +1,11 @@
 package logic.items.transport.vehicules
 
-import logic.economy.ResourcesTypes
 import logic.items.ItemTypes._
 import logic.items.transport.facilities.{Airport, Station, TransportFacility}
-import logic.items.transport.vehicules.VehicleComponentType._
+import logic.items.transport.vehicules.VehicleComponentTypes._
 import logic.world.Company
 
 import scala.collection.mutable.ListBuffer
-
-private object VehicleComponentFactory {
-
-  def makeEngine(engineType : VehicleComponentType.EngineType) : Engine = {
-    engineType match {
-      case DIESEL_ENGINE => new DieselEngine(engineType, 5.0, 3000.0, 100000.0, 50000.0)
-      case ELECTRIC_ENGINE => new ElectricEngine(engineType, 3.0, 10000.0, 50000.0, 1500.0)
-      case KEROSENE_ENGINE => new KeroseneEngine(engineType, 15.0, 30000.0, 100000.0, 2000000.0)
-    }
-  }
-
-  def makePassengerCarriage(maxSpeed : Double, maxWeight : Double, maxCapacity : Int) : Carriage = {
-    new PassengerCarriage(maxSpeed, maxWeight, maxCapacity)
-  }
-
-  def makeResourceCarriage[R <: ResourcesTypes.ResourceType]
-    (resourceType : ResourcesTypes.ResourceType) : ResourceCarriage[R] = {
-    new ResourceCarriage[R](5.0, 5000.0)
-  }
-
-}
 
 object VehicleFactory {
 

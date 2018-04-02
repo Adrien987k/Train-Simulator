@@ -1,7 +1,7 @@
 package logic.world
 
 import logic.items.ItemTypes._
-import logic.items.transport.vehicules.VehicleComponentType.{DIESEL_ENGINE, ELECTRIC_ENGINE, EngineType, KEROSENE_ENGINE}
+import logic.items.transport.vehicules.VehicleComponentTypes.{DIESEL_ENGINE, ELECTRIC_ENGINE, EngineType, KEROSENE_ENGINE}
 
 object Shop {
 

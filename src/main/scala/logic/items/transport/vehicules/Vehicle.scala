@@ -59,6 +59,7 @@ extends Item(vehicleType, company) with PointUpdatable {
           transportFacility.unload(this)
         } else {
           val speed = currentSpeed()
+          println("SPEED : " + speed)
           pos.x += dir.x * speed
           pos.y += dir.y * speed
 

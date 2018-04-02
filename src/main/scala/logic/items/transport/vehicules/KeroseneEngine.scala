@@ -1,13 +1,13 @@
 package logic.items.transport.vehicules
 
-import logic.items.transport.vehicules.VehicleComponentType.EngineType
+import logic.items.transport.vehicules.VehicleComponentTypes.EngineType
 
 class KeroseneEngine
 (override val engineType : EngineType,
- override val maxSpeed : Double,
- override val maxWeight : Double,
- override val maxTractiveEffort : Double,
- override val maxFuelLevel: Double)
+ maxSpeed : Double,
+ maxWeight : Double,
+ maxTractiveEffort : Double,
+ maxFuelLevel: Double)
   extends Engine(engineType, maxSpeed, maxWeight, maxTractiveEffort, maxFuelLevel) {
 
   override def tractiveEffort(weight: Double): Double = {

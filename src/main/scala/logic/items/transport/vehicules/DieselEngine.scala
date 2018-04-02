@@ -1,19 +1,25 @@
 package logic.items.transport.vehicules
 
-import logic.items.transport.vehicules.VehicleComponentType.EngineType
+import logic.items.transport.vehicules.VehicleComponentTypes.EngineType
 
 class DieselEngine
 (override val engineType : EngineType,
- override val maxSpeed : Double,
- override val maxWeight : Double,
- override val maxTractiveEffort : Double,
- override val maxFuelLevel: Double)
+ maxSpeed : Double,
+ maxWeight : Double,
+ maxTractiveEffort : Double,
+ maxFuelLevel: Double)
   extends Engine(engineType, maxSpeed, maxWeight, maxTractiveEffort, maxFuelLevel) {
 
-  override def tractiveEffort(weight : Double): Double = {
-    if (weight < 2000) return maxSpeed
-    if (weight < 10000) 3.0
-    else 1.5
+  override def tractiveEffort(weight : Double) : Double = {
+    println("W: " + weight)
+    println("MT : " + maxTractiveEffort)
+    println("MS : " + maxSpeed)
+
+    if (weight < maxTractiveEffort / 3) return maxSpeed
+    if (weight < maxTractiveEffort / 2) return maxSpeed / 2
+    if (weight < maxTractiveEffort) return maxSpeed / 4
+
+    maxSpeed / 15
   }
 
   override def consumption(weight : Double) : Double = {

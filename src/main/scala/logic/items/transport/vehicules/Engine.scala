@@ -1,18 +1,21 @@
 package logic.items.transport.vehicules
 
-import logic.items.transport.vehicules.VehicleComponentType.EngineType
+import logic.exceptions.AlreadyMaxLevelException
+import logic.items.transport.vehicules.VehicleComponentTypes.EngineType
 
 import scalafx.scene.Node
-import scalafx.scene.control.Label
+import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.VBox
+import scalafx.scene.paint.Color
+import scalafx.scene.text.{Font, FontWeight}
 
 abstract class Engine
 (val engineType : EngineType,
- val maxSpeed : Double,
- val maxWeight : Double,
- val maxTractiveEffort : Double,
- val maxFuelLevel : Double)
-  extends VehicleComponent(maxSpeed, maxWeight) {
+ maxSpeed : Double,
+ maxWeight : Double,
+ var maxTractiveEffort : Double,
+ var maxFuelLevel : Double)
+  extends VehicleComponent(engineType, maxSpeed, maxWeight) {
 
   private var _fuelLevel : Double = maxFuelLevel
 
@@ -31,6 +34,16 @@ abstract class Engine
 
   def consumption(weight : Double) : Double
 
+  def evolve(newMaxSpeed : Double,
+             newMaxWeight : Double,
+             newMaxTractiveEffort : Double,
+             newMaxFuelLevel : Double) : Unit = {
+    super.evolve(newMaxSpeed, newMaxWeight)
+
+    maxFuelLevel = if (newMaxFuelLevel == NO_CHANGE) maxFuelLevel else newMaxFuelLevel
+    maxTractiveEffort = if (newMaxTractiveEffort == NO_CHANGE) maxTractiveEffort else newMaxTractiveEffort
+  }
+
   override def step(): Boolean = { false }
 
   val panel = new VBox()
@@ -38,9 +51,24 @@ abstract class Engine
   val engineLabel = new Label("=== Engine ===")
   val fuelLevelLabel = new Label()
 
+  val evolveButton = new Button("Evolve")
+  evolveButton.font = Font.font(null, FontWeight.ExtraBold, 19)
+  evolveButton.textFill = Color.Green
+
+  val warningLabel = new Label()
+
+  evolveButton.onAction = _ => {
+    try {
+      evolve()
+    } catch {
+      case e : AlreadyMaxLevelException =>
+        warningLabel.text = e.getMessage
+    }
+  }
+
   labels = List(engineLabel, fuelLevelLabel)
 
-  panel.children = labels
+  panel.children = labels ++ List(evolveButton, warningLabel)
 
   styleLabels()
 

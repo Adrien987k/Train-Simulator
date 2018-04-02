@@ -1,9 +1,11 @@
 package logic.items.transport.vehicules
 
-object VehicleComponentType {
+object VehicleComponentTypes {
 
-  abstract class CarriageType {}
-  abstract class EngineType {}
+  abstract class VehicleComponentType {}
+
+  abstract class CarriageType extends VehicleComponentType {}
+  abstract class EngineType extends VehicleComponentType {}
 
   case object RESOURCE_CARRIAGE extends CarriageType
   case object PASSENGER_CARRIAGE extends CarriageType

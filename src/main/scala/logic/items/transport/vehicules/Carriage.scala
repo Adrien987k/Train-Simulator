@@ -1,11 +1,14 @@
 package logic.items.transport.vehicules
+import logic.items.transport.vehicules.VehicleComponentTypes.CarriageType
+
 import scalafx.scene.Node
 import scalafx.scene.layout.BorderPane
 
 abstract class Carriage
-(val maxSpeed : Double,
- val maxWeight : Double)
-  extends VehicleComponent(maxSpeed, maxWeight) {
+(val carriageType : CarriageType,
+ maxSpeed : Double,
+ maxWeight : Double)
+  extends VehicleComponent(carriageType, maxSpeed, maxWeight) {
 
   override def step() : Boolean = { false }
 
