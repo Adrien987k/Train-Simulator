@@ -2,6 +2,7 @@ package logic.items.transport.vehicules.components
 
 import logic.economy.ResourcesTypes
 import logic.exceptions.AlreadyMaxLevelException
+import logic.items.ItemTypes.VehicleType
 import logic.items.transport.vehicules.components.VehicleComponentTypes._
 import logic.world.Company
 
@@ -23,6 +24,18 @@ object VehicleComponentFactory {
     1 -> List(15.0, 30000.0, 100000.0, 2000000.0),
     2 -> List(20.0, 50000.0, 150000.0, 3000000.0),
     3 -> List(25.0, 75000.0, 200000.0, 3000000.0)
+  )
+
+  val passengerCarriageEvolutions = Map(
+    1 -> List(),
+    2 -> List(),
+    3 -> List()
+  )
+
+  val resourceCarriageEvolutions = Map(
+    1 -> List(),
+    2 -> List(),
+    3 -> List()
   )
 
   def evolve(vehicleComponent : VehicleComponent) : Unit = {
@@ -67,13 +80,13 @@ object VehicleComponentFactory {
     }
   }
 
-  def makePassengerCarriage(company : Company, maxSpeed : Double, maxWeight : Double, maxCapacity : Int) : Carriage = {
+  def makePassengerCarriage(vehicleType : VehicleType, company : Company, maxSpeed : Double, maxWeight : Double, maxCapacity : Int) : Carriage = {
     new PassengerCarriage(company, maxSpeed, maxWeight, maxCapacity)
   }
 
   def makeResourceCarriage[R <: ResourcesTypes.ResourceType]
   (resourceType : ResourcesTypes.ResourceType, company : Company) : ResourceCarriage[R] = {
-    new ResourceCarriage[R](company, 5.0, 5000.0)
+    new ResourceCarriage[R](company, 5.0, 5000.0, 10000.0)
   }
 
 }

@@ -52,7 +52,8 @@ abstract class Engine
 
   val panel = new VBox()
 
-  val engineLabel = new Label("=== Engine ===")
+  val engineLabel = new Label("=== " + engineType.name + " ===")
+  val levelLabel = new Label()
   val fuelLevelLabel = new Label()
 
   val evolveButton = new Button("Evolve")
@@ -66,17 +67,24 @@ abstract class Engine
       evolve()
     } catch {
       case e : AlreadyMaxLevelException =>
-        warningLabel.text = e.getMessage
+        if (!levelIsMax) {
+          warningLabel.text = e.getMessage
+          warningLabel.font = Font.font(null, FontWeight.Bold, 18)
+
+          if (panel.children.contains(evolveButton))
+            panel.children.remove(evolveButton)
+        }
     }
   }
 
-  labels = List(engineLabel, fuelLevelLabel)
+  labels = List(engineLabel, levelLabel, fuelLevelLabel)
 
   panel.children = labels ++ List(evolveButton, warningLabel)
 
   styleLabels()
 
   override def propertyPane() : Node = {
+    levelLabel.text = "Level : " + level
     fuelLevelLabel.text = "Fuel level : " + fuelLevel
 
     panel

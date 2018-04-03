@@ -9,8 +9,11 @@ import scala.collection.mutable.ListBuffer
 class ResourceCarriage[R <: ResourceType]
 (override val company : Company,
   _maxSpeed : Double,
- _weight : Double)
+ _weight : Double,
+ private var _weightCapacity : Double)
   extends Carriage(RESOURCE_CARRIAGE, company, _maxSpeed, _weight) {
+
+  def weightCapacity : Double = _weightCapacity
 
   var resources : ListBuffer[R] = ListBuffer.empty
 

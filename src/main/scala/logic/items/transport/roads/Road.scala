@@ -47,4 +47,8 @@ abstract class Road
   def addVehicle(vehicle : Vehicle) : Unit = vehicles += vehicle
   def removeVehicle(vehicle: Vehicle) : Unit = vehicles -= vehicle
 
+  override def evolve() : Unit = {
+    //TODO evolve rail
+  }
+
 }

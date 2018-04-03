@@ -19,7 +19,7 @@ abstract class Vehicle
  val engine : Engine,
  val carriages : ListBuffer[Carriage],
  var currentTransportFacility : Option[TransportFacility])
-extends Item(vehicleType, company) with PointUpdatable {
+  extends Item(vehicleType, company) with PointUpdatable {
 
   updateRate(UpdateRate.VEHICLE_UPDATE)
 
@@ -99,7 +99,6 @@ extends Item(vehicleType, company) with PointUpdatable {
 
   def crash() : Unit = {
     //TODO GUI.crash(pos)
-    println("CRASH")
 
     _crashed = true
   }
@@ -145,6 +144,10 @@ extends Item(vehicleType, company) with PointUpdatable {
 
   def addCarriage(carriage : Carriage) : Unit = {
     carriages += carriage
+  }
+
+  override def evolve() : Unit = {
+    engine.evolve()
   }
 
   /**
