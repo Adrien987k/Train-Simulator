@@ -5,28 +5,27 @@ import logic.world.towns.Town
 
 import scalafx.scene.paint.Color
 
-class ItemStyle(val color : Color) {}
-
-class VehicleStyle(override val color : Color, val radius : Int)
-  extends ItemStyle(color)
-{
-
-}
-
-class TownStyle(override val color : Color, val radius : Int)
-  extends ItemStyle(color)
-{
-
-}
-
-class RoadStyle(override val color : Color, val width : Int, val empty : Boolean = false)
-  extends ItemStyle(color)
-{
-
-}
-
-
 object ItemsStyle {
+
+  class ItemStyle(val color : Color) {}
+
+  class VehicleStyle(override val color : Color, val radius : Int)
+    extends ItemStyle(color)
+  {
+
+  }
+
+  class TownStyle(override val color : Color, val radius : Int)
+    extends ItemStyle(color)
+  {
+
+  }
+
+  class RoadStyle(override val color : Color, val width : Int, val empty : Boolean = false)
+    extends ItemStyle(color)
+  {
+
+  }
 
   def ofVehicle(vehicleType : VehicleType) : VehicleStyle = {
     vehicleType match {

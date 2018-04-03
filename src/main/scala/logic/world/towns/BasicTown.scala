@@ -1,10 +1,13 @@
 package logic.world.towns
 
+import logic.exceptions.AlreadyMaxLevelException
 import utils.Pos
 
 import scalafx.scene.Node
-import scalafx.scene.control.Label
+import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.{BorderPane, VBox}
+import scalafx.scene.paint.Color
+import scalafx.scene.text.{Font, FontWeight}
 
 class BasicTown(pos : Pos, name : String) extends Town(pos, name) {
 

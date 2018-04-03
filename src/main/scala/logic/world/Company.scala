@@ -1,16 +1,17 @@
 package logic.world
 
 import logic.exceptions.CannotBuildItemException
-import logic.items.transport.facilities.{Airport, Station, TransportFacility}
-import logic.items.transport.roads.{BasicLine, BasicRail, Road, RoadFactory}
+import logic.items.transport.facilities.{Airport, Station, TransportFacility, TransportFacilityFactory}
+import logic.items.transport.roads.{Road, RoadFactory}
 import logic.items.transport.vehicules.Vehicle
 import logic.world.towns.Town
 import interface.{GlobalInformationPanel, OneVehicleInformationPanel, WorldCanvas}
 import logic.Updatable
+import logic.items.ItemTypes
 import logic.items.ItemTypes._
-import logic.items.transport.vehicules.components.VehicleComponentTypes.VehicleComponentType
 import utils.Pos
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scalafx.collections.ObservableBuffer
 
@@ -154,17 +155,22 @@ abstract class Company(world : World) {
     money -= price
   }
 
-  def canBuyEvolution(vehicleComponentType : VehicleComponentType, level : Int) : Boolean = {
-    val price = Shop.evolutionPrice(vehicleComponentType, level)
+  def canBuyEvolution(itemType : ItemType, level : Int) : Boolean = {
+    val price = Shop.evolutionPrice(itemType, level)
     money - price >= 0
   }
 
-  def buyEvolution(vehicleComponentType : VehicleComponentType, level : Int) : Unit = {
-    val price = Shop.evolutionPrice(vehicleComponentType, level)
+  def buyEvolution(itemType : ItemType, level : Int) : Unit = {
+    val price = Shop.evolutionPrice(itemType, level)
     if (money - price < 0)
-      throw new CannotBuildItemException("Not enough money to build evolution")
+      throw new CannotBuildItemException("Not enough money to buy " + itemType.name + " evolution")
 
     money -= price
+  }
+
+  def CanBuyInfrastructure(itemType : ItemType, level : Int) : Boolean = {
+    val price = Shop.evolutionPrice(itemType, level)
+    money - price >= 0
   }
 
   /**
@@ -191,12 +197,49 @@ abstract class Company(world : World) {
   /**
     * @return The list of all airport of this company
     */
-  def getAirports : ListBuffer[Airport] = {
+  def getAirports : ListBuffer[Airport] =
     transportFacilities.filter(_.isInstanceOf[Airport]).asInstanceOf[ListBuffer[Airport]]
-  }
+
+  def getStations : ListBuffer[Station] =
+    transportFacilities.filter(_.isInstanceOf[Station]).asInstanceOf[ListBuffer[Station]]
 
   def indicateNextObjective(vehicle : Vehicle) : Unit = {
     if (vehicle.destination.isEmpty) return
+
+    val startTransportFacility = vehicle.currentTransportFacility match {
+      case Some(transportFacility) => transportFacility
+
+      case None => return
+    }
+
+    val transportFacilities = ItemTypes.transportFacilityFromVehicle(vehicle.vehicleType) match {
+      case AIRPORT => getAirports
+      case STATION => getStations
+    }
+
+    //TODO Finish Create node
+    /*
+    var copy = ListBuffer.empty
+    transportFacilities.copyToBuffer(copy)
+    val visited = copy.map(e => false -> e).toMap
+
+    copy = ListBuffer.empty
+    transportFacilities.copyToBuffer(copy)
+    */
+
+    val queue = mutable.Queue.empty[TransportFacility]
+
+    queue += startTransportFacility
+
+    while (queue.nonEmpty) {
+      val currentTF = queue.dequeue()
+
+      val neighbours = currentTF.neighbours()
+
+      neighbours.foreach(tf => {
+
+      })
+    }
 
     //TODO A* + set the next station to this vehicle
   }

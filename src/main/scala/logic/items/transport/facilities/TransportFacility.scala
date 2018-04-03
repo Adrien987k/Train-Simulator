@@ -15,26 +15,52 @@ import scala.collection.mutable.ListBuffer
 abstract class TransportFacility
 (val transportFacilityType: TransportFacilityType,
  override val company : Company,
- val town : Town)
+ val town : Town,
+ private var _capacity : Int)
   extends Item(transportFacilityType, company) with PointUpdatable {
 
   updateRate(1)
   pos = town.pos
 
-  val DEFAULT_CAPACITY = 5
+  def capacity : Int = _capacity
 
-  var capacity : Int = DEFAULT_CAPACITY
-
-  var waitingPassengers : mutable.HashMap[TransportFacility, Int] = mutable.HashMap.empty
+  private var waitingPassengers : mutable.HashMap[TransportFacility, Int] = mutable.HashMap.empty
 
   private val vehicles : ListBuffer[Vehicle] = ListBuffer.empty
   private val roads : ListBuffer[Road] = ListBuffer.empty
+
+  /**
+    * @return True if vehicle capacity is reached
+    */
+  def isFull : Boolean = vehicles.lengthCompare(capacity) == 0
+
+  def nbNeighbours() : Int = roads.size
+
+  /**
+    * @return The number of available vehicles
+    */
+  def availableVehicles : Int = vehicles.size
 
   def addRoad(road : Road) : Unit = {
     roads += road
   }
 
-  def buildVehicle(vehicleType : VehicleType) : Unit = {
+  override def step() : Boolean = {
+    if(!super.step()) return false
+
+    for ((transportFacility, nbPassenger) <- waitingPassengers) {
+      trySendPassenger(transportFacility, nbPassenger)
+    }
+
+    true
+  }
+
+  /**
+    * Build a new vehicle of type [vehicleType]
+    *
+    * @param vehicleType the type of vehicle to build
+    */
+  protected def buildVehicle(vehicleType : VehicleType) : Unit = {
     if (isFull) throw new CannotBuildItemException("This facility is full")
 
     val vehicle = VehicleFactory.makeVehicle(vehicleType, company, this)
@@ -43,10 +69,10 @@ abstract class TransportFacility
     vehicles += vehicle
   }
 
-  def isFull : Boolean = vehicles.lengthCompare(capacity) == 0
-  def availableVehicles : Int = vehicles.size
-
-  def nbWaitingPassengers(): Int = {
+  /**
+    * @return Number of passenger waiting for a specific destination
+    */
+  def nbWaitingPassengers() : Int = {
     waitingPassengers.foldLeft(0) {
       case (total, (_, nb)) => total + nb
     }
@@ -64,17 +90,6 @@ abstract class TransportFacility
     neighbourList
   }
 
-  def nbNeighbours() : Int = roads.size
-
-  override def step() : Boolean = {
-    if(!super.step()) return false
-
-    for ((transportFacility, nbPassenger) <- waitingPassengers) {
-      sendPassenger(transportFacility, nbPassenger)
-    }
-
-    true
-  }
 
   /**
     * Try to send @nbPassenger to @objective
@@ -82,45 +97,55 @@ abstract class TransportFacility
     * @param objective The transport facility objective
     * @param nbPassenger The number of passenger to send
     */
-  def sendPassenger(objective : TransportFacility, nbPassenger : Int) : Unit = {
+  def trySendPassenger(objective : TransportFacility, nbPassenger : Int) : Unit = {
     try {
-      if (vehicles.isEmpty) {
-        throw new CannotSendPassengerException(nbPassenger)
-      }
-
-      getRoadTo(objective) match {
-        case Some(road) =>
-          if (road.nbVehicle == road.DEFAULT_CAPACITY) {
-            throw new CannotSendPassengerException(nbPassenger)
-          }
-
-          val vehicleOpt = availableVehicle()
-          if (vehicleOpt.isEmpty)
-            throw new CannotSendPassengerException(nbPassenger)
-
-          val vehicle = vehicleOpt.get
-
-          val loadedPassenger = load(vehicle, objective, nbPassenger)
-          try {
-            vehicle.putOnRoad(road)
-          } catch {
-            case ImpossibleActionException(_) =>
-              unload(vehicle)
-              throw new CannotSendPassengerException(nbPassenger)
-          }
-          company.money += loadedPassenger * road.length * company.ticketPricePerKm
-
-        case None =>
-          throw new CannotSendPassengerException(nbPassenger)
-      }
+      sendPassenger(objective, nbPassenger)
     } catch {
-      case e : CannotSendPassengerException =>
-        val nbPassenger = Integer.parseInt(e.getMessage)
-        waitingPassengers += ((objective, nbPassenger))
-        return
+    case e : CannotSendPassengerException =>
+      val newWaitingPassengers = Integer.parseInt(e.getMessage)
+      waitingPassengers += ((objective, newWaitingPassengers))
+      return
+  }
+
+  waitingPassengers -= objective
+  }
+
+  /**
+    * Send @nbPassenger to @objective
+    *
+    * @param objective The transport facility objective
+    * @param nbPassenger The number of passenger to send
+    */
+  def sendPassenger(objective : TransportFacility, nbPassenger : Int) : Unit = {
+    if (vehicles.isEmpty) {
+      throw new CannotSendPassengerException(nbPassenger)
     }
 
-    waitingPassengers -= objective
+    getRoadTo(objective) match {
+      case Some(road) =>
+        if (road.nbVehicle == road.DEFAULT_CAPACITY) {
+          throw new CannotSendPassengerException(nbPassenger)
+        }
+
+        val vehicleOpt = availableVehicle()
+        if (vehicleOpt.isEmpty)
+          throw new CannotSendPassengerException(nbPassenger)
+
+        val vehicle = vehicleOpt.get
+
+        val loadedPassenger = load(vehicle, objective, nbPassenger)
+        try {
+          vehicle.putOnRoad(road)
+        } catch {
+          case ImpossibleActionException(_) =>
+            unload(vehicle)
+            throw new CannotSendPassengerException(nbPassenger)
+        }
+        company.money += loadedPassenger * road.length * company.ticketPricePerKm
+
+      case None =>
+        throw new CannotSendPassengerException(nbPassenger)
+    }
   }
 
   /**
@@ -172,8 +197,17 @@ abstract class TransportFacility
     vehicles += vehicle
   }
 
+  /**
+    * Give +2 capacity to this station
+    */
   override def evolve() : Unit = {
-    //TODO evolve
+    if (!company.canBuyEvolution(transportFacilityType, level + 1))
+      throw new CannotBuildItemException("Not enough money to evolve" + transportFacilityType.name)
+
+    _capacity += level
+    level += 1
+
+    company.buyEvolution(transportFacilityType, level + 1)
   }
 
 }

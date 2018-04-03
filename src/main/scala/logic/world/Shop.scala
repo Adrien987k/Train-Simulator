@@ -25,11 +25,16 @@ object Shop {
     }
   }
 
-  def evolutionPrice(vehicleComponentType : VehicleComponentType, level : Int) : Double = {
-    vehicleComponentType match {
+  def evolutionPrice(itemType : ItemType, level : Int) : Double = {
+    itemType match {
       case _ : EngineType => level * 100
 
-      case _  => 0
+      case _ : PassengerCarriageType => level * 50
+
+      case AIRPORT => level * 1000
+      case STATION => level * 400
+
+      case _ => 0
     }
   }
 

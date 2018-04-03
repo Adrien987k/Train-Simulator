@@ -1,6 +1,6 @@
 package logic.items.transport.vehicules.components
 
-import logic.items.transport.vehicules.components.VehicleComponentTypes.PASSENGER_CARRIAGE
+import logic.items.transport.vehicules.components.VehicleComponentTypes.TRAIN_PASSENGER_CARRIAGE
 import logic.world.Company
 
 class PassengerCarriage
@@ -8,7 +8,7 @@ class PassengerCarriage
  _maxSpeed : Double,
  _weight : Double,
  var maxCapacity : Int)
-extends Carriage(PASSENGER_CARRIAGE, company, _maxSpeed, _weight) {
+extends Carriage(TRAIN_PASSENGER_CARRIAGE, company, _maxSpeed, _weight) {
 
   var nbPassenger = 0
 
@@ -23,7 +23,7 @@ extends Carriage(PASSENGER_CARRIAGE, company, _maxSpeed, _weight) {
     tempPassenger
   }
 
-  private def evolve(newMaxSpeed : Double,
+  def evolve(newMaxSpeed : Double,
                      newWeight : Double,
                      newMaxCapacity : Int) : Unit = {
     super.evolve(newMaxSpeed, newWeight)

@@ -1,9 +1,14 @@
 
 FUTURE
-+ Add new Types of vehicle, TF, roads
-  (Trucks/Ships)
 + Design
 
++ Improve Town/TF/Carriage evolutions
+  - Refactor code
+  - Object Evolution and its hierarchy
+  - Better display and evolution for TF/Roads
+  - Evolution for Resource Carriage
+
 URGENT
-+ Town/TF/Carriage evolutions
 + Path finding
++ Add Trucks / Ships
++ Better price / payment

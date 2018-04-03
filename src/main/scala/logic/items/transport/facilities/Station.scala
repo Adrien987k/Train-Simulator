@@ -9,10 +9,11 @@ import logic.world.towns.Town
 abstract class Station
 (override val transportFacilityType : TransportFacilityType,
  override val company : Company,
- override val town : Town)
-  extends TransportFacility(transportFacilityType, company, town) with Updatable {
+ override val town : Town,
+ _capacity : Int)
+  extends TransportFacility(transportFacilityType, company, town, _capacity) with Updatable {
 
-  def addRail(rail : Rail): Unit = {
+  def addRail(rail : Rail) : Unit = {
     super.addRoad(rail)
   }
 

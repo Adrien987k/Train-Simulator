@@ -93,11 +93,11 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     vehicleType match {
       case DIESEL_TRAIN | ELECTRIC_TRAIN =>
         if (!hasStation) throw new CannotBuildItemException("This town does not have a Station")
-        station.get.buildVehicle(vehicleType)
+        station.get.buildTrain(vehicleType.asInstanceOf[TrainType])
 
       case BOEING | CONCORDE =>
         if (!hasAirport) throw new CannotBuildItemException("This town does not have an airport")
-        airport.get.buildVehicle(vehicleType)
+        airport.get.buildPlane(vehicleType.asInstanceOf[PlaneType])
     }
   }
 
@@ -131,7 +131,7 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
   }
 
   private def sendPeople(from : Option[TransportFacility], to : TransportFacility, nbPassenger : Int) : Unit = {
-    from.foreach(_.sendPassenger(to, nbPassenger))
+    from.foreach(_.trySendPassenger(to, nbPassenger))
   }
 
   /**

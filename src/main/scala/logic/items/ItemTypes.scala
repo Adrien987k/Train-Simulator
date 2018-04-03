@@ -32,4 +32,11 @@ object ItemTypes {
     List(BOEING, CONCORDE, DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, STATION, AIRPORT)
   }
 
+  def transportFacilityFromVehicle(vehicleType : VehicleType) : TransportFacilityType = {
+    vehicleType match {
+      case _ : TrainType => STATION
+      case _ : PlaneType => AIRPORT
+    }
+  }
+
 }

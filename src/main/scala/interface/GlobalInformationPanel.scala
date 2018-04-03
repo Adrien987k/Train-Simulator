@@ -17,7 +17,7 @@ object GlobalInformationPanel extends GUIComponent {
   val moneyLabel = new Label("money : 0")
   val ticketPriceLabel = new Label("Ticket price per Km : ")
   val warningLabel = new Label()
-  val nbTrainLabel = new Label("trains : 0")
+  val nbTrainLabel = new Label("Total vehicles : 0")
   val totalPopulationLabel = new Label
 
   val labels : List[Label] = List(mainLabel, timeLabel, moneyLabel, ticketPriceLabel, nbTrainLabel, totalPopulationLabel)

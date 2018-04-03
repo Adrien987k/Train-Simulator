@@ -20,22 +20,22 @@ object VehicleFactory {
       case DIESEL_TRAIN =>
         new BasicTrain(DIESEL_TRAIN, company, transportFacility.asInstanceOf[Station],
           VehicleComponentFactory.makeEngine(DIESEL_ENGINE, company),
-          ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company, 5.0, 1000.0, 500)))
+          ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company)))
 
       case ELECTRIC_TRAIN =>
         new BasicTrain(ELECTRIC_TRAIN, company, transportFacility.asInstanceOf[Station],
         VehicleComponentFactory.makeEngine(ELECTRIC_ENGINE, company),
-        ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company, 5.0, 700.0, 800)))
+        ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company)))
 
       case BOEING =>
         new BasicPlane(BOEING, company, transportFacility.asInstanceOf[Airport],
           VehicleComponentFactory.makeEngine(KEROSENE_ENGINE, company),
-          ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company, 15.0, 2500.0, 300)))
+          ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company)))
 
       case CONCORDE =>
         new BasicPlane(CONCORDE, company, transportFacility.asInstanceOf[Airport],
           VehicleComponentFactory.makeEngine(KEROSENE_ENGINE, company),
-          ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company, 20.0, 1500.0, 100)))
+          ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company)))
     }
   }
 
