@@ -1,7 +1,7 @@
 package logic.world
 
 import logic.exceptions.CannotBuildItemException
-import logic.items.transport.facilities.{Airport, Station, TransportFacility, TransportFacilityFactory}
+import logic.items.transport.facilities.{Airport, Station, TransportFacility}
 import logic.items.transport.roads.{Road, RoadFactory}
 import logic.items.transport.vehicules.Vehicle
 import logic.world.towns.Town
@@ -14,6 +14,8 @@ import utils.Pos
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scalafx.collections.ObservableBuffer
+
+import scala.math.Ordering.Implicits._
 
 abstract class Company(world : World) {
 
@@ -200,11 +202,26 @@ abstract class Company(world : World) {
   def getAirports : ListBuffer[Airport] =
     transportFacilities.filter(_.isInstanceOf[Airport]).asInstanceOf[ListBuffer[Airport]]
 
+  /**
+    * @return The list of all stations of this company
+    */
   def getStations : ListBuffer[Station] =
     transportFacilities.filter(_.isInstanceOf[Station]).asInstanceOf[ListBuffer[Station]]
 
+
+  /**
+    * Found the shortest path between [vehicle] current transport facility
+    * and destination and set the appropriate goal transport facility
+    * (Goal transport facility is the next facility to reach in one step)
+    *
+    * Don't do anything if [vehicle] does not have a destination or a current station
+    *
+    * @param vehicle The vehicle to set goal transport facility
+    */
   def indicateNextObjective(vehicle : Vehicle) : Unit = {
     if (vehicle.destination.isEmpty) return
+
+    val destination = vehicle.destination.get
 
     val startTransportFacility = vehicle.currentTransportFacility match {
       case Some(transportFacility) => transportFacility
@@ -217,31 +234,67 @@ abstract class Company(world : World) {
       case STATION => getStations
     }
 
-    //TODO Finish Create node
-    /*
-    var copy = ListBuffer.empty
-    transportFacilities.copyToBuffer(copy)
-    val visited = copy.map(e => false -> e).toMap
+    val nodes = new mutable.HashMap[TransportFacility, Node]
+    transportFacilities.foreach(tf =>
+      nodes += ((tf, new Node(tf))))
 
-    copy = ListBuffer.empty
-    transportFacilities.copyToBuffer(copy)
-    */
+    val queue : ListBuffer[Node] = new ListBuffer[Node]()
 
-    val queue = mutable.Queue.empty[TransportFacility]
+    val startNode = nodes(startTransportFacility)
 
-    queue += startTransportFacility
+    nodes.foreach(c => {
+      queue += c._2
+    })
+
+    startNode.dist = 0.0
 
     while (queue.nonEmpty) {
-      val currentTF = queue.dequeue()
+      val currentNode = queue.foldLeft(queue.head)((acc, node) => if (node.dist < acc.dist) node else acc)
+      queue -= currentNode
 
-      val neighbours = currentTF.neighbours()
-
+      val neighbours = currentNode.transportFacility.neighbours()
       neighbours.foreach(tf => {
+        val neighbourNode = nodes(tf)
+
+        val roadOpt = tf.getRoadTo(currentNode.transportFacility)
+        val road = roadOpt match {
+          case Some(r) => r
+
+          case None =>
+            vehicle.goalTransportFacility = None
+
+            return
+        }
+
+        if (neighbourNode.dist > currentNode.dist + road.length) {
+          neighbourNode.dist = currentNode.dist + road.length
+          neighbourNode.prec = currentNode
+        }
 
       })
     }
 
-    //TODO A* + set the next station to this vehicle
+    val path : ListBuffer[Node] = ListBuffer.empty
+
+    var destinationNode = nodes(destination)
+
+    while (destinationNode != null) {
+      path += destinationNode
+      destinationNode = destinationNode.prec
+    }
+
+    if (path.lengthCompare(1) > 0) {
+      path.remove(path.size - 1)
+      vehicle.goalTransportFacility = None
+      vehicle.setObjective(path.last.transportFacility)
+    }
+  }
+
+  private class Node(val transportFacility : TransportFacility) {
+    var dist : Double = Double.MaxValue
+    var visited : Boolean = false
+
+    var prec : Node = _
   }
 
 }

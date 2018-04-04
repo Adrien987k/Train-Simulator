@@ -1,5 +1,7 @@
 package logic.items.transport.vehicules
 
+import game.Game
+import interface.{ItemsButtonBar, WorldCanvas}
 import logic.exceptions.ImpossibleActionException
 import logic.{PointUpdatable, UpdateRate}
 import logic.items.Item
@@ -12,6 +14,10 @@ import logic.world.towns.Town
 import utils.{Dir, Pos}
 
 import scala.collection.mutable.ListBuffer
+import scalafx.scene.Node
+import scalafx.scene.control.{Button, Label}
+import scalafx.scene.layout.{BorderPane, VBox}
+import scalafx.scene.text.{Font, FontWeight}
 
 abstract class Vehicle
 (val vehicleType : VehicleType,
@@ -47,17 +53,17 @@ abstract class Vehicle
 
     if (crashed) return false
 
+    if (currentRoad.isEmpty) return false
+
     goalTransportFacility match {
       case Some(transportFacility) =>
         if (pos.inRange(transportFacility.pos, 10)) {
 
-          if (destination.nonEmpty && transportFacility == destination.get)
-            destination = None
-
-          company.refillFuel(this)
-
           removeFromRoad()
+
+          println("step goal TF : " + transportFacility.town.name)
           transportFacility.unload(this)
+
         } else {
           val speed = currentSpeed()
           pos.x += dir.x * speed
@@ -104,6 +110,7 @@ abstract class Vehicle
 
   def setObjective(transportFacility : TransportFacility) : Unit = {
     if (goalTransportFacility.nonEmpty) return
+    println("YEAD")
 
     goalTransportFacility = Some(transportFacility)
 
@@ -128,6 +135,8 @@ abstract class Vehicle
       case None =>
         currentTransportFacility = None
         road.addVehicle(this)
+
+        println("PUT ON ROAD SUCCESS")
         currentRoad = Some(road)
     }
   }
@@ -205,6 +214,74 @@ abstract class Vehicle
         case _ => total
       }
     })
+  }
+
+  val pane = new BorderPane
+
+  val panel = new VBox()
+
+  val typeLabel = new Label(vehicleType.name)
+  val speedLabel = new Label()
+  val maxPassengerLabel = new Label()
+  val nbPassengerLabel = new Label()
+  val posLabel = new Label()
+  val goalStationLabel = new Label()
+  val destinationLabel = new Label()
+
+  labels = List(typeLabel,
+    speedLabel,
+    maxPassengerLabel,
+    nbPassengerLabel,
+    posLabel,
+    goalStationLabel,
+    destinationLabel)
+
+  panel.children = labels
+
+  styleLabels()
+
+  pane.top = panel
+
+  val chooseDestPanel = new Button("Choose destination")
+
+  override def propertyPane() : Node = {
+    typeLabel.text = vehicleType.name
+    speedLabel.text = "Max Speed : " + engine.maxSpeed
+    maxPassengerLabel.text = "Max passengers : " + passengerCapacity
+    nbPassengerLabel.text = "Passengers : " + nbPassenger
+    posLabel.text = "Position : " + pos
+
+    if (goalTransportFacility.nonEmpty) {
+      goalStationLabel.text = "Next goal : " + goalTransportFacility.get.town.name
+
+      if (!panel.children.contains(goalStationLabel))
+        panel.children.add(goalStationLabel)
+    }
+
+    if (destination.nonEmpty) {
+      destinationLabel.text = "Destination : " + destination.get.town.name
+
+      if (!panel.children.contains(destinationLabel))
+        panel.children.add(destinationLabel)
+    } else {
+      destinationLabel.text = ""
+    }
+
+    chooseDestPanel.font = Font.font(null, FontWeight.Bold, 18)
+
+    chooseDestPanel.onAction = _ => {
+      if (!ItemsButtonBar.buildMode) {
+        Game.world.company.selectVehicle(this)
+        WorldCanvas.activeDestinationChoice()
+      }
+    }
+
+    if (!panel.children.contains(chooseDestPanel))
+      panel.children.add(chooseDestPanel)
+
+    pane.center = engine.propertyPane()
+
+    pane
   }
 
 }

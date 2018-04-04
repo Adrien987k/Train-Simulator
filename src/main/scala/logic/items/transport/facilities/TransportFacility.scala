@@ -29,6 +29,8 @@ abstract class TransportFacility
   private val vehicles : ListBuffer[Vehicle] = ListBuffer.empty
   private val roads : ListBuffer[Road] = ListBuffer.empty
 
+  private val waitingVehicles : ListBuffer[Vehicle] = ListBuffer.empty
+
   /**
     * @return True if vehicle capacity is reached
     */
@@ -51,6 +53,15 @@ abstract class TransportFacility
     for ((transportFacility, nbPassenger) <- waitingPassengers) {
       trySendPassenger(transportFacility, nbPassenger)
     }
+
+    vehicles.foreach(vehicle => {
+      if (vehicle.destination.nonEmpty && !waitingVehicles.contains(vehicle))
+        waitingVehicles += vehicle
+    })
+
+    waitingVehicles.foreach(vehicle => {
+      sendToDestination(vehicle)
+    })
 
     true
   }
@@ -101,13 +112,13 @@ abstract class TransportFacility
     try {
       sendPassenger(objective, nbPassenger)
     } catch {
-    case e : CannotSendPassengerException =>
-      val newWaitingPassengers = Integer.parseInt(e.getMessage)
-      waitingPassengers += ((objective, newWaitingPassengers))
-      return
-  }
+      case e : CannotSendPassengerException =>
+        val newWaitingPassengers = Integer.parseInt(e.getMessage)
+        waitingPassengers += ((objective, newWaitingPassengers))
+        return
+    }
 
-  waitingPassengers -= objective
+    waitingPassengers -= objective
   }
 
   /**
@@ -133,15 +144,15 @@ abstract class TransportFacility
 
         val vehicle = vehicleOpt.get
 
-        val loadedPassenger = load(vehicle, objective, nbPassenger)
+        load(vehicle, objective, nbPassenger)
+
         try {
-          vehicle.putOnRoad(road)
+          putOnRoad(vehicle, road)
         } catch {
           case ImpossibleActionException(_) =>
             unload(vehicle)
             throw new CannotSendPassengerException(nbPassenger)
         }
-        company.money += loadedPassenger * road.length * company.ticketPricePerKm
 
       case None =>
         throw new CannotSendPassengerException(nbPassenger)
@@ -189,12 +200,75 @@ abstract class TransportFacility
   /**
     * @param vehicle The vehicle to unload
     */
-  def unload(vehicle: Vehicle) : Unit = {
+  def unload(vehicle : Vehicle) : Unit = {
+    vehicle.currentTransportFacility = Some(this)
+
+    vehicle.destination match {
+      case Some(transportFacility) =>
+        if (transportFacility != this) {
+          sendToDestination(vehicle)
+
+          return
+        } else {
+          vehicle.destination = None
+        }
+
+      case None =>
+    }
+
     vehicle.unsetObjective()
 
     town.population += vehicle.unloadPassenger()
 
     vehicles += vehicle
+  }
+
+  /**
+    * @param vehicle Send this vehicle to its destination if it have one
+    */
+  def sendToDestination(vehicle : Vehicle) : Unit = {
+    company.indicateNextObjective(vehicle)
+
+    vehicle.goalTransportFacility match {
+      case Some(goal) =>
+        val road = getRoadTo(goal).get
+
+        try {
+          putOnRoad(vehicle, road)
+        } catch {
+          case ImpossibleActionException(_) =>
+            waitingVehicles += vehicle
+        }
+
+      case None =>
+    }
+  }
+
+  /**
+    * @param vehicle The vehicle to put it on the [road]
+    * @param road The road to put the vehicle
+    */
+  private def putOnRoad(vehicle : Vehicle, road : Road) : Unit = {
+    company.refillFuel(vehicle)
+
+    if (vehicles.contains(vehicle)) vehicles -= vehicle
+    if (waitingVehicles.contains(vehicle)) waitingVehicles -= vehicle
+
+    vehicle.currentTransportFacility = None
+
+    vehicle.putOnRoad(road)
+
+    makePassengerPay(vehicle.nbPassenger(), road.length)
+  }
+
+  /**
+    * Make passengers pay for they tickets
+    *
+    * @param nbPassenger The number of passenger
+    * @param distance The distance they passengers will travel
+    */
+  private def makePassengerPay(nbPassenger : Int, distance : Double) : Unit = {
+    company.money += nbPassenger * distance * company.ticketPricePerKm
   }
 
   /**
