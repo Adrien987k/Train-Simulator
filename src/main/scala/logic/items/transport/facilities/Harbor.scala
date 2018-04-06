@@ -1,6 +1,7 @@
 package logic.items.transport.facilities
 
-import logic.items.ItemTypes.{ShipType, TransportFacilityType}
+import game.Game
+import logic.items.ItemTypes.{ShipType, TransportFacilityType, WATERWAY}
 import logic.items.transport.roads.Waterway
 import logic.world.Company
 import logic.world.towns.Town
@@ -12,8 +13,23 @@ class Harbor
  _capacity : Int)
   extends TransportFacility(transportFacilityType, company, town, _capacity) {
 
+  Game.world.naturalWaterways.foreach(waterway => {
+    if (waterway.townA == town || waterway.townB == town) {
+
+      if (waterway.townB.hasHarbor) {
+        company.buildRoad(WATERWAY, this, waterway.townB.harbor.get)
+      }
+
+      if (waterway.townB == town) {
+        if (waterway.townA.hasHarbor) {
+          company.buildRoad(WATERWAY, this, waterway.townA.harbor.get)
+        }
+      }
+    }
+  })
+
   def connectWaterway(waterway : Waterway) : Unit = {
-    super.addRoad(waterway)
+    super.connectRoad(waterway)
   }
 
   def buildShip(shipType : ShipType) : Boolean = {

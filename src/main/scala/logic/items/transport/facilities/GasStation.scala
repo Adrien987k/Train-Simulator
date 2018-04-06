@@ -14,7 +14,7 @@ class GasStation
   extends TransportFacility(transportFacilityType, company, town, _capacity) with Updatable {
 
   def connectHighway(highway : Highway) : Unit = {
-    super.addRoad(highway)
+    super.connectRoad(highway)
   }
 
   def buildTruck(truckType : TruckType) : Boolean = {

@@ -1,6 +1,9 @@
 package game
 
-import logic.world.World
+import interface.GUI
+import logic.world.{BasicCompany, World}
+
+import scala.collection.mutable.ListBuffer
 
 object Game {
 
@@ -14,6 +17,12 @@ object Game {
 
   def start() : Unit = {
     world.start()
+  }
+
+  def newGame() : Unit = {
+    GUI.restart()
+
+    start()
   }
 
 }

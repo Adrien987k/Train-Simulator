@@ -1,6 +1,7 @@
 package logic.items.transport.vehicules
 
 import logic.economy.BoxedResourcePack
+import logic.economy.ResourcesTypes.BoxedResourceType
 import logic.items.ItemTypes._
 import logic.items.transport.facilities._
 import logic.items.transport.vehicules.components.VehicleComponentFactory
@@ -41,20 +42,18 @@ object VehicleFactory {
       case TRUCK =>
         new BasicTruck(TRUCK, company, transportFacility.asInstanceOf[GasStation],
           VehicleComponentFactory.makeEngine(DIESEL_ENGINE, company),
-          VehicleComponentFactory.makeResourceCarriage[BoxedResourcePack](company))
+          VehicleComponentFactory.makeResourceCarriage[BoxedResourceType](company))
 
-      //TODO make engines for ships
-      /*
+      //TODO make carriages for ships
       case LINER =>
         new BasicShip(LINER, company, transportFacility.asInstanceOf[Harbor],
-          VehicleComponentFactory.makeEngine(),
+          VehicleComponentFactory.makeEngine(SHIP_ENGINE, company),
           ListBuffer.empty)
 
       case CRUISE_BOAT =>
         new BasicShip(CRUISE_BOAT, company, transportFacility.asInstanceOf[Harbor],
-          VehicleComponentFactory.makeEngine(),
+          VehicleComponentFactory.makeEngine(SHIP_ENGINE, company),
           ListBuffer.empty)
-      */
 
       case _ => throw new Exception("Not implemented")
     }

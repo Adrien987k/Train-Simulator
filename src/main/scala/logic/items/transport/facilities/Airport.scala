@@ -16,8 +16,8 @@ extends TransportFacility(transportFacilityType, company, town, _capacity) with 
     company.buildRoad(LINE, this, airport)
   )
 
-  def addLine(line : Line) : Unit = {
-    super.addRoad(line)
+  def connectLine(line : Line) : Unit = {
+    super.connectRoad(line)
   }
 
   def buildPlane(planeType : PlaneType) : Boolean = {

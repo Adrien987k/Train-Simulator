@@ -7,7 +7,7 @@ import logic.world.Company
 object RoadFactory {
 
   def makeRoad(roadType : RoadType,
-                company : Company,
+               company : Company,
                transportFacilityA : TransportFacility,
                transportFacilityB : TransportFacility) : Road = {
 

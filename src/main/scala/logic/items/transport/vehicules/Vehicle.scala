@@ -59,9 +59,8 @@ abstract class Vehicle
       case Some(transportFacility) =>
         if (pos.inRange(transportFacility.pos, 10)) {
 
-          removeFromRoad()
+          leaveRoad()
 
-          println("step goal TF : " + transportFacility.town.name)
           transportFacility.unload(this)
 
         } else {
@@ -110,7 +109,6 @@ abstract class Vehicle
 
   def setObjective(transportFacility : TransportFacility) : Unit = {
     if (goalTransportFacility.nonEmpty) return
-    println("YEAD")
 
     goalTransportFacility = Some(transportFacility)
 
@@ -127,7 +125,7 @@ abstract class Vehicle
     destination = town.transportFacilityForVehicleType(vehicleType)
   }
 
-  def putOnRoad(road : Road) : Unit = {
+  def enterRoad(road : Road) : Unit = {
     if (road.isFull) throw new ImpossibleActionException("Road is full")
     currentRoad match {
       case Some(_) =>
@@ -136,12 +134,11 @@ abstract class Vehicle
         currentTransportFacility = None
         road.addVehicle(this)
 
-        println("PUT ON ROAD SUCCESS")
         currentRoad = Some(road)
     }
   }
 
-  def removeFromRoad() : Unit = {
+  def leaveRoad() : Unit = {
     currentRoad match {
       case Some(road) =>
         road.removeVehicle(this)

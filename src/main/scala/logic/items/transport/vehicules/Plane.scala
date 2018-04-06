@@ -17,11 +17,11 @@ abstract class Plane
   extends Vehicle(planeType, company, engine, carriages, Some(initialAirport)) {
 
   def putOnLine(line : Line) : Unit = {
-    super.putOnRoad(line)
+    super.enterRoad(line)
   }
 
   def removeFromRail() : Unit = {
-    super.removeFromRoad()
+    super.leaveRoad()
   }
 
 }

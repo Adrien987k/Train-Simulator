@@ -101,12 +101,13 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
           tf
       }
     }
+
     tfType match {
       case STATION => station = Some(buildInternal(station, "a station").asInstanceOf[Station])
 
       case AIRPORT => airport = Some(buildInternal(airport, "an airport").asInstanceOf[Airport])
 
-      case HARBOR => harbor = Some(buildInternal(airport, "an harbor").asInstanceOf[Harbor])
+      case HARBOR => harbor = Some(buildInternal(harbor, "an harbor").asInstanceOf[Harbor])
 
       case GAS_STATION => gasStation = Some(buildInternal(gasStation, "a gas station").asInstanceOf[GasStation])
     }
@@ -130,7 +131,7 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
         airport.get.buildPlane(vehicleType.asInstanceOf[PlaneType])
 
       case LINER | CRUISE_BOAT =>
-        if (!hasAirport) throw new CannotBuildItemException("This town does not have an harbor")
+        if (!hasHarbor) throw new CannotBuildItemException("This town does not have an harbor")
         harbor.get.buildShip(vehicleType.asInstanceOf[ShipType])
 
       case TRUCK =>

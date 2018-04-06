@@ -40,7 +40,7 @@ object GUI {
     menuBar.menus = List(mapMenu)
 
     newGameItem.onAction = (_ : ActionEvent) => {
-      Game.world.newGame()
+      Game.newGame()
     }
 
     saveItem.onAction = (_ : ActionEvent) => {

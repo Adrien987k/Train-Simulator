@@ -3,7 +3,7 @@ package interface
 import game.Game
 import logic.items.Item
 import logic.Updatable
-import logic.items.ItemTypes.{RoadType, VehicleType}
+import logic.items.ItemTypes.{RoadType, VehicleType, WATERWAY}
 import logic.items.transport.roads.Road
 import logic.items.transport.vehicules.Vehicle
 import logic.world.towns.Town
@@ -18,8 +18,6 @@ import scalafx.scene.input.MouseEvent
 import scalafx.scene.paint.Color
 
 object WorldCanvas extends GUIComponent {
-
-  val TOWN_RADIUS = 10
 
   var canvas = new Canvas(Game.world.MAP_WIDTH, Game.world.MAP_HEIGHT)
   var gc : GraphicsContext = canvas.graphicsContext2D
@@ -88,20 +86,24 @@ object WorldCanvas extends GUIComponent {
   def displaySelection() : Unit = {
     if (selectedUpdatable.isEmpty) return
 
-    gc.stroke = Color.Black
+    gc.stroke = ItemsStyle.SELECTED_TOWN_COLOR
+    gc.lineWidth = 3
 
     selectedUpdatable.get match {
       case town : Town =>
         val style = ItemsStyle.ofTown(town)
-        if (destinationChoice) gc.stroke = Color.BlueViolet
+        if (destinationChoice) gc.stroke = ItemsStyle.SELECTED_VEHICLE_COLOR
+
         gc.strokeRect(town.pos.x - style.radius * 1.25, town.pos.y - style.radius * 1.25, style.radius * 2.5, style.radius * 2.5)
 
       case item : Item =>
         item.itemType match {
           case t : VehicleType =>
             val style = ItemsStyle.ofVehicle(t)
+
             val vehicle = item.asInstanceOf[Vehicle]
-            gc.stroke = Color.BlueViolet
+
+            gc.stroke = ItemsStyle.SELECTED_VEHICLE_COLOR
             gc.strokeRect(vehicle.pos.x - style.radius * 2,
               vehicle.pos.y - style.radius * 2,
               style.radius * 4,
@@ -109,10 +111,13 @@ object WorldCanvas extends GUIComponent {
 
           case t : RoadType =>
             val style = ItemsStyle.ofRoad(t)
+
             if (!style.empty) {
               gc.lineWidth = style.width * 2
-              gc.stroke = Color.Gold
+              gc.stroke = ItemsStyle.SELECTED_ROAD_COLOR
+
               val road = item.asInstanceOf[Road]
+
               gc.strokeLine(road.posA.x, road.posA.y, road.posB.x, road.posB.y)
             }
         }
@@ -141,11 +146,25 @@ object WorldCanvas extends GUIComponent {
         gc.strokeLine(road.posA.x, road.posA.y, road.posB.x, road.posB.y)
     })
 
+    Game.world.naturalWaterways.foreach(waterway => {
+      val style = ItemsStyle.ofRoad(WATERWAY)
+      gc.stroke = style.color
+      gc.lineWidth = style.width
+
+      if (!style.empty)
+        gc.strokeLine(waterway.townA.pos.x, waterway.townA.pos.y, waterway.townB.pos.x, waterway.townB.pos.y)
+    })
+
     if (selectedVehicle.nonEmpty) {
+      val style = ItemsStyle.ofVehicle(selectedVehicle.get.vehicleType)
+
       val pos = selectedVehicle.get.pos
+
       gc.lineWidth = 3
-      gc.stroke = Color.BlueViolet
-      gc.strokeRect(pos.x - TOWN_RADIUS * 1.25, pos.y - TOWN_RADIUS * 1.25, TOWN_RADIUS * 2.5, TOWN_RADIUS * 2.5)
+      gc.stroke = ItemsStyle.SELECTED_VEHICLE_COLOR
+
+      gc.strokeRect(pos.x - style.radius * 1.25,
+        pos.y - style.radius * 1.25, style.radius * 2.5, style.radius * 2.5)
     }
 
     displayVehicle()

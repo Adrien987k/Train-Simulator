@@ -17,11 +17,11 @@ abstract class Train
   extends Vehicle(trainType, company, engine, carriages, Some(initialStation)) {
 
   def putOnRail(rail : Rail) : Unit = {
-    super.putOnRoad(rail)
+    super.enterRoad(rail)
   }
 
   def removeFromRail() : Unit = {
-    super.removeFromRoad()
+    super.leaveRoad()
   }
 
 }

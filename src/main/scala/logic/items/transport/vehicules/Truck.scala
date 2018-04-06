@@ -1,7 +1,9 @@
 package logic.items.transport.vehicules
 
-import logic.economy.BoxedResourcePack
+import logic.economy.ResourcesTypes.BoxedResourceType
 import logic.items.ItemTypes.TruckType
+import logic.items.transport.facilities.GasStation
+import logic.items.transport.roads.Highway
 import logic.items.transport.vehicules.components.{Engine, ResourceCarriage}
 import logic.world.Company
 
@@ -11,16 +13,16 @@ abstract class Truck
 (val truckType : TruckType,
  override val company : Company,
  override val engine : Engine,
- val carriage : ResourceCarriage[BoxedResourcePack], //TODO
+ val carriage : ResourceCarriage[BoxedResourceType], //TODO
  val initialGasStation : GasStation)
   extends Vehicle(truckType, company, engine, ListBuffer(carriage), Some(initialGasStation)) {
 
-  def enterHighway(haigway : Highway) : Unit = {
-    super.putOnRoad(highway)
+  def enterHighway(highway : Highway) : Unit = {
+    super.enterRoad(highway)
   }
 
   def leaveHighway() : Unit = {
-    super.removeFromRoad()
+    super.leaveRoad()
   }
 
 }

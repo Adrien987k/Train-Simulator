@@ -1,6 +1,8 @@
 package logic.items.transport.vehicules
 
 import logic.items.ItemTypes.ShipType
+import logic.items.transport.facilities.Harbor
+import logic.items.transport.roads.Waterway
 import logic.items.transport.vehicules.components.{Carriage, Engine}
 import logic.world.Company
 
@@ -16,11 +18,11 @@ abstract class Ship
 {
 
   def enterWaterway(waterway : Waterway) : Unit = {
-    super.putOnRoad(waterway)
+    super.enterRoad(waterway)
   }
 
   def leaveWaterway() : Unit = {
-    super.removeFromRoad()
+    super.leaveRoad()
   }
 
 }

@@ -21,5 +21,6 @@ object VehicleComponentTypes {
   case object DIESEL_ENGINE extends EngineType("Diesel engine")
   case object ELECTRIC_ENGINE extends EngineType("Electric engine")
   case object KEROSENE_ENGINE extends EngineType("Kerosene engine")
+  case object SHIP_ENGINE extends EngineType("Ship engine")
 
 }

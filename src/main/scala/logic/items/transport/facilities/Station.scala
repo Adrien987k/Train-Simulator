@@ -13,8 +13,8 @@ abstract class Station
  _capacity : Int)
   extends TransportFacility(transportFacilityType, company, town, _capacity) with Updatable {
 
-  def addRail(rail : Rail) : Unit = {
-    super.addRoad(rail)
+  def connectRail(rail : Rail) : Unit = {
+    super.connectRoad(rail)
   }
 
   def buildTrain(trainType : TrainType) : Boolean = {

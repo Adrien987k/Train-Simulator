@@ -48,7 +48,12 @@ abstract class TransportFacility
     */
   def availableVehicles : Int = vehicles.size
 
-  def addRoad(road : Road) : Unit = {
+  /**
+    * Connect this transport facility to the [road]
+    *
+    * @param road The road to connect
+    */
+  def connectRoad(road : Road) : Unit = {
     roads += road
   }
 
@@ -82,6 +87,7 @@ abstract class TransportFacility
     val vehicle = VehicleFactory.makeVehicle(vehicleType, company, this)
 
     company.addVehicle(vehicle)
+
     vehicles += vehicle
   }
 
@@ -149,7 +155,7 @@ abstract class TransportFacility
 
         val vehicle = vehicleOpt.get
 
-        load(vehicle, objective, nbPassenger)
+        loadPassenger(vehicle, objective, nbPassenger)
 
         try {
           putOnRoad(vehicle, road)
@@ -189,7 +195,7 @@ abstract class TransportFacility
     * @param nbPassenger The number of passenger to load
     * @return The number of loaded passenger
     */
-  def load(vehicle: Vehicle, objective : TransportFacility, nbPassenger : Int) : Int = {
+  def loadPassenger(vehicle: Vehicle, objective : TransportFacility, nbPassenger : Int) : Int = {
     var loadedPassenger = vehicle.loadPassenger(nbPassenger)
 
     val remainingPassenger = nbPassenger - loadedPassenger
@@ -261,7 +267,7 @@ abstract class TransportFacility
 
     vehicle.currentTransportFacility = None
 
-    vehicle.putOnRoad(road)
+    vehicle.enterRoad(road)
 
     makePassengerPay(vehicle.nbPassenger(), road.length)
   }
@@ -324,7 +330,7 @@ abstract class TransportFacility
 
   styleLabels()
 
-  override def propertyPane(): Node = {
+  override def propertyPane() : Node = {
     capacityLabel.text = "Capacity : " + capacity
     vehiclesLabel.text = "Vehicles : " + availableVehicles
     waitingPassengerLabel.text = "Waiting passenger : " + nbWaitingPassengers()

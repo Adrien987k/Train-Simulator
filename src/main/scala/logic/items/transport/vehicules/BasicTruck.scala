@@ -1,8 +1,9 @@
 package logic.items.transport.vehicules
 
-import logic.economy.BoxedResourcePack
+import logic.economy.ResourcesTypes.BoxedResourceType
 import logic.items.ItemTypes.TruckType
-import logic.items.transport.vehicules.components.{Carriage, Engine, ResourceCarriage}
+import logic.items.transport.facilities.GasStation
+import logic.items.transport.vehicules.components.{Engine, ResourceCarriage}
 import logic.world.Company
 
 class BasicTruck
@@ -10,7 +11,7 @@ class BasicTruck
  company : Company,
  initialGasStation : GasStation,
  engine : Engine,
- carriage : ResourceCarriage[BoxedResourcePack])
+ carriage : ResourceCarriage[BoxedResourceType])
   extends Truck(truckType, company, engine, carriage, initialGasStation) {
 
 }

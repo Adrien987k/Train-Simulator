@@ -13,10 +13,10 @@ import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 
 abstract class Road
-(val roadType: RoadType,
+(val roadType : RoadType,
  override val company : Company,
- val transportFacilityA: TransportFacility,
- val transportFacilityB: TransportFacility,
+ val transportFacilityA : TransportFacility,
+ val transportFacilityB : TransportFacility,
  val speedLimit : Double)
   extends Item(roadType, company) with LineUpdatable {
 
@@ -34,7 +34,7 @@ abstract class Road
   override def step() : Boolean = {
     vehicles.foreach(vehicle => {
       if (vehicle.crashed) {
-        vehicle.removeFromRoad()
+        vehicle.leaveRoad()
         vehicles -= vehicle
 
         println("ROAD CRASHED")
@@ -57,18 +57,20 @@ abstract class Road
 
   val panel = new VBox()
 
+  val roadLabel = new Label("=== " + roadType.name + " ===")
   val maxCapLabel = new Label("Max capacity : " + DEFAULT_CAPACITY)
   val nbPlaneLabel = new Label()
   val lengthLabel = new Label()
   val connectLabel = new Label()
 
-  labels = List(maxCapLabel, nbPlaneLabel, lengthLabel, connectLabel)
+  labels = List(roadLabel, maxCapLabel, nbPlaneLabel, lengthLabel, connectLabel)
 
   panel.children = labels
 
   styleLabels()
 
   override def propertyPane() : Node = {
+
     maxCapLabel.text = "Max capacity : " + DEFAULT_CAPACITY
     nbPlaneLabel.text = "Vehicles : " + nbVehicle
     lengthLabel.text = "Length : " + length.toInt

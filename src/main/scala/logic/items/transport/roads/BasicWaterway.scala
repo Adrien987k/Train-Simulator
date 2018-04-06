@@ -1,6 +1,7 @@
 package logic.items.transport.roads
 
 import logic.items.ItemTypes.RoadType
+import logic.items.transport.facilities.Harbor
 import logic.world.Company
 
 class BasicWaterway

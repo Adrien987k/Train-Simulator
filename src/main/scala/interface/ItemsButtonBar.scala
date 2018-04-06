@@ -43,7 +43,7 @@ object ItemsButtonBar extends GUIComponent {
 
     for (item <- ItemTypes.onSaleItems()) {
       val itemButton = new Button(item.name + " " + Shop.price(item) + "$" +
-        (item match {case ItemTypes.RAIL => " per KM" case _ => ""}))
+        (item match {case ItemTypes.RAIL | ItemTypes.HIGHWAY => " per KM" case _ => ""}))
       itemButton.style = buildModeButton.style()
       itemButton.onAction = _ => {
         if (buildMode) {

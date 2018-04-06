@@ -42,18 +42,13 @@ object AllVehiclesInformationPanel extends GUIComponent {
 
   }
 
-  Game.world.company.vehicles.onChange(
-    (_, changes) =>
-      changes.foreach {
-        case Add(_, added) =>
-          added.foreach(addVehicleButton)
+  def addVehiclePanel(vehicle : Vehicle) : Unit = {
+    addVehicleButton(vehicle)
+  }
 
-        case Remove(_, removed) =>
-          removed.foreach(removeTrainButton)
-
-        case _ =>
-      }
-  )
+  def removeVehiclePanel(vehicle : Vehicle) : Unit = {
+    removeVehicleButton(vehicle)
+  }
 
   def keyForValue(value: Button): Option[Vehicle] = {
     vehicleButtonsMap.find({case (_, button) => button  == value}) match {
@@ -82,7 +77,7 @@ object AllVehiclesInformationPanel extends GUIComponent {
     vehicleButtonsBox.children.add(vehicleButton)
   }
 
-  def removeTrainButton(vehicle : Vehicle): Unit = {
+  def removeVehicleButton(vehicle : Vehicle): Unit = {
     vehicleButtonsBox.children.remove(vehicleButtonsMap(vehicle))
     vehicleButtonsMap.-=(vehicle)
   }
