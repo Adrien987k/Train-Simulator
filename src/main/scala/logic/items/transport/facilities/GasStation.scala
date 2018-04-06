@@ -1,27 +1,27 @@
 package logic.items.transport.facilities
 
 import logic.Updatable
-import logic.items.ItemTypes.{TrainType, TransportFacilityType}
-import logic.items.transport.roads.Rail
+import logic.items.ItemTypes.{TrainType, TransportFacilityType, TruckType}
+import logic.items.transport.roads.{Highway, Rail}
 import logic.world.Company
 import logic.world.towns.Town
 
-abstract class Station
+class GasStation
 (override val transportFacilityType : TransportFacilityType,
  override val company : Company,
  override val town : Town,
  _capacity : Int)
   extends TransportFacility(transportFacilityType, company, town, _capacity) with Updatable {
 
-  def addRail(rail : Rail) : Unit = {
-    super.addRoad(rail)
+  def connectHighway(highway : Highway) : Unit = {
+    super.addRoad(highway)
   }
 
-  def buildTrain(trainType : TrainType) : Boolean = {
-    buildVehicle(trainType)
+  def buildTruck(truckType : TruckType) : Boolean = {
+    buildVehicle(truckType)
     true
   }
 
-  def availableTrains : Int = super.availableVehicles
+  def availableTrucks : Int = super.availableVehicles
 
 }

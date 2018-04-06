@@ -1,19 +1,24 @@
 package logic.items.transport.facilities
 
-import logic.exceptions.{CannotBuildItemException, CannotSendPassengerException, ImpossibleActionException}
+import logic.exceptions.{AlreadyMaxLevelException, CannotBuildItemException, CannotSendPassengerException, ImpossibleActionException}
 import logic.PointUpdatable
 import logic.items.Item
 import logic.items.ItemTypes.{TransportFacilityType, VehicleType}
 import logic.items.transport.roads.Road
 import logic.items.transport.vehicules.{Vehicle, VehicleFactory}
-import logic.world.Company
+import logic.world.{Company, Shop}
 import logic.world.towns.Town
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scalafx.scene.Node
+import scalafx.scene.control.{Button, Label}
+import scalafx.scene.layout.VBox
+import scalafx.scene.paint.Color
+import scalafx.scene.text.{Font, FontWeight}
 
 abstract class TransportFacility
-(val transportFacilityType: TransportFacilityType,
+(val transportFacilityType : TransportFacilityType,
  override val company : Company,
  val town : Town,
  private var _capacity : Int)
@@ -282,6 +287,49 @@ abstract class TransportFacility
     level += 1
 
     company.buyEvolution(transportFacilityType, level + 1)
+  }
+
+  /* For the GUI */
+
+  val panel = new VBox()
+
+  val transportFacilityLabel = new Label("=== " + transportFacilityType.name + " ===")
+  val capacityLabel = new Label()
+  val vehiclesLabel = new Label()
+  val waitingPassengerLabel = new Label()
+
+  val evolveButton = new Button("Evolve : " + Shop.evolutionPrice(transportFacilityType, 1) + "$")
+  evolveButton.font = Font.font(null, FontWeight.ExtraBold, 19)
+  evolveButton.textFill = Color.Green
+
+  evolveButton.onAction = _ => {
+    try {
+      evolve()
+    } catch {
+      case e : AlreadyMaxLevelException =>
+        if (!levelIsMax) {
+          if (panel.children.contains(evolveButton))
+            panel.children.remove(evolveButton)
+        }
+    }
+
+    evolveButton.text =
+      "Evolve : " + Shop.evolutionPrice(transportFacilityType, level) + "$"
+
+  }
+
+  labels = List(transportFacilityLabel, capacityLabel, vehiclesLabel, waitingPassengerLabel)
+
+  panel.children = labels ++ List(evolveButton)
+
+  styleLabels()
+
+  override def propertyPane(): Node = {
+    capacityLabel.text = "Capacity : " + capacity
+    vehiclesLabel.text = "Vehicles : " + availableVehicles
+    waitingPassengerLabel.text = "Waiting passenger : " + nbWaitingPassengers()
+
+    panel
   }
 
 }

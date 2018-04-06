@@ -65,7 +65,7 @@ object WorldCanvas extends GUIComponent {
         }
       } else {
         if (destinationChoice) {
-          Game.world.company.setTrainDestination(lastPosClicked)
+          Game.world.company.setVehicleDestination(lastPosClicked)
           destinationChoice = false
         }
         else LocalInformationPanel.selectUpdatableAt(lastPosClicked)

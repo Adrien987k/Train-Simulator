@@ -1,12 +1,16 @@
 package logic.items.transport.roads
 
+import logic.LineUpdatable
 import logic.items.Item
 import logic.items.ItemTypes.RoadType
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.vehicules.Vehicle
-import logic.world.{Company, LineUpdatable}
+import logic.world.Company
 
 import scala.collection.mutable.ListBuffer
+import scalafx.scene.Node
+import scalafx.scene.control.Label
+import scalafx.scene.layout.VBox
 
 abstract class Road
 (val roadType: RoadType,
@@ -49,6 +53,29 @@ abstract class Road
 
   override def evolve() : Unit = {
     //TODO evolve rail
+  }
+
+  val panel = new VBox()
+
+  val maxCapLabel = new Label("Max capacity : " + DEFAULT_CAPACITY)
+  val nbPlaneLabel = new Label()
+  val lengthLabel = new Label()
+  val connectLabel = new Label()
+
+  labels = List(maxCapLabel, nbPlaneLabel, lengthLabel, connectLabel)
+
+  panel.children = labels
+
+  styleLabels()
+
+  override def propertyPane() : Node = {
+    maxCapLabel.text = "Max capacity : " + DEFAULT_CAPACITY
+    nbPlaneLabel.text = "Vehicles : " + nbVehicle
+    lengthLabel.text = "Length : " + length.toInt
+    connectLabel.text = "Endpoints : " + transportFacilityA.town.name + ", " +
+                                         transportFacilityB.town.name
+
+    panel
   }
 
 }

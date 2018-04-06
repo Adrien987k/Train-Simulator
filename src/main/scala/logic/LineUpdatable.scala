@@ -1,6 +1,5 @@
-package logic.world
+package logic
 
-import logic.Updatable
 import utils.Pos
 
 trait LineUpdatable extends Updatable {

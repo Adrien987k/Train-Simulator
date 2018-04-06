@@ -1,15 +1,14 @@
 package logic.items.transport.roads
 
 import logic.items.ItemTypes.RoadType
-import logic.items.transport.facilities.Station
 import logic.world.Company
 
-class BasicRail
+class BasicHighway
 (override val roadType : RoadType,
  override val company : Company,
- override val stationA : Station,
- override val stationB : Station,
+ override val gasStationA : GasStation,
+ override val gasStationB : GasStation,
  override val speedLimit : Double)
-  extends Rail(roadType, company, stationA , stationB, speedLimit) {
+  extends Highway(roadType, company, gasStationA , gasStationB, speedLimit) {
 
 }

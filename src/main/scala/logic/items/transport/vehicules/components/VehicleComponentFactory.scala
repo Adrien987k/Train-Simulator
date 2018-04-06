@@ -107,7 +107,7 @@ object VehicleComponentFactory {
   }
 
   def makeResourceCarriage[R <: ResourcesTypes.ResourceType]
-  (resourceType : ResourcesTypes.ResourceType, company : Company) : ResourceCarriage[R] = {
+  (company : Company) : ResourceCarriage[R] = {
     new ResourceCarriage[R](company, 5.0, 5000.0, 10000.0)
   }
 

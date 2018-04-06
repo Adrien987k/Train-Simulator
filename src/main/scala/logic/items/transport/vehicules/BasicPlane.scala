@@ -10,9 +10,9 @@ import scala.collection.mutable.ListBuffer
 class BasicPlane
 (planeType : PlaneType,
  company : Company,
- airport  : Airport,
+ initialAirport  : Airport,
  engine : Engine,
  carriages : ListBuffer[Carriage])
-  extends Plane(planeType, company, engine, carriages, airport) {
+extends Plane(planeType, company, engine, carriages, initialAirport) {
 
 }

@@ -1,7 +1,8 @@
 package logic.items.transport.vehicules
 
+import logic.economy.BoxedResourcePack
 import logic.items.ItemTypes._
-import logic.items.transport.facilities.{Airport, Station, TransportFacility}
+import logic.items.transport.facilities._
 import logic.items.transport.vehicules.components.VehicleComponentFactory
 import logic.items.transport.vehicules.components.VehicleComponentTypes._
 import logic.world.Company
@@ -36,6 +37,26 @@ object VehicleFactory {
         new BasicPlane(CONCORDE, company, transportFacility.asInstanceOf[Airport],
           VehicleComponentFactory.makeEngine(KEROSENE_ENGINE, company),
           ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company)))
+
+      case TRUCK =>
+        new BasicTruck(TRUCK, company, transportFacility.asInstanceOf[GasStation],
+          VehicleComponentFactory.makeEngine(DIESEL_ENGINE, company),
+          VehicleComponentFactory.makeResourceCarriage[BoxedResourcePack](company))
+
+      //TODO make engines for ships
+      /*
+      case LINER =>
+        new BasicShip(LINER, company, transportFacility.asInstanceOf[Harbor],
+          VehicleComponentFactory.makeEngine(),
+          ListBuffer.empty)
+
+      case CRUISE_BOAT =>
+        new BasicShip(CRUISE_BOAT, company, transportFacility.asInstanceOf[Harbor],
+          VehicleComponentFactory.makeEngine(),
+          ListBuffer.empty)
+      */
+
+      case _ => throw new Exception("Not implemented")
     }
   }
 

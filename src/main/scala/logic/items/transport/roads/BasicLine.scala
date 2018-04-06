@@ -15,26 +15,7 @@ class BasicLine
  override val airportB : Airport)
   extends Line(roadType, company, airportA , airportB) {
 
-  val panel = new VBox()
-
-  val maxCapLabel = new Label("Max capacity : " + DEFAULT_CAPACITY)
-  val nbPlaneLabel = new Label()
-  val lengthLabel = new Label()
-  val connectLabel = new Label()
-
-  labels = List(maxCapLabel, nbPlaneLabel, lengthLabel, connectLabel)
-
-  panel.children = labels
-
-  styleLabels()
-
-  override def propertyPane(): Node = {
-    maxCapLabel.text = "Max capacity : " + DEFAULT_CAPACITY
-    nbPlaneLabel.text = "Trains : " + nbVehicle
-    lengthLabel.text = "Length : " + length.toInt
-    connectLabel.text = "Endpoints : " + airportA.town.name + ", " + airportB.town.name
-
-    panel
-  }
+  if (panel.children.contains(maxCapLabel))
+    panel.children.remove(maxCapLabel)
 
 }

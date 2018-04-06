@@ -1,7 +1,7 @@
 package logic.items.transport.roads
 
-import logic.items.ItemTypes.{LINE, RAIL, RoadType}
-import logic.items.transport.facilities.{Airport, Station, TransportFacility}
+import logic.items.ItemTypes._
+import logic.items.transport.facilities._
 import logic.world.Company
 
 object RoadFactory {
@@ -10,6 +10,7 @@ object RoadFactory {
                 company : Company,
                transportFacilityA : TransportFacility,
                transportFacilityB : TransportFacility) : Road = {
+
     roadType match {
       case RAIL =>
         new BasicRail(RAIL, company,
@@ -20,6 +21,19 @@ object RoadFactory {
         new BasicLine(LINE, company,
           transportFacilityA.asInstanceOf[Airport],
           transportFacilityB.asInstanceOf[Airport])
+
+      case WATERWAY =>
+        new BasicWaterway(WATERWAY, company,
+          transportFacilityA.asInstanceOf[Harbor],
+          transportFacilityB.asInstanceOf[Harbor],
+          5.0)
+
+      case HIGHWAY =>
+        new BasicHighway(HIGHWAY, company,
+          transportFacilityA.asInstanceOf[GasStation],
+          transportFacilityB.asInstanceOf[GasStation],
+          7.5)
+
     }
   }
 

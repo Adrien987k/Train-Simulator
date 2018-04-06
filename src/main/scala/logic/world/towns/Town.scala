@@ -23,6 +23,8 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
 
   var station : Option[Station] = None
   var airport : Option[Airport] = None
+  var harbor : Option[Harbor] = None
+  var gasStation : Option[GasStation] = None
 
   var offer : Offer = new Offer
   var request : Request = new Request
@@ -33,8 +35,11 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
   var proportionTraveler : Double = DEFAULT_PROPORTION_TRAVELER
 
   def name : String = _name
+
   def hasStation : Boolean = station.nonEmpty
   def hasAirport : Boolean = airport.nonEmpty
+  def hasHarbor : Boolean = harbor.nonEmpty
+  def hasGasStation : Boolean = gasStation.nonEmpty
 
   override def step() : Boolean = {
     if(!super.step()) return false
@@ -45,8 +50,23 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
 
     station.foreach(_.step())
     airport.foreach(_.step())
+    harbor.foreach(_.step())
+    gasStation.foreach(_.step())
 
     true
+  }
+
+  /**
+    * @param transportFacilityType The transport facility type to check
+    * @return True if this station own a transport facility of type [transportFacilityType]
+    */
+  def hasTransportFacilityOfType(transportFacilityType : TransportFacilityType) : Boolean = {
+    transportFacilityType match {
+      case STATION => hasStation
+      case AIRPORT => hasAirport
+      case HARBOR => hasHarbor
+      case GAS_STATION => hasGasStation
+    }
   }
 
   /**
@@ -54,8 +74,12 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     */
   def nbWaitingPassengers : Int = {
     var waiters = 0
+
     waiters += (if (hasStation) station.get.nbWaitingPassengers() else 0)
     waiters += (if (hasAirport) airport.get.nbWaitingPassengers() else 0)
+    waiters += (if (hasHarbor) harbor.get.nbWaitingPassengers() else 0)
+    waiters += (if (hasGasStation) gasStation.get.nbWaitingPassengers() else 0)
+
     waiters
   }
 
@@ -69,7 +93,8 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     def buildInternal(tfOpt : Option[TransportFacility], itemNameForError : String) : TransportFacility = {
       tfOpt match {
         case Some(_) =>
-          throw new CannotBuildItemException("This town already have a " + itemNameForError)
+          throw new CannotBuildItemException("This town already have " + itemNameForError)
+
         case None =>
           val tf = TransportFacilityFactory.make(tfType, Game.world.company, this)
           Game.world.company.addTransportFacility(tf)
@@ -78,7 +103,12 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     }
     tfType match {
       case STATION => station = Some(buildInternal(station, "a station").asInstanceOf[Station])
+
       case AIRPORT => airport = Some(buildInternal(airport, "an airport").asInstanceOf[Airport])
+
+      case HARBOR => harbor = Some(buildInternal(airport, "an harbor").asInstanceOf[Harbor])
+
+      case GAS_STATION => gasStation = Some(buildInternal(gasStation, "a gas station").asInstanceOf[GasStation])
     }
   }
 
@@ -98,6 +128,14 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
       case BOEING | CONCORDE =>
         if (!hasAirport) throw new CannotBuildItemException("This town does not have an airport")
         airport.get.buildPlane(vehicleType.asInstanceOf[PlaneType])
+
+      case LINER | CRUISE_BOAT =>
+        if (!hasAirport) throw new CannotBuildItemException("This town does not have an harbor")
+        harbor.get.buildShip(vehicleType.asInstanceOf[ShipType])
+
+      case TRUCK =>
+        if (!hasGasStation) throw new CannotBuildItemException("This town does not have a gas station")
+        gasStation.get.buildTruck(vehicleType.asInstanceOf[TruckType])
     }
   }
 
@@ -162,6 +200,8 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     transportFacilityType match {
       case STATION => station
       case AIRPORT => airport
+      case HARBOR => harbor
+      case GAS_STATION => gasStation
     }
   }
 
@@ -169,6 +209,8 @@ abstract class Town(_pos : Pos, private var _name : String) extends PointUpdatab
     vehicleType match {
       case _ : TrainType => station
       case _ : PlaneType => airport
+      case _ : ShipType => harbor
+      case _ : TruckType => gasStation
     }
   }
 
