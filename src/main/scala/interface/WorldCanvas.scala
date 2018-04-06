@@ -57,7 +57,7 @@ object WorldCanvas extends GUIComponent {
     canvas.onMouseClicked = (event: MouseEvent) => {
       lastPosClicked = new Pos(event.x, event.y)
       if (ItemsButtonBar.buildMode) {
-        ItemsButtonBar.selected match {
+        ItemsButtonBar.selectedItem match {
           case Some(item) => Game.world.company.tryPlace(item, lastPosClicked)
           case _ =>
         }

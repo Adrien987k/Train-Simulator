@@ -1,5 +1,7 @@
 package logic.items
 
+import logic.items.VehicleCategories.VehicleCategory
+
 object ItemTypes {
 
   abstract class ItemType(val name : String) {}
@@ -54,6 +56,15 @@ object ItemTypes {
       AIRPORT,
       HARBOR,
       GAS_STATION)
+  }
+
+  def onSaleItemsForVehicleCategory(vehicleCategory : VehicleCategory) : List[ItemType] = {
+    vehicleCategory match {
+      case VehicleCategories.Trains => List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, STATION)
+      case VehicleCategories.Planes => List(BOEING, CONCORDE, AIRPORT)
+      case VehicleCategories.Ships => List(CRUISE_BOAT, LINER, HARBOR)
+      case VehicleCategories.Trucks => List(TRUCK, HIGHWAY, GAS_STATION)
+    }
   }
 
   def transportFacilityFromVehicle(vehicleType : VehicleType) : TransportFacilityType = {

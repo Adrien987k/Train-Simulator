@@ -22,7 +22,7 @@ object GlobalInformationPanel extends GUIComponent {
 
   val labels : List[Label] = List(mainLabel, timeLabel, moneyLabel, ticketPriceLabel, nbTrainLabel, totalPopulationLabel)
 
-  def make(): VBox = {
+  def make() : VBox = {
     panel.children = labels
 
     labels.foreach(_.font = Font.font(null, FontWeight.Bold, 18))
@@ -32,11 +32,11 @@ object GlobalInformationPanel extends GUIComponent {
     panel
   }
 
-  def restart(): Unit = {
-
+  def restart() : Unit = {
+    warningLabel.text = ""
   }
 
-  def update(): Unit = {
+  def update() : Unit = {
     timeLabel.text = Game.world.gameDateTime.time()
     moneyLabel.text = "Money : " + Game.world.company.money.toInt
     ticketPriceLabel.text = "Ticket price per Km : " + Game.world.company.ticketPricePerKm

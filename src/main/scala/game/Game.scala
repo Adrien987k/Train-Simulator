@@ -1,9 +1,7 @@
 package game
 
 import interface.GUI
-import logic.world.{BasicCompany, World}
-
-import scala.collection.mutable.ListBuffer
+import logic.world.World
 
 object Game {
 
@@ -22,7 +20,8 @@ object Game {
   def newGame() : Unit = {
     GUI.restart()
 
-    start()
+    _world = Some(new World)
+    _world.get.start()
   }
 
 }
