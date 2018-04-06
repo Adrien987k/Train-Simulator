@@ -1,5 +1,6 @@
 package logic.items.transport.facilities
 
+import interface.GlobalInformationPanel
 import logic.exceptions.{AlreadyMaxLevelException, CannotBuildItemException, CannotSendPassengerException, ImpossibleActionException}
 import logic.PointUpdatable
 import logic.items.Item
@@ -312,11 +313,14 @@ abstract class TransportFacility
     try {
       evolve()
     } catch {
-      case e : AlreadyMaxLevelException =>
+      case _ : AlreadyMaxLevelException =>
         if (!levelIsMax) {
           if (panel.children.contains(evolveButton))
             panel.children.remove(evolveButton)
         }
+
+      case _ : CannotBuildItemException =>
+        GlobalInformationPanel.displayWarningMessage("Not enough money")
     }
 
     evolveButton.text =

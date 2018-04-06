@@ -22,10 +22,11 @@ object LocalInformationPanel extends GUIComponent {
 
     localInformationPane.style = "-fx-background-color: lightCoral"
     localInformationPane.center = noInfoLabel
+
     localInformationPane
   }
 
-  override def restart(): Unit = {
+  override def restart() : Unit = {
     localInformationPane.center = noInfoLabel
     currentUpdatable = None
   }
@@ -39,7 +40,7 @@ object LocalInformationPanel extends GUIComponent {
     }
   }
 
-  def selectUpdatableAt(pos : Pos): Unit = {
+  def selectUpdatableAt(pos : Pos) : Unit = {
     Game.world.updatableAt(pos) match {
       case Some(vehicle : Vehicle) =>
         OneVehicleInformationPanel.addCurrentVehicle(vehicle)

@@ -1,6 +1,5 @@
 package logic.items.transport.vehicules
 
-import logic.economy.BoxedResourcePack
 import logic.economy.ResourcesTypes.BoxedResourceType
 import logic.items.ItemTypes._
 import logic.items.transport.facilities._

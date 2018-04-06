@@ -7,14 +7,14 @@ import scalafx.scene.control.Label
 import scalafx.scene.layout.{BorderPane, VBox}
 class BasicTown(pos : Pos, name : String) extends Town(pos, name) {
 
-  val mainPanel = new BorderPane
+  private val mainPanel = new BorderPane
 
-  val townPanel = new VBox()
+  private val townPanel = new VBox()
 
-  val nameLabel = new Label("=== " + name + " ===")
-  val populationLabel = new Label()
-  val propTravelerLabel = new Label()
-  val posLabel = new Label()
+  private val nameLabel = new Label("=== " + name + " ===")
+  private val populationLabel = new Label()
+  private val propTravelerLabel = new Label()
+  private val posLabel = new Label()
 
   labels = List(nameLabel,
     populationLabel,
@@ -36,7 +36,9 @@ class BasicTown(pos : Pos, name : String) extends Town(pos, name) {
 
   }
 
-  val transportFacilitiesVBox = new VBox()
+  private var resized = false
+
+  private val transportFacilitiesVBox = new VBox()
 
   mainPanel.center = transportFacilitiesVBox
 
@@ -56,6 +58,16 @@ class BasicTown(pos : Pos, name : String) extends Town(pos, name) {
 
     if (hasGasStation && !transportFacilitiesVBox.children.contains(gasStation.get.propertyPane()))
       transportFacilitiesVBox.children.add(gasStation.get.propertyPane())
+
+    if (transportFacilitiesVBox.children.size() >= 4 && !resized) {
+      styleLabels(14)
+      station.get.styleLabels(14)
+      airport.get.styleLabels(14)
+      gasStation.get.styleLabels(14)
+      harbor.get.styleLabels(14)
+
+      resized = true
+    }
 
     mainPanel
   }

@@ -28,6 +28,8 @@ abstract class VehicleComponent
       VehicleComponentFactory.evolve(this)
     } catch {
       case e : AlreadyMaxLevelException =>
+        company.buyEvolution(vehicleComponentType, level)
+
         throw new AlreadyMaxLevelException(e.getMessage)
     }
 

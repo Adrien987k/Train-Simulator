@@ -36,6 +36,8 @@ object AllVehiclesInformationPanel extends GUIComponent {
   override def restart() : Unit = {
     vehicleButtonsMap = mutable.Map.empty
     vehicleButtonsBox.children.remove(0, vehicleButtonsBox.children.size())
+
+    nbVehicle = 0
   }
 
   override def update() : Unit = {

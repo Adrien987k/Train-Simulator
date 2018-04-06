@@ -56,10 +56,7 @@ object VehicleComponentFactory {
 
   def evolve(vehicleComponent : VehicleComponent) : Unit = {
     val statsOpt = getStatsList(vehicleComponent.vehicleComponentType, vehicleComponent.level + 1)
-
-    if (statsOpt.isEmpty)
-      throw new AlreadyMaxLevelException(
-        vehicleComponent.vehicleComponentType.name + " is level max")
+    val statsLevelSupOpt = getStatsList(vehicleComponent.vehicleComponentType, vehicleComponent.level + 2)
 
     val stats = statsOpt.get
 
@@ -70,6 +67,10 @@ object VehicleComponentFactory {
 
       case _ : PassengerCarriageType => evolvePassengerCarriage(vehicleComponent.asInstanceOf[PassengerCarriage], stats)
     }
+
+    if (statsLevelSupOpt.isEmpty)
+      throw new AlreadyMaxLevelException(
+        vehicleComponent.vehicleComponentType.name + " is level max")
   }
 
   private def evolveEngine(engine : Engine, stats : List[Double]) : Unit = {

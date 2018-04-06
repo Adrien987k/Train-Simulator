@@ -37,7 +37,6 @@ abstract class Road
         vehicle.leaveRoad()
         vehicles -= vehicle
 
-        println("ROAD CRASHED")
         company.destroyVehicle(vehicle)
       }
     })

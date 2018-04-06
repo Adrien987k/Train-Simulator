@@ -83,13 +83,13 @@ object ItemsButtonBar extends GUIComponent {
     buildModeButton.font = Font.font(null, FontWeight.Bold, 18)
     buildModeButton.style = "-fx-background-color: lightCoral"
     buildModeButton.onAction = _ => {
+      select()
+
       if (!buildMode) {
-        selected = None
         buildMode = true
         bar.style = "-fx-background-color: black"
         buildModeButton.text = "Build mode"
       } else {
-        println("default")
         buildMode = false
         bar.style = "-fx-background-color: white"
         buildModeButton.text = "Game mode"

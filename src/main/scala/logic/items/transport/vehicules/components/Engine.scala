@@ -2,7 +2,7 @@ package logic.items.transport.vehicules.components
 
 import logic.exceptions.AlreadyMaxLevelException
 import logic.items.transport.vehicules.components.VehicleComponentTypes.EngineType
-import logic.world.Company
+import logic.world.{Company, Shop}
 
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
@@ -48,7 +48,7 @@ abstract class Engine
     _maxTractiveEffort = if (newMaxTractiveEffort == NO_CHANGE) maxTractiveEffort else newMaxTractiveEffort
   }
 
-  override def step(): Boolean = { false }
+  override def step() : Boolean = { false }
 
   val panel = new VBox()
 
@@ -56,7 +56,7 @@ abstract class Engine
   val levelLabel = new Label()
   val fuelLevelLabel = new Label()
 
-  val evolveButton = new Button("Evolve")
+  val evolveButton = new Button("Evolve " + Shop.evolutionPrice(engineType, level + 1) + "$")
   evolveButton.font = Font.font(null, FontWeight.ExtraBold, 19)
   evolveButton.textFill = Color.Green
 
@@ -86,6 +86,7 @@ abstract class Engine
   override def propertyPane() : Node = {
     levelLabel.text = "Level : " + level
     fuelLevelLabel.text = "Fuel level : " + fuelLevel
+    evolveButton.text = "Evolve " + Shop.evolutionPrice(engineType, level + 1) + "$"
 
     panel
   }

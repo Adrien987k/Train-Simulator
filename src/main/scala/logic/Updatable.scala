@@ -25,7 +25,7 @@ trait Updatable {
 
   def propertyPane() : Node
 
-  def styleLabels() : Unit = {
-    labels.foreach(_.font = Font.font(null, FontWeight.Bold, 18))
+  def styleLabels(size : Int = 18) : Unit = {
+    labels.foreach(_.font = Font.font(null, FontWeight.Bold, size))
   }
 }

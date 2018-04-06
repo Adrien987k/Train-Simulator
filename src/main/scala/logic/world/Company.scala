@@ -154,10 +154,14 @@ abstract class Company(world : World) {
     * @return True if a road already exist between [transportFacilityA] and [transportFacilityB]
     */
   private def roadAlreadyExists(townA : Town, townB : Town) : Boolean = {
-    roads.exists(road =>
-      road.transportFacilityA.town == townA && road.transportFacilityB.town == townB
-      ||
-      road.transportFacilityB.town == townA && road.transportFacilityA.town == townB)
+    roads.exists(road => {
+      road.roadType match {
+        case LINE => return false
+        case _ =>
+          road.transportFacilityA.town == townA && road.transportFacilityB.town == townB ||
+          road.transportFacilityB.town == townA && road.transportFacilityA.town == townB
+      }
+    })
   }
 
   private def canBuy(itemType : ItemType, quantity : Int = 1) : Boolean = {
@@ -199,8 +203,6 @@ abstract class Company(world : World) {
     * @param transportFacilityB The second facility to connect
     */
   def buildRoad(roadType : RoadType, transportFacilityA : TransportFacility, transportFacilityB : TransportFacility) : Unit = {
-    println("BUILD ROAD")
-
     if (transportFacilityA == transportFacilityB) return
 
     if (roadType != WATERWAY && Game.world.existNaturalWaterWay(transportFacilityA.town, transportFacilityB.town))
