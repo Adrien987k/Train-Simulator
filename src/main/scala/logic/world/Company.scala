@@ -15,7 +15,7 @@ import utils.Pos
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-abstract class Company(world : World) {
+class Company(world : World) {
 
   var money = 2000000.0
   var ticketPricePerKm = 0.01
@@ -158,8 +158,8 @@ abstract class Company(world : World) {
       road.roadType match {
         case LINE => return false
         case _ =>
-          road.transportFacilityA.town == townA && road.transportFacilityB.town == townB ||
-          road.transportFacilityB.town == townA && road.transportFacilityA.town == townB
+          (road.transportFacilityA.town == townA && road.transportFacilityB.town == townB) ||
+          (road.transportFacilityB.town == townA && road.transportFacilityA.town == townB)
       }
     })
   }
@@ -206,10 +206,10 @@ abstract class Company(world : World) {
     if (transportFacilityA == transportFacilityB) return
 
     if (roadType != WATERWAY && Game.world.existNaturalWaterWay(transportFacilityA.town, transportFacilityB.town))
-    throw new CannotBuildItemException("Cannot build road on waterway")
+      throw new CannotBuildItemException("Cannot build road on waterway")
 
     if (roadAlreadyExists(transportFacilityA.town, transportFacilityB.town))
-    throw new CannotBuildItemException("Road already exists there")
+      throw new CannotBuildItemException("Road already exists there")
 
     val road = RoadFactory.makeRoad(roadType, this, transportFacilityA, transportFacilityB)
 

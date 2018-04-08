@@ -6,7 +6,7 @@ import logic.items.transport.facilities.Station
 import logic.items.transport.vehicules.Train
 import logic.world.Company
 
-abstract class Rail
+class Rail
 (override val roadType : RoadType,
  override val company: Company,
  val stationA : Station,

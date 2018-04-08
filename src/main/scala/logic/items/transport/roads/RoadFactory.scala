@@ -13,23 +13,23 @@ object RoadFactory {
 
     roadType match {
       case RAIL =>
-        new BasicRail(RAIL, company,
+        new Rail(RAIL, company,
                       transportFacilityA.asInstanceOf[Station],
                       transportFacilityB.asInstanceOf[Station],
                       10.0)
       case LINE =>
-        new BasicLine(LINE, company,
+        new Line(LINE, company,
           transportFacilityA.asInstanceOf[Airport],
           transportFacilityB.asInstanceOf[Airport])
 
       case WATERWAY =>
-        new BasicWaterway(WATERWAY, company,
+        new Waterway(WATERWAY, company,
           transportFacilityA.asInstanceOf[Harbor],
           transportFacilityB.asInstanceOf[Harbor],
           5.0)
 
       case HIGHWAY =>
-        new BasicHighway(HIGHWAY, company,
+        new Highway(HIGHWAY, company,
           transportFacilityA.asInstanceOf[GasStation],
           transportFacilityB.asInstanceOf[GasStation],
           7.5)

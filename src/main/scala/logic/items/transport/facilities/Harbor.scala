@@ -16,15 +16,11 @@ class Harbor
   Game.world.naturalWaterways.foreach(waterway => {
     if (waterway.townA == town || waterway.townB == town) {
 
-      if (waterway.townB.hasHarbor) {
+      if (waterway.townA == town && waterway.townB.hasHarbor)
         company.buildRoad(WATERWAY, this, waterway.townB.harbor.get)
-      }
 
-      if (waterway.townB == town) {
-        if (waterway.townA.hasHarbor) {
-          company.buildRoad(WATERWAY, this, waterway.townA.harbor.get)
-        }
-      }
+      if (waterway.townB == town && waterway.townA.hasHarbor)
+        company.buildRoad(WATERWAY, this, waterway.townA.harbor.get)
     }
   })
 

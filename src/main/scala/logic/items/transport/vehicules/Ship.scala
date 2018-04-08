@@ -8,7 +8,7 @@ import logic.world.Company
 
 import scala.collection.mutable.ListBuffer
 
-abstract class Ship
+class Ship
 (val shipType : ShipType,
  override val company : Company,
  override val engine : Engine,

@@ -9,11 +9,11 @@ import logic.world.Company
 
 import scala.collection.mutable.ListBuffer
 
-abstract class Truck
+class Truck
 (val truckType : TruckType,
  override val company : Company,
  override val engine : Engine,
- val carriage : ResourceCarriage[BoxedResourceType], //TODO
+ val carriage : ResourceCarriage[BoxedResourceType],
  val initialGasStation : GasStation)
   extends Vehicle(truckType, company, engine, ListBuffer(carriage), Some(initialGasStation)) {
 

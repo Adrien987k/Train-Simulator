@@ -10,11 +10,11 @@ object TransportFacilityFactory {
 
   def make(tfType : TransportFacilityType, company : Company, town : Town) : TransportFacility = {
     tfType match {
-      case STATION => new BasicStation(STATION, company, town, DEFAULT_CAPACITY)
+      case STATION => new Station(STATION, company, town, DEFAULT_CAPACITY)
 
-      case AIRPORT => new BasicAirport(AIRPORT, company, town, DEFAULT_CAPACITY)
+      case AIRPORT => new Airport(AIRPORT, company, town, DEFAULT_CAPACITY)
 
-      case HARBOR => new BasicHarbor(HARBOR, company, town, DEFAULT_CAPACITY)
+      case HARBOR => new Harbor(HARBOR, company, town, DEFAULT_CAPACITY)
 
       case GAS_STATION => new GasStation(GAS_STATION, company, town, DEFAULT_CAPACITY)
     }

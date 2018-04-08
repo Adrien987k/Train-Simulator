@@ -8,7 +8,7 @@ import logic.world.Company
 
 import scala.collection.mutable.ListBuffer
 
-abstract class Plane
+class Plane
 (val planeType : PlaneType,
  override val company : Company,
  override val engine : Engine,

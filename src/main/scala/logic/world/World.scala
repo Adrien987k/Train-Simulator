@@ -1,7 +1,7 @@
 package logic.world
 
 import logic.Updatable
-import logic.world.towns.{BasicTown, Town}
+import logic.world.towns.Town
 import interface.{GUI, ItemsStyle}
 import utils.{GameDateTime, Pos}
 
@@ -19,14 +19,14 @@ class World() {
   val MAP_HEIGHT = 700
 
   val INIT_NB_TOWNS = 10
-  val APPARITION_WATERWAY = 3
+  val APPARITION_WATERWAY = 15
 
   val rand = new Random
 
   var towns : ListBuffer[Town] = ListBuffer.empty
   var naturalWaterways : ListBuffer[NaturalWaterway] = ListBuffer.empty
 
-  var company : Company = new BasicCompany(this)
+  var company : Company = new Company(this)
 
   var gameDateTime : GameDateTime = new GameDateTime
 
@@ -50,7 +50,7 @@ class World() {
     towns = ListBuffer.empty
     naturalWaterways = ListBuffer.empty
 
-    company = new BasicCompany(this)
+    company = new Company(this)
 
     generateRandomMap()
 
@@ -69,8 +69,8 @@ class World() {
     */
   def existNaturalWaterWay(townA : Town, townB : Town) : Boolean = {
     naturalWaterways.exists(waterway => {
-      waterway.townA == townA && waterway.townB == townB ||
-      waterway.townB == townA && waterway.townA == townB
+      (waterway.townA == townA && waterway.townB == townB) ||
+      (waterway.townB == townA && waterway.townA == townB)
     })
   }
 
@@ -83,7 +83,7 @@ class World() {
     for (i <- 0 to INIT_NB_TOWNS) {
       val x = rand.nextInt(areaWidth - ItemsStyle.INIT_TOWN_SIZE * 2) + (i * areaWidth) + ItemsStyle.INIT_TOWN_SIZE
       val y = rand.nextInt(MAP_HEIGHT - ItemsStyle.INIT_TOWN_SIZE * 2) + ItemsStyle.INIT_TOWN_SIZE
-      towns += new BasicTown(new Pos(x, y), "Town " + i)
+      towns += new Town(new Pos(x, y), "Town " + i)
     }
 
     for (townA <- towns) {
@@ -91,7 +91,7 @@ class World() {
         if (townA != townB) {
           val randInt = rand.nextInt(100)
 
-          if (randInt < APPARITION_WATERWAY) {
+          if (randInt < APPARITION_WATERWAY && townA != townB && !existNaturalWaterWay(townA, townB)) {
             naturalWaterways += new NaturalWaterway(townA, townB)
           }
         }

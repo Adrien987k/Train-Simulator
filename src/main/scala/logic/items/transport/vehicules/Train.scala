@@ -8,7 +8,7 @@ import logic.world.Company
 
 import scala.collection.mutable.ListBuffer
 
-abstract class Train
+class Train
 (val trainType : TrainType,
  override val company: Company,
  override val engine : Engine,

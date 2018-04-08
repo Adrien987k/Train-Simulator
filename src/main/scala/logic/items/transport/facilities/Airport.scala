@@ -5,7 +5,7 @@ import logic.items.transport.roads.Line
 import logic.world.Company
 import logic.world.towns.Town
 
-abstract class Airport
+class Airport
 (override val transportFacilityType : TransportFacilityType,
  override val company : Company,
  override val town : Town,
