@@ -1,13 +1,18 @@
 package logic.world.towns
 
 import game.Game
+import logic.economy.Resources.Resource
 import logic.{PointUpdatable, UpdateRate}
-import logic.economy.{Offer, Request}
+import logic.economy._
 import logic.exceptions.CannotBuildItemException
 import logic.items.ItemTypes._
+import logic.items.production.FactoryTypes.FactoryType
+import logic.items.production.{Factory, FactoryFactory}
 import logic.items.transport.facilities._
 import utils.Pos
 
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scalafx.scene.Node
 import scalafx.scene.control.Label
@@ -23,19 +28,29 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   val MAX_POPULATION = 1000000
   val MIN_POPULATION = 10
   val DEFAULT_PROPORTION_TRAVELER = 0.1
+  val INIT_MAX_NB_FACTORY = 3
 
   var station : Option[Station] = None
+
   var airport : Option[Airport] = None
   var harbor : Option[Harbor] = None
   var gasStation : Option[GasStation] = None
-
-  var offer : Offer = new Offer
-  var request : Request = new Request
 
   var population : Int = MIN_POPULATION +
       new Random().nextInt(MAX_POPULATION + 1 - MIN_POPULATION)
 
   var proportionTraveler : Double = DEFAULT_PROPORTION_TRAVELER
+
+  val factories : ListBuffer[Factory] = ListBuffer.empty
+
+  val maxNbFactory : Int = INIT_MAX_NB_FACTORY
+
+  val offer : Offer = new Offer
+  val requests : TownRequests = new TownRequests
+  val consumption : Consumption = Consumption.initialConsumption()
+  val warehouse : Warehouse = new Warehouse
+
+  val requestFromOtherCities = new ListBuffer[Request]
 
   def name : String = _name
 
@@ -55,6 +70,8 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     airport.foreach(_.step())
     harbor.foreach(_.step())
     gasStation.foreach(_.step())
+
+    produce()
 
     true
   }
@@ -114,6 +131,18 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
       case GAS_STATION => gasStation = Some(buildInternal(gasStation, "a gas station").asInstanceOf[GasStation])
     }
+  }
+
+  def buildFactory(factoryType : FactoryType) : Unit = {
+    if (!Game.world.company.canBuy(factoryType))
+      throw new CannotBuildItemException("Not enough money")
+
+    if (factories.lengthCompare(maxNbFactory) == 0)
+      throw new CannotBuildItemException("Max number of factory reached")
+
+    factories += FactoryFactory.makeFactory(factoryType, Game.world.company, this)
+
+    Game.world.company.buy(factoryType)
   }
 
   /**
@@ -198,6 +227,22 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   }
 
   /**
+    * Send a list of resource packs to a town
+    *
+    * @param town where to send the resources
+    * @param packs the packs to send
+    */
+  def sendResource(town : Town, packs : ListBuffer[ResourcePack]) : Unit = {
+    transportFacilities().foreach(tfOpt => {
+      tfOpt.foreach(tf => {
+
+        if (neighboursOf(tfOpt).contains(town))
+          tf.trySendResources(town.transportFacilityOfType(tf.transportFacilityType).get, packs)
+      })
+    })
+  }
+
+  /**
     * @return The transport facility associate with the type [transportFacilityType]
     */
   def transportFacilityOfType(transportFacilityType : TransportFacilityType) : Option[TransportFacility] = {
@@ -218,12 +263,90 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     }
   }
 
-  def explore() : Unit = {
+  private def neighboursOf(transportFacilityOpt : Option[TransportFacility]) : ListBuffer[Town] = {
+    transportFacilityOpt match {
+      case Some(tf) => tf.neighbours().map(tf => tf.town)
+      case None => ListBuffer()
+    }
+  }
 
+  def neighbours() : ListBuffer[Town] = {
+    neighboursOf(station) ++
+    neighboursOf(airport) ++
+    neighboursOf(harbor) ++
+    neighboursOf(gasStation)
+  }
+
+  def transportFacilities() : List[Option[TransportFacility]] = {
+    List(station, airport, harbor, gasStation)
   }
 
   def produce() : Unit = {
+    factories.foreach(_.step())
+  }
 
+  def consume() : Unit = {
+    consumption.resources.foreach(resourceTypeAndQuantity => {
+      val (resourceType, quantity) = resourceTypeAndQuantity
+
+      val (_, missingQuantity) = warehouse.take(resourceType, quantity)
+
+      if (missingQuantity > 0) {
+        requests.update(resourceType, missingQuantity)
+      }
+    })
+  }
+
+  def searchResource() : Unit = {
+    transportFacilities().foreach(tfOpt => {
+      tfOpt.foreach(searchResource)
+    })
+  }
+
+  /**
+    * Search the neighbours cities for missing resources in the city
+    */
+  def searchResource(transportFacility : TransportFacility) : Unit = {
+    transportFacility.neighbours().foreach(tf => {
+      requests.requests.foreach(request => {
+        searchResourceIn(tf.town, request)
+      })
+    })
+  }
+
+  def searchResourceIn(town : Town, request : (Resource, Int)) : Unit = {
+    if (town.offer.quantityOf(request._1) > 0) {
+
+      town.takeRequestFromOtherTown(Request(this, request._1, request._2))
+    }
+  }
+
+  def takeRequestFromOtherTown(request : Request) : Unit = {
+    requestFromOtherCities += request
+  }
+
+  def answerRequests() : Unit = {
+    val packsTo : mutable.HashMap[Town, ListBuffer[ResourcePack]] = mutable.HashMap.empty
+
+    requestFromOtherCities.foreach(request => {
+      val canOfferQuantity = offer.quantityOf(request.resourceType)
+
+      if (canOfferQuantity > 0) {
+        val (toSendPack, _) = offer.take(request.resourceType, request.quantity)
+
+        val list = packsTo(request.town)
+
+        list += toSendPack
+
+        packsTo.update(request.town, list)
+      }
+    })
+
+    packsTo.foreach(townAndPacks => {
+      val (town, packs) = townAndPacks
+
+      sendResource(town, packs)
+    })
   }
 
   private val mainPanel = new BorderPane
@@ -270,15 +393,12 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     if (hasGasStation && !transportFacilitiesVBox.children.contains(gasStation.get.propertyPane()))
       transportFacilitiesVBox.children.add(gasStation.get.propertyPane())
 
-    if (transportFacilitiesVBox.children.size() >= 4 && !resized) {
-      styleLabels(14)
-      station.get.styleLabels(14)
-      airport.get.styleLabels(14)
-      gasStation.get.styleLabels(14)
-      harbor.get.styleLabels(14)
+    styleLabels(14)
 
-      resized = true
-    }
+    factories.foreach(factory => {
+      if (!transportFacilitiesVBox.children.contains(factory.propertyPane()))
+        transportFacilitiesVBox.children.add(factory.propertyPane())
+    })
 
     mainPanel
   }

@@ -1,12 +1,16 @@
 package logic.world
 
 import logic.items.ItemTypes._
+import logic.items.production.FactoryTypes._
 import logic.items.transport.vehicules.components.VehicleComponentTypes._
 
 object Shop {
 
-  def price(item : ItemType, quantity : Int = 1) : Double = {
+  def itemPrice(item : ItemType, quantity : Int = 1) : Double = {
     item match {
+      case factory : FactoryType =>
+        factoryPrice(factory)
+
       case DIESEL_TRAIN => 200
       case ELECTRIC_TRAIN => 300
       case BOEING => 800
@@ -22,6 +26,22 @@ object Shop {
 
       case RAIL => 2
       case HIGHWAY => 1
+
+      case _ => 0
+    }
+  }
+
+  def factoryPrice(factoryType : FacilityType) : Double = {
+    factoryType match {
+      case GRAIN_FARM => 1000
+
+      case GARDEN => 1500
+
+      case IRON_MINE => 3000
+      case BAUXITE_MINE => 5000
+      case COAL_MINE => 1200
+
+      case TEXTILE_FACTORY => 4000
 
       case _ => 0
     }

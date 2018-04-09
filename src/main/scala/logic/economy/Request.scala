@@ -1,8 +1,13 @@
 package logic.economy
 
-/* NOT USED YET */
-class Request {
+import logic.economy.Resources.Resource
+import logic.world.towns.Town
 
-  //val resources : ArrayBuffer[Resource] = ArrayBuffer.empty
+case class Request
+(town : Town,
+ resourceType : Resource,
+ quantity : Int) {
+
+
 
 }

@@ -24,7 +24,9 @@ object ItemTypes {
   case object LINER extends ShipType("Liner")
   case object CRUISE_BOAT extends ShipType("Cruise boat")
 
-  abstract class TransportFacilityType(name : String) extends ItemType(name) {}
+  abstract class FacilityType(name : String) extends ItemType(name)
+
+  abstract class TransportFacilityType(name : String) extends FacilityType(name) {}
 
   case object STATION extends TransportFacilityType("Station")
   case object AIRPORT extends TransportFacilityType("Airport")

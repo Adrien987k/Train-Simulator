@@ -3,7 +3,7 @@ package logic.world
 import logic.Updatable
 import logic.world.towns.Town
 import interface.{GUI, ItemsStyle}
-import utils.{GameDateTime, Pos}
+import utils.{DateTime, Pos}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -28,7 +28,7 @@ class World() {
 
   var company : Company = new Company(this)
 
-  var gameDateTime : GameDateTime = new GameDateTime
+  var gameDateTime : DateTime = new DateTime
 
   def start() : Unit = {
     init()

@@ -56,6 +56,7 @@ object WorldCanvas extends GUIComponent {
   def initWorld(townsPositions : List[Pos]) : Unit = {
     canvas.onMouseClicked = (event: MouseEvent) => {
       lastPosClicked = new Pos(event.x, event.y)
+
       if (ItemsButtonBar.buildMode) {
         ItemsButtonBar.selectedItem match {
           case Some(item) => Game.world.company.tryPlace(item, lastPosClicked)

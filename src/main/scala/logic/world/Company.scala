@@ -10,6 +10,7 @@ import interface.{AllVehiclesInformationPanel, GlobalInformationPanel, OneVehicl
 import logic.Updatable
 import logic.items.ItemTypes
 import logic.items.ItemTypes._
+import logic.items.production.FactoryTypes.FactoryType
 import utils.Pos
 
 import scala.collection.mutable
@@ -97,6 +98,9 @@ class Company(world : World) {
       case (roadType : RoadType, town : Town) =>
         tryBuildRoad(roadType, town)
 
+      case (factoryType : FactoryType, town : Town) =>
+        town.buildFactory(factoryType)
+
       case _ =>
     }
   }
@@ -164,13 +168,13 @@ class Company(world : World) {
     })
   }
 
-  private def canBuy(itemType : ItemType, quantity : Int = 1) : Boolean = {
-    val price = Shop.price(itemType, quantity)
+  def canBuy(itemType : ItemType, quantity : Int = 1) : Boolean = {
+    val price = Shop.itemPrice(itemType, quantity)
     money - price >= 0
   }
 
   def buy(itemType : ItemType, quantity : Int = 1) : Unit = {
-    val price = Shop.price(itemType, quantity)
+    val price = Shop.itemPrice(itemType, quantity)
     if (money - price < 0)
       throw new CannotBuildItemException("Not enough money")
 
@@ -190,7 +194,7 @@ class Company(world : World) {
     money -= price
   }
 
-  def CanBuyInfrastructure(itemType : ItemType, level : Int) : Boolean = {
+  def canBuyInfrastructure(itemType : ItemType, level : Int = 1) : Boolean = {
     val price = Shop.evolutionPrice(itemType, level)
     money - price >= 0
   }

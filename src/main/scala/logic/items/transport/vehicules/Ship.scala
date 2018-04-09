@@ -1,6 +1,6 @@
 package logic.items.transport.vehicules
 
-import logic.items.ItemTypes.ShipType
+import logic.items.ItemTypes.{CRUISE_BOAT, LINER, ShipType}
 import logic.items.transport.facilities.Harbor
 import logic.items.transport.roads.Waterway
 import logic.items.transport.vehicules.components.{Carriage, Engine}
@@ -23,6 +23,11 @@ class Ship
 
   def leaveWaterway() : Unit = {
     super.leaveRoad()
+  }
+
+  override def canTransportResource : Boolean = shipType match {
+    case CRUISE_BOAT => false
+    case LINER => true
   }
 
 }

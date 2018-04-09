@@ -3,6 +3,7 @@ package interface
 import logic.items.{ItemTypes, VehicleCategories}
 import logic.items.ItemTypes.ItemType
 import logic.items.VehicleCategories.VehicleCategory
+import logic.items.production.FactoryTypes
 import logic.world.Shop
 
 import scala.collection.mutable
@@ -13,6 +14,7 @@ import scalafx.scene.layout.BorderPane
 import scalafx.scene.text.{Font, FontWeight}
 
 object ItemsButtonBar extends GUIComponent {
+
   val mainPane = new BorderPane
 
   val bar : ButtonBar = new ButtonBar
@@ -22,8 +24,11 @@ object ItemsButtonBar extends GUIComponent {
   val planesCategoryButton = new Button("Planes")
   val shipsCategoryButton = new Button("Ships")
   val trucksCategoryButton = new Button("Trucks")
+  val factoriesButton = new Button("Factories")
 
   var buttonsForItemCategory : mutable.HashMap[VehicleCategory, List[Button]] = mutable.HashMap.empty
+
+  var factoriesButtons : List[Button] = List.empty
 
   var selected : Option[(ItemType, Button)] = None
 
@@ -51,7 +56,7 @@ object ItemsButtonBar extends GUIComponent {
     ItemTypes.onSaleItemsForVehicleCategory(vehicleCategory).foldLeft(buttons)(
       (buttons, item) => {
 
-        val itemButton = new Button(item.name + " " + Shop.price(item) + "$" +
+        val itemButton = new Button(item.name + " " + Shop.itemPrice(item) + "$" +
           (item match {case ItemTypes.RAIL | ItemTypes.HIGHWAY => " per KM" case _ => ""}))
 
         itemButton.style = buildModeButton.style()
@@ -66,6 +71,27 @@ object ItemsButtonBar extends GUIComponent {
       })
 
     buttonsForItemCategory.+=((vehicleCategory, buttons.toList))
+  }
+
+  def buildButtonForFactories() : Unit = {
+    val buttons = ListBuffer.empty[Button]
+
+    FactoryTypes.factories().foldLeft(buttons)(
+      (buttons, item) => {
+
+        val itemButton = new Button(item.name)
+        itemButton.style = buildModeButton.style()
+
+        itemButton.onAction = _ => {
+          if (buildMode) {
+            select(item, itemButton)
+          }
+        }
+
+        buttons += itemButton
+      })
+
+    factoriesButtons = buttons.toList
   }
 
   def addActionToCategoryButton(button : Button, category : VehicleCategory) : Unit = {
@@ -102,10 +128,21 @@ object ItemsButtonBar extends GUIComponent {
     buildButtonForCategory(VehicleCategories.Ships)
     buildButtonForCategory(VehicleCategories.Trucks)
 
+    buildButtonForFactories()
+
     addActionToCategoryButton(trainCategoryButton, VehicleCategories.Trains)
     addActionToCategoryButton(planesCategoryButton, VehicleCategories.Planes)
     addActionToCategoryButton(shipsCategoryButton, VehicleCategories.Ships)
     addActionToCategoryButton(trucksCategoryButton, VehicleCategories.Trucks)
+
+    factoriesButton.onAction = _ => {
+      val leftBar = new ButtonBar
+      leftBar.buttons = factoriesButtons
+
+      mainPane.right = leftBar
+    }
+
+    itemChoiceButtons += factoriesButton
 
     bar.buttons = itemChoiceButtons
 

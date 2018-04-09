@@ -2,8 +2,8 @@ package logic.items.transport.facilities
 
 import interface.GlobalInformationPanel
 import logic.exceptions.{AlreadyMaxLevelException, CannotBuildItemException, CannotSendPassengerException, ImpossibleActionException}
-import logic.PointUpdatable
-import logic.items.Item
+import logic.economy.ResourcePack
+import logic.items.Facility
 import logic.items.ItemTypes.{TransportFacilityType, VehicleType}
 import logic.items.transport.roads.Road
 import logic.items.transport.vehicules.{Vehicle, VehicleFactory}
@@ -21,12 +21,9 @@ import scalafx.scene.text.{Font, FontWeight}
 abstract class TransportFacility
 (val transportFacilityType : TransportFacilityType,
  override val company : Company,
- val town : Town,
+ override val town : Town,
  private var _capacity : Int)
-  extends Item(transportFacilityType, company) with PointUpdatable {
-
-  updateRate(1)
-  pos = town.pos
+  extends Facility(transportFacilityType, company, town) {
 
   def capacity : Int = _capacity
 
@@ -113,6 +110,15 @@ abstract class TransportFacility
     neighbourList
   }
 
+  def trySendResources(objective : TransportFacility, packs : ListBuffer[ResourcePack]) : Unit = {
+    try {
+      sendResources(objective, packs)
+    } catch {
+      case e : CannotSendPassengerException =>
+        //TODO Change to an other exception
+    }
+  }
+
 
   /**
     * Try to send @nbPassenger to @objective
@@ -139,16 +145,15 @@ abstract class TransportFacility
     * @param objective The transport facility objective
     * @param nbPassenger The number of passenger to send
     */
-  def sendPassenger(objective : TransportFacility, nbPassenger : Int) : Unit = {
+  private def sendPassenger(objective : TransportFacility, nbPassenger : Int) : Unit = {
     if (vehicles.isEmpty) {
       throw new CannotSendPassengerException(nbPassenger)
     }
 
     getRoadTo(objective) match {
       case Some(road) =>
-        if (road.nbVehicle == road.DEFAULT_CAPACITY) {
+        if (road.nbVehicle == road.DEFAULT_CAPACITY)
           throw new CannotSendPassengerException(nbPassenger)
-        }
 
         val vehicleOpt = availableVehicle()
         if (vehicleOpt.isEmpty)
@@ -171,11 +176,46 @@ abstract class TransportFacility
     }
   }
 
+  private def sendResources(objective : TransportFacility, packs : ListBuffer[ResourcePack]) : Unit = {
+    if (vehicles.isEmpty)
+      throw new ImpossibleActionException("Cannot send resources")
+
+    getRoadTo(objective) match {
+      case Some(road) =>
+        if (road.nbVehicle == road.DEFAULT_CAPACITY)
+          throw new ImpossibleActionException("")
+
+        val vehicleOpt = availableVehicle(true)
+        if (vehicleOpt.isEmpty)
+          throw new ImpossibleActionException("No available resource transport vehicle")
+
+        val vehicle = vehicleOpt.get
+
+        loadResources(vehicle, objective, packs)
+
+        try {
+          putOnRoad(vehicle, road)
+        } catch {
+          case ImpossibleActionException(_) =>
+            unload(vehicle)
+            throw new ImpossibleActionException("Cannot pu on road")
+        }
+
+      case None =>
+        throw new ImpossibleActionException("No road to transport facility")
+    }
+  }
+
   /**
     * @return One available vehicle
     */
-  private def availableVehicle() : Option[Vehicle] = {
-    val vehicleOpt = vehicles.find(_.destination.isEmpty)
+  private def availableVehicle(forResourceTransport : Boolean = false) : Option[Vehicle] = {
+    val vehicleOpt = vehicles.find(vehicle => {
+      if (forResourceTransport)
+        vehicle.canTransportResource && vehicle.destination.isEmpty
+
+      else vehicle.destination.isEmpty
+    })
 
     if (vehicleOpt.nonEmpty) vehicles -= vehicleOpt.get
 
@@ -209,6 +249,12 @@ abstract class TransportFacility
     loadedPassenger
   }
 
+  def loadResources(vehicle : Vehicle, objective : TransportFacility, packs : ListBuffer[ResourcePack]) : Unit = {
+    vehicle.loadResources(packs)
+
+    vehicle.setObjective(objective)
+  }
+
   /**
     * @param vehicle The vehicle to unload
     */
@@ -231,6 +277,7 @@ abstract class TransportFacility
     vehicle.unsetObjective()
 
     town.population += vehicle.unloadPassenger()
+    town.warehouse.storeResourcePacks(vehicle.unloadResources())
 
     vehicles += vehicle
   }
@@ -332,7 +379,7 @@ abstract class TransportFacility
 
   panel.children = labels ++ List(evolveButton)
 
-  styleLabels()
+  styleLabels(14)
 
   override def propertyPane() : Node = {
     capacityLabel.text = "Capacity : " + capacity

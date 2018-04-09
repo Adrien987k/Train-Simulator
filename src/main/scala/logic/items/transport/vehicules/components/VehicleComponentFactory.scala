@@ -1,12 +1,13 @@
 package logic.items.transport.vehicules.components
 
-import logic.economy.ResourcesTypes
+import logic.economy.Resources.{DRY_BULK, ResourceType}
 import logic.exceptions.AlreadyMaxLevelException
 import logic.items.ItemTypes._
 import logic.items.transport.vehicules.components.VehicleComponentTypes._
 import logic.world.Company
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 object VehicleComponentFactory {
 
@@ -114,9 +115,11 @@ object VehicleComponentFactory {
     new PassengerCarriage(company, stats.head, stats(1), stats(2).toInt)
   }
 
-  def makeResourceCarriage[R <: ResourcesTypes.ResourceType]
-  (company : Company) : ResourceCarriage[R] = {
-    new ResourceCarriage[R](company, 5.0, 5000.0, 10000.0)
+  def makeResourcesCarriages
+  (company : Company) : ListBuffer[ResourceCarriage] = {
+    ListBuffer(new ResourceCarriage(DRY_BULK, company, 5.0, 5000.0, 10000.0))
+
+    //TODO More + update
   }
 
 }

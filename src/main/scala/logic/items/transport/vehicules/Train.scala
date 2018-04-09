@@ -24,4 +24,6 @@ class Train
     super.leaveRoad()
   }
 
+  override def canTransportResource : Boolean = true
+
 }

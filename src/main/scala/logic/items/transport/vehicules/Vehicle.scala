@@ -2,13 +2,14 @@ package logic.items.transport.vehicules
 
 import game.Game
 import interface.{ItemsButtonBar, WorldCanvas}
+import logic.economy.ResourcePack
 import logic.exceptions.ImpossibleActionException
 import logic.{PointUpdatable, UpdateRate}
 import logic.items.Item
 import logic.items.ItemTypes.VehicleType
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.roads.Road
-import logic.items.transport.vehicules.components.{Carriage, Engine, PassengerCarriage}
+import logic.items.transport.vehicules.components.{Carriage, Engine, PassengerCarriage, ResourceCarriage}
 import logic.world.Company
 import logic.world.towns.Town
 import utils.{Dir, Pos}
@@ -107,6 +108,8 @@ abstract class Vehicle
     _crashed = true
   }
 
+  def canTransportResource : Boolean
+
   def setObjective(transportFacility : TransportFacility) : Unit = {
     if (goalTransportFacility.nonEmpty) return
 
@@ -147,13 +150,7 @@ abstract class Vehicle
     }
   }
 
-  def addCarriage(carriage : Carriage) : Unit = {
-    carriages += carriage
-  }
-
-  override def evolve() : Unit = {
-    engine.evolve()
-  }
+  override def evolve() : Unit = engine.evolve()
 
   /**
     * @param nbPassenger The number of passenger to load
@@ -161,15 +158,33 @@ abstract class Vehicle
     */
   def loadPassenger(nbPassenger : Int) : Int = {
     var remainingPassenger = nbPassenger
+
     carriages.foreach {
       case passengerCarriage : PassengerCarriage =>
         if (remainingPassenger > 0) {
           remainingPassenger -=
             passengerCarriage.loadPassenger(remainingPassenger)
         }
+
       case _ =>
     }
+
     nbPassenger - remainingPassenger
+  }
+
+  def loadResources(packs : ListBuffer[ResourcePack]) : Unit = {
+    packs.foreach(pack => {
+      carriages.foreach {
+        case resourceCarriage : ResourceCarriage =>
+          if (resourceCarriage.resourceType == pack.resource.resourceType) {
+            resourceCarriage.addResourcePack(pack)
+          }
+          //TODO Case not enough place in the vehicle
+
+        case _ =>
+      }
+    })
+
   }
 
   /**
@@ -182,7 +197,26 @@ abstract class Vehicle
       carriage match {
         case passengerCarriage : PassengerCarriage =>
           total + passengerCarriage.unloadPassenger()
+
         case _ => total
+      }
+    })
+  }
+
+  /**
+    * Empty the train of its resources
+    *
+    * @return The resources
+    */
+  def unloadResources() : ListBuffer[ResourcePack] = {
+    val resources : ListBuffer[ResourcePack] = ListBuffer.empty
+
+    carriages.foldLeft(resources)((resources, carriage) => {
+      carriage match {
+        case resourceCarriage : ResourceCarriage =>
+          resources ++= resourceCarriage.takeResources()
+
+        case _ => resources
       }
     })
   }

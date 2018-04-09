@@ -1,6 +1,5 @@
 package logic.items.transport.vehicules
 
-import logic.economy.ResourcesTypes.BoxedResourceType
 import logic.items.ItemTypes._
 import logic.items.transport.facilities._
 import logic.items.transport.vehicules.components.VehicleComponentFactory
@@ -45,7 +44,7 @@ object VehicleFactory {
       case TRUCK =>
         new Truck(TRUCK, company,
           VehicleComponentFactory.makeEngine(DIESEL_ENGINE, company),
-          VehicleComponentFactory.makeResourceCarriage[BoxedResourceType](company),
+          VehicleComponentFactory.makeResourcesCarriages(company).head,
           transportFacility.asInstanceOf[GasStation])
 
       //TODO make carriages for ships

@@ -24,4 +24,6 @@ class Plane
     super.leaveRoad()
   }
 
+  override def canTransportResource: Boolean = false
+
 }
