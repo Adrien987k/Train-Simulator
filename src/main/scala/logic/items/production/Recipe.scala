@@ -4,7 +4,7 @@ import logic.economy.Resources.Resource
 import utils.DateTime
 
 case class Recipe
-(input : Option[(Resource, Int)],
+(input : List[(Resource, Int)],
  output : (Resource, Int),
  time : DateTime) {
 

@@ -3,9 +3,10 @@ package interface
 import game.Game
 import logic.items.Item
 import logic.Updatable
-import logic.items.ItemTypes.{RoadType, VehicleType, WATERWAY}
 import logic.items.transport.roads.Road
+import logic.items.transport.roads.RoadTypes.{RoadType, WATERWAY}
 import logic.items.transport.vehicules.Vehicle
+import logic.items.transport.vehicules.VehicleTypes.VehicleType
 import logic.world.towns.Town
 import utils.Pos
 

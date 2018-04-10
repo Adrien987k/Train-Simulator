@@ -1,44 +1,15 @@
 package logic.items
 
 import logic.items.VehicleCategories.VehicleCategory
+import logic.items.transport.facilities.TransportFacilityTypes._
+import logic.items.transport.roads.RoadTypes._
+import logic.items.transport.vehicules.VehicleTypes._
 
 object ItemTypes {
 
   abstract class ItemType(val name : String) {}
 
-  abstract class VehicleType(name : String) extends ItemType(name) {}
-
-  abstract class TrainType(name : String) extends VehicleType(name) {}
-  abstract class PlaneType(name : String) extends VehicleType(name) {}
-  abstract class TruckType(name : String) extends VehicleType(name) {}
-  abstract class ShipType(name : String) extends VehicleType(name) {}
-
-  case object DIESEL_TRAIN extends TrainType("Diesel Train")
-  case object ELECTRIC_TRAIN extends TrainType("Electric Train")
-
-  case object BOEING extends PlaneType("Boeing")
-  case object CONCORDE extends PlaneType("Concorde")
-
-  case object TRUCK extends TruckType("Truck")
-
-  case object LINER extends ShipType("Liner")
-  case object CRUISE_BOAT extends ShipType("Cruise boat")
-
   abstract class FacilityType(name : String) extends ItemType(name)
-
-  abstract class TransportFacilityType(name : String) extends FacilityType(name) {}
-
-  case object STATION extends TransportFacilityType("Station")
-  case object AIRPORT extends TransportFacilityType("Airport")
-  case object HARBOR extends TransportFacilityType("Harbor")
-  case object GAS_STATION extends TransportFacilityType("Gas Station")
-
-  abstract class RoadType(name : String) extends ItemType(name) {}
-
-  case object RAIL extends RoadType("Rail")
-  case object LINE extends RoadType("Line")
-  case object WATERWAY extends RoadType("Waterway")
-  case object HIGHWAY extends RoadType("Highway")
 
   def items() : List[ItemType] = {
     List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, LINE, STATION, AIRPORT)
@@ -66,6 +37,8 @@ object ItemTypes {
       case VehicleCategories.Planes => List(BOEING, CONCORDE, AIRPORT)
       case VehicleCategories.Ships => List(CRUISE_BOAT, LINER, HARBOR)
       case VehicleCategories.Trucks => List(TRUCK, HIGHWAY, GAS_STATION)
+
+      case _ => List()
     }
   }
 

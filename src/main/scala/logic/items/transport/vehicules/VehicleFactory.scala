@@ -1,8 +1,8 @@
 package logic.items.transport.vehicules
 
-import logic.items.ItemTypes._
 import logic.items.transport.facilities._
-import logic.items.transport.vehicules.components.VehicleComponentFactory
+import logic.items.transport.vehicules.VehicleTypes._
+import logic.items.transport.vehicules.components.{Carriage, VehicleComponentFactory}
 import logic.items.transport.vehicules.components.VehicleComponentTypes._
 import logic.world.Company
 
@@ -10,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 
 object VehicleFactory {
 
-  def makeVehicle
+  def make
     (vehicleType : VehicleType,
      company : Company,
      transportFacility : TransportFacility) : Vehicle = {
@@ -20,13 +20,15 @@ object VehicleFactory {
       case DIESEL_TRAIN =>
         new Train(DIESEL_TRAIN, company,
           VehicleComponentFactory.makeEngine(DIESEL_ENGINE, company),
-          ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company)),
+          ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company))
+            ++ VehicleComponentFactory.makeResourcesCarriages(vehicleType, company),
           transportFacility.asInstanceOf[Station])
 
       case ELECTRIC_TRAIN =>
         new Train(ELECTRIC_TRAIN, company,
         VehicleComponentFactory.makeEngine(ELECTRIC_ENGINE, company),
-        ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company)),
+        ListBuffer(VehicleComponentFactory.makePassengerCarriage(vehicleType, company))
+          ++ VehicleComponentFactory.makeResourcesCarriages(vehicleType, company),
         transportFacility.asInstanceOf[Station])
 
       case BOEING =>
@@ -44,20 +46,21 @@ object VehicleFactory {
       case TRUCK =>
         new Truck(TRUCK, company,
           VehicleComponentFactory.makeEngine(DIESEL_ENGINE, company),
-          VehicleComponentFactory.makeResourcesCarriages(company).head,
+          VehicleComponentFactory.makeResourcesCarriages(vehicleType, company).head,
           transportFacility.asInstanceOf[GasStation])
 
       //TODO make carriages for ships
       case LINER =>
         new Ship(LINER, company,
           VehicleComponentFactory.makeEngine(SHIP_ENGINE, company),
-          ListBuffer.empty,
+          VehicleComponentFactory.makeResourcesCarriages(vehicleType, company)
+            .asInstanceOf[ListBuffer[Carriage]],
           transportFacility.asInstanceOf[Harbor])
 
       case CRUISE_BOAT =>
         new Ship(CRUISE_BOAT, company,
           VehicleComponentFactory.makeEngine(SHIP_ENGINE, company),
-          ListBuffer.empty,
+          ListBuffer(VehicleComponentFactory.makePassengerCarriage(CRUISE_BOAT, company)),
           transportFacility.asInstanceOf[Harbor])
 
       case _ => throw new Exception("Not implemented")

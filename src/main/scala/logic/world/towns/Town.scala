@@ -5,10 +5,11 @@ import logic.economy.Resources.Resource
 import logic.{PointUpdatable, UpdateRate}
 import logic.economy._
 import logic.exceptions.CannotBuildItemException
-import logic.items.ItemTypes._
 import logic.items.production.FactoryTypes.FactoryType
 import logic.items.production.{Factory, FactoryFactory}
+import logic.items.transport.facilities.TransportFacilityTypes._
 import logic.items.transport.facilities._
+import logic.items.transport.vehicules.VehicleTypes._
 import utils.Pos
 
 import scala.collection.mutable
@@ -45,10 +46,10 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
   val maxNbFactory : Int = INIT_MAX_NB_FACTORY
 
-  val offer : Offer = new Offer
+  val offer : ResourceCollection = new ResourceCollection
   val requests : TownRequests = new TownRequests
   val consumption : Consumption = Consumption.initialConsumption()
-  val warehouse : Warehouse = new Warehouse
+  val warehouse : ResourceCollection = new ResourceCollection
 
   val requestFromOtherCities = new ListBuffer[Request]
 
@@ -72,6 +73,8 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     gasStation.foreach(_.step())
 
     produce()
+
+    consume()
 
     true
   }
@@ -140,7 +143,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     if (factories.lengthCompare(maxNbFactory) == 0)
       throw new CannotBuildItemException("Max number of factory reached")
 
-    factories += FactoryFactory.makeFactory(factoryType, Game.world.company, this)
+    factories += FactoryFactory.make(factoryType, Game.world.company, this)
 
     Game.world.company.buy(factoryType)
   }
@@ -369,8 +372,6 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   townPanel.children = labels
 
   mainPanel.top = townPanel
-
-  private var resized = false
 
   private val transportFacilitiesVBox = new VBox()
 

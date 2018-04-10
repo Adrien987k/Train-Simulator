@@ -23,12 +23,15 @@ class Factory
 
     recipes.foreach(recipe => {
       if (recipe.input.nonEmpty) {
-        val (pack, _) =  town.warehouse.take(recipe.input.get._1, recipe.input.get._2)
+        if (town.warehouse.available(recipe.input)) {
+          val packs =  town.warehouse.takeAll(recipe.input)
 
-        val production = new Production(recipe)
-        production.start(pack)
+          val production = new Production(recipe)
+          production.start(packs)
 
-        productions += production
+          productions += production
+        }
+
       } else {
         val production = new Production(recipe)
         production.start()

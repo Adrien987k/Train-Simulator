@@ -4,8 +4,9 @@ import interface.GlobalInformationPanel
 import logic.exceptions.{AlreadyMaxLevelException, CannotBuildItemException, CannotSendPassengerException, ImpossibleActionException}
 import logic.economy.ResourcePack
 import logic.items.Facility
-import logic.items.ItemTypes.{TransportFacilityType, VehicleType}
+import logic.items.transport.facilities.TransportFacilityTypes.TransportFacilityType
 import logic.items.transport.roads.Road
+import logic.items.transport.vehicules.VehicleTypes.VehicleType
 import logic.items.transport.vehicules.{Vehicle, VehicleFactory}
 import logic.world.{Company, Shop}
 import logic.world.towns.Town
@@ -82,7 +83,7 @@ abstract class TransportFacility
   protected def buildVehicle(vehicleType : VehicleType) : Unit = {
     if (isFull) throw new CannotBuildItemException("This facility is full")
 
-    val vehicle = VehicleFactory.makeVehicle(vehicleType, company, this)
+    val vehicle = VehicleFactory.make(vehicleType, company, this)
 
     company.addVehicle(vehicle)
 

@@ -1,8 +1,8 @@
 package logic.items.transport.vehicules.components
 
-import logic.economy.Resources.{DRY_BULK, ResourceType}
+import logic.economy.Resources.{BOXED, DRY_BULK, LIQUID}
 import logic.exceptions.AlreadyMaxLevelException
-import logic.items.ItemTypes._
+import logic.items.transport.vehicules.VehicleTypes._
 import logic.items.transport.vehicules.components.VehicleComponentTypes._
 import logic.world.Company
 
@@ -37,6 +37,8 @@ object VehicleComponentFactory {
     3 -> List(4.0, 200000.0, 2000000.0, 10000000.0)
   ))
 
+  /* maxSpeed, weight, maxCapacity */
+
   evolutions += (TRAIN_PASSENGER_CARRIAGE -> Map(
     1 -> List(10.0, 1000.0, 500),
     2 -> List(12.0, 1200.0, 750),
@@ -53,6 +55,12 @@ object VehicleComponentFactory {
     1 -> List(30.0, 2500.0, 300),
     2 -> List(30.0, 3500.0, 500),
     3 -> List(30.0, 4000.0, 800)
+  ))
+
+  evolutions += (CRUISE_BOAT_CARRIAGE -> Map(
+    1 -> List(8.0, 10000.0, 1000),
+    2 -> List(8.0, 12000.0, 1200),
+    3 -> List(9.0, 14000.0, 1500)
   ))
 
   def evolve(vehicleComponent : VehicleComponent) : Unit = {
@@ -107,6 +115,8 @@ object VehicleComponentFactory {
 
       case BOEING => getStatsList(BOEING_PASSENGER_CARRIAGE, 1)
 
+      case CRUISE_BOAT => getStatsList(CRUISE_BOAT_CARRIAGE, 1)
+
       case _ : TrainType => getStatsList(TRAIN_PASSENGER_CARRIAGE, 1)
     }
 
@@ -116,8 +126,34 @@ object VehicleComponentFactory {
   }
 
   def makeResourcesCarriages
-  (company : Company) : ListBuffer[ResourceCarriage] = {
-    ListBuffer(new ResourceCarriage(DRY_BULK, company, 5.0, 5000.0, 10000.0))
+  (vehicleType : VehicleType, company : Company) : ListBuffer[ResourceCarriage] = {
+    vehicleType match {
+
+      case DIESEL_TRAIN | ELECTRIC_TRAIN =>
+        ListBuffer(
+          new ResourceCarriage(DRY_BULK, company, 10.0, 5000.0, 10000.0),
+          new ResourceCarriage(LIQUID, company, 10.0, 5000.0, 10000.0),
+          new ResourceCarriage(BOXED, company, 10.0, 5000.0, 10000.0),
+          new ResourceCarriage(BOXED, company, 10.0, 5000.0, 10000.0),
+          new ResourceCarriage(BOXED, company, 10.0, 5000.0, 10000.0),
+          new ResourceCarriage(BOXED, company, 10.0, 5000.0, 10000.0)
+        )
+
+      case TRUCK =>
+        ListBuffer(
+          new ResourceCarriage(DRY_BULK, company, 10.0, 3000.0, 5000.0),
+          new ResourceCarriage(BOXED, company, 10.0, 3000.0, 5000.0)
+        )
+      case LINER =>
+        ListBuffer(
+          new ResourceCarriage(DRY_BULK, company, 7.0, 75000.0, 2000000.0),
+          new ResourceCarriage(LIQUID, company, 7.0, 75000.0, 1500000.0),
+          new ResourceCarriage(BOXED, company, 7.0, 7500.0, 2500000.0)
+        )
+
+      case _ => ListBuffer[ResourceCarriage]()
+
+    }
 
     //TODO More + update
   }

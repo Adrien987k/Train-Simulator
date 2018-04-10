@@ -1,8 +1,10 @@
 package logic.items.transport.facilities
 
 import game.Game
-import logic.items.ItemTypes.{ShipType, TransportFacilityType, WATERWAY}
+import logic.items.transport.facilities.TransportFacilityTypes.TransportFacilityType
+import logic.items.transport.roads.RoadTypes.WATERWAY
 import logic.items.transport.roads.Waterway
+import logic.items.transport.vehicules.VehicleTypes.ShipType
 import logic.world.Company
 import logic.world.towns.Town
 

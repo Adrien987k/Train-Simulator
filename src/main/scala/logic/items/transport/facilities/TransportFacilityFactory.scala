@@ -1,6 +1,6 @@
 package logic.items.transport.facilities
 
-import logic.items.ItemTypes._
+import logic.items.transport.facilities.TransportFacilityTypes._
 import logic.world.Company
 import logic.world.towns.Town
 

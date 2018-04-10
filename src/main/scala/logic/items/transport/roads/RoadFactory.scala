@@ -1,15 +1,15 @@
 package logic.items.transport.roads
 
-import logic.items.ItemTypes._
 import logic.items.transport.facilities._
+import logic.items.transport.roads.RoadTypes._
 import logic.world.Company
 
 object RoadFactory {
 
-  def makeRoad(roadType : RoadType,
-               company : Company,
-               transportFacilityA : TransportFacility,
-               transportFacilityB : TransportFacility) : Road = {
+  def make(roadType : RoadType,
+           company : Company,
+           transportFacilityA : TransportFacility,
+           transportFacilityB : TransportFacility) : Road = {
 
     roadType match {
       case RAIL =>

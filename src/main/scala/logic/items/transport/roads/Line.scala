@@ -1,8 +1,8 @@
 package logic.items.transport.roads
 
 import logic.Updatable
-import logic.items.ItemTypes.RoadType
 import logic.items.transport.facilities.Airport
+import logic.items.transport.roads.RoadTypes.RoadType
 import logic.items.transport.vehicules.Plane
 import logic.world.Company
 

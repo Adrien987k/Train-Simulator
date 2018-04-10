@@ -1,9 +1,10 @@
 package interface
 
-import logic.items.{ItemTypes, VehicleCategories}
 import logic.items.ItemTypes.ItemType
+import logic.items.{ItemTypes, VehicleCategories}
 import logic.items.VehicleCategories.VehicleCategory
 import logic.items.production.FactoryTypes
+import logic.items.transport.roads.RoadTypes.{HIGHWAY, RAIL}
 import logic.world.Shop
 
 import scala.collection.mutable
@@ -57,7 +58,7 @@ object ItemsButtonBar extends GUIComponent {
       (buttons, item) => {
 
         val itemButton = new Button(item.name + " " + Shop.itemPrice(item) + "$" +
-          (item match {case ItemTypes.RAIL | ItemTypes.HIGHWAY => " per KM" case _ => ""}))
+          (item match {case RAIL | HIGHWAY => " per KM" case _ => ""}))
 
         itemButton.style = buildModeButton.style()
 

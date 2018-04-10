@@ -1,7 +1,7 @@
 package logic.items.transport.vehicules.components
 
 import logic.economy.ResourcePack
-import logic.economy.Resources.{Resource, ResourceType}
+import logic.economy.Resources.ResourceType
 import logic.items.transport.vehicules.components.VehicleComponentTypes.RESOURCE_CARRIAGE
 import logic.world.Company
 

@@ -1,8 +1,8 @@
 package logic.items.transport.vehicules
 
-import logic.items.ItemTypes.TruckType
 import logic.items.transport.facilities.GasStation
 import logic.items.transport.roads.Highway
+import logic.items.transport.vehicules.VehicleTypes.TruckType
 import logic.items.transport.vehicules.components.{Engine, ResourceCarriage}
 import logic.world.Company
 

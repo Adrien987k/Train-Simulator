@@ -2,7 +2,6 @@ package interface
 
 import game.Game
 
-import scala.collection.mutable.ListBuffer
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 import scalafx.scene.paint.Color

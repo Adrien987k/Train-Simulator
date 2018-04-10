@@ -6,9 +6,9 @@ import logic.economy.ResourcePack
 import logic.exceptions.ImpossibleActionException
 import logic.{PointUpdatable, UpdateRate}
 import logic.items.Item
-import logic.items.ItemTypes.VehicleType
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.roads.Road
+import logic.items.transport.vehicules.VehicleTypes.VehicleType
 import logic.items.transport.vehicules.components.{Carriage, Engine, PassengerCarriage, ResourceCarriage}
 import logic.world.Company
 import logic.world.towns.Town

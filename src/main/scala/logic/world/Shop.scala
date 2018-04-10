@@ -2,6 +2,9 @@ package logic.world
 
 import logic.items.ItemTypes._
 import logic.items.production.FactoryTypes._
+import logic.items.transport.facilities.TransportFacilityTypes.{AIRPORT, GAS_STATION, HARBOR, STATION}
+import logic.items.transport.roads.RoadTypes.{HIGHWAY, RAIL}
+import logic.items.transport.vehicules.VehicleTypes._
 import logic.items.transport.vehicules.components.VehicleComponentTypes._
 
 object Shop {

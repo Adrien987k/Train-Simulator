@@ -1,6 +1,8 @@
 package interface
 
-import logic.items.ItemTypes._
+import logic.items.transport.facilities.TransportFacilityTypes._
+import logic.items.transport.roads.RoadTypes._
+import logic.items.transport.vehicules.VehicleTypes._
 import logic.world.towns.Town
 
 import scala.collection.mutable.ListBuffer

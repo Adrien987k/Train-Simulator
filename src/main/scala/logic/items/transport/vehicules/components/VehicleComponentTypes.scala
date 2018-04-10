@@ -17,6 +17,7 @@ object VehicleComponentTypes {
   case object TRAIN_PASSENGER_CARRIAGE extends PassengerCarriageType("Passenger carriage")
   case object CONCORDE_PASSENGER_CARRIAGE extends PassengerCarriageType("Passenger Carriage")
   case object BOEING_PASSENGER_CARRIAGE extends PassengerCarriageType("Passenger Carriage")
+  case object CRUISE_BOAT_CARRIAGE extends PassengerCarriageType("Cruise boat carriage")
 
   case object DIESEL_ENGINE extends EngineType("Diesel engine")
   case object ELECTRIC_ENGINE extends EngineType("Electric engine")

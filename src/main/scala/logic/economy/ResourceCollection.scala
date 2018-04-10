@@ -38,6 +38,28 @@ class ResourceCollection {
      remainingToTake)
   }
 
+  def takeAll(resources : List[(Resource, Int)]) : List[ResourcePack] = {
+    val resultPacks : ListBuffer[ResourcePack] = ListBuffer.empty
+
+    resources.foldLeft(resultPacks)((packs, resourceAndQuantity) => {
+      val (pack, _) = take(resourceAndQuantity._1, resourceAndQuantity._2)
+
+      packs += pack
+
+      packs
+    }).toList
+  }
+
+  def available(resources : List[(Resource, Int)]) : Boolean = {
+    val lack = resources.find(resourcesAndQuantity => {
+      val (resource, quantity) = resourcesAndQuantity
+
+      quantityOf(resource) < quantity
+    })
+
+    lack.isEmpty
+  }
+
   def quantityOf(resourceType : Resource) : Int = {
     resources.foldLeft(0)((total, pack) => {
       if (pack.resource == resourceType)

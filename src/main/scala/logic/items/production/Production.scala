@@ -1,6 +1,5 @@
 package logic.items.production
 
-import logic.economy.Resources.Resource
 import game.Game
 import logic.economy.ResourcePack
 import utils.DateTime
@@ -9,7 +8,7 @@ class Production(val recipe : Recipe) {
 
   var startTime : DateTime = _
 
-  def start(input : ResourcePack) : Unit = {
+  def start(input : List[ResourcePack]) : Unit = {
     //TODO Check input = recipe.input
 
     startTime = Game.world.gameDateTime

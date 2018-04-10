@@ -1,8 +1,9 @@
 package logic.items.transport.facilities
 
 import logic.Updatable
-import logic.items.ItemTypes.{TrainType, TransportFacilityType}
+import logic.items.transport.facilities.TransportFacilityTypes.TransportFacilityType
 import logic.items.transport.roads.Rail
+import logic.items.transport.vehicules.VehicleTypes.TrainType
 import logic.world.Company
 import logic.world.towns.Town
 

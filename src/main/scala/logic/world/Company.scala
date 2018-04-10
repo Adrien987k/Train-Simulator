@@ -11,6 +11,9 @@ import logic.Updatable
 import logic.items.ItemTypes
 import logic.items.ItemTypes._
 import logic.items.production.FactoryTypes.FactoryType
+import logic.items.transport.facilities.TransportFacilityTypes._
+import logic.items.transport.roads.RoadTypes.{LINE, RoadType, WATERWAY}
+import logic.items.transport.vehicules.VehicleTypes.VehicleType
 import utils.Pos
 
 import scala.collection.mutable
@@ -215,7 +218,7 @@ class Company(world : World) {
     if (roadAlreadyExists(transportFacilityA.town, transportFacilityB.town))
       throw new CannotBuildItemException("Road already exists there")
 
-    val road = RoadFactory.makeRoad(roadType, this, transportFacilityA, transportFacilityB)
+    val road = RoadFactory.make(roadType, this, transportFacilityA, transportFacilityB)
 
     roads += road
 

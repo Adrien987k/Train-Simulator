@@ -11,6 +11,8 @@ object FactoryTypes {
   abstract class MinesType(name : String) extends FactoryType(name)
   abstract class SimpleFactoryType(name : String) extends FactoryType(name)
 
+  case object ALUMINIUM_PLANT extends SimpleFactoryType("Aluminium plant")
+
   case object GRAIN_FARM extends FarmsType("Grain farm")
   case object GARDEN extends FarmsType("Garden")
 
