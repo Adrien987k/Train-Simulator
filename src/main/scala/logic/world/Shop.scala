@@ -37,14 +37,12 @@ object Shop {
   def factoryPrice(factoryType : FacilityType) : Double = {
     factoryType match {
       case GRAIN_FARM => 1000
-
-      case GARDEN => 1500
-
-      case IRON_MINE => 3000
+      case BAKERY => 2000
       case BAUXITE_MINE => 5000
       case COAL_MINE => 1200
-
-      case TEXTILE_FACTORY => 4000
+      case ALUMINIUM_PLANT => 4500
+      case TEXTILE_MILL => 4000
+      case SHEEP_FARM => 3500
 
       case _ => 0
     }

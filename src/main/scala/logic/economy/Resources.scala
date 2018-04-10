@@ -46,6 +46,8 @@ object Resources {
 
   case object BRICK extends BoxedResource("brick", "box", 10.0, 5.0, 20.0, 50.0, 10)
 
+  case object CANNED_FOOD extends BoxedResource("Canned food", "box", 20.0, 5.0, 100.0, 10.0, 2)
+
   case object CATTLE extends BoxedResource("cattle", "individual", 100.0, 20.0, 200.0, 10.0, 5)
 
   case object CEMENT extends DryBulkResource("cement", 20.0, 10.0, 40.0, 15.0)
