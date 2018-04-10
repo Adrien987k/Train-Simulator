@@ -21,7 +21,7 @@ class ElectricEngine
   override def consumption(weight : Double) : Double = {
     val speed = tractiveEffort(weight)
 
-    weight * 0.001 * speed
+    weight * 0.0001 * speed
   }
 
 }

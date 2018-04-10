@@ -1,10 +1,11 @@
 package logic.items.transport.vehicules.components
 
 import logic.economy.ResourcePack
-import logic.economy.Resources.ResourceType
+import logic.economy.Resources.{Resource, ResourceType}
 import logic.items.transport.vehicules.components.VehicleComponentTypes.RESOURCE_CARRIAGE
 import logic.world.Company
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class ResourceCarriage
@@ -36,6 +37,20 @@ class ResourceCarriage
     resources = ListBuffer.empty
 
     resourcesResult
+  }
+
+  def resourceMap() : Map[Resource, Int] = {
+    val result : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
+
+    resources.foldLeft(result)((map, pack) => {
+      val oldQuantity =
+        if (map.contains(pack.resource)) map(pack.resource)
+        else 0
+
+      map.update(pack.resource, pack.quantity + oldQuantity)
+
+      map
+    }).toMap
   }
 
 }

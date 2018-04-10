@@ -22,7 +22,7 @@ class DieselEngine
   override def consumption(weight : Double) : Double = {
     val speed = tractiveEffort(weight)
 
-    weight * 0.01 * speed
+    weight * 0.001 * speed
   }
 
 }

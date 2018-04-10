@@ -3,6 +3,7 @@ package logic.items.transport.vehicules
 import game.Game
 import interface.{ItemsButtonBar, WorldCanvas}
 import logic.economy.ResourcePack
+import logic.economy.Resources.Resource
 import logic.exceptions.ImpossibleActionException
 import logic.{PointUpdatable, UpdateRate}
 import logic.items.Item
@@ -14,6 +15,7 @@ import logic.world.Company
 import logic.world.towns.Town
 import utils.{Dir, Pos}
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
@@ -103,6 +105,7 @@ abstract class Vehicle
   }
 
   def crash() : Unit = {
+    println("Crash")
     //TODO GUI.crash(pos)
 
     _crashed = true
@@ -247,6 +250,28 @@ abstract class Vehicle
     })
   }
 
+  def carriagesInfo() : String = {
+    val builder : StringBuilder = new StringBuilder
+    val resourceMap : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
+
+    carriages.foldLeft(resourceMap)((resourceMap, carriage) => {
+      carriage match {
+        case resourceCarriage : ResourceCarriage =>
+          resourceMap.++=(resourceCarriage.resourceMap())
+          resourceMap
+
+        case _ =>
+          resourceMap
+      }
+    })
+
+    resourceMap.foldLeft(builder)((builder, resourceAndQuantity) => {
+      val (resource, quantity) = resourceAndQuantity
+
+      builder.append(resource.name + " : " + quantity + " " + resource.unit + "\n")
+    }).toString()
+  }
+
   val pane = new BorderPane
 
   val panel = new VBox()
@@ -258,6 +283,8 @@ abstract class Vehicle
   val posLabel = new Label()
   val goalStationLabel = new Label()
   val destinationLabel = new Label()
+
+  val carriageInfoLabel = new Label()
 
   labels = List(typeLabel,
     speedLabel,
@@ -276,7 +303,7 @@ abstract class Vehicle
   val chooseDestPanel = new Button("Choose destination")
 
   override def propertyPane() : Node = {
-    typeLabel.text = vehicleType.name
+    typeLabel.text = "=== " + vehicleType.name + " ==="
     speedLabel.text = "Max Speed : " + engine.maxSpeed
     maxPassengerLabel.text = "Max passengers : " + passengerCapacity
     nbPassengerLabel.text = "Passengers : " + nbPassenger
@@ -311,6 +338,13 @@ abstract class Vehicle
       panel.children.add(chooseDestPanel)
 
     pane.center = engine.propertyPane()
+
+    carriageInfoLabel.text = "=== resources ===\n" + carriagesInfo()
+    carriageInfoLabel.font = Font.font(null, FontWeight.Bold, 14)
+
+    if (!panel.children.contains(carriageInfoLabel))
+    panel.children.add(carriageInfoLabel)
+
 
     pane
   }

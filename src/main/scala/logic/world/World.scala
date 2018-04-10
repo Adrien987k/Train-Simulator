@@ -19,7 +19,7 @@ class World() {
   val MAP_HEIGHT = 700
 
   val INIT_NB_TOWNS = 10
-  val APPARITION_WATERWAY = 15
+  val APPARITION_WATERWAY = 3
 
   val rand = new Random
 

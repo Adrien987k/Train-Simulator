@@ -5,7 +5,7 @@ import logic.world.towns.Town
 
 case class Request
 (town : Town,
- resourceType : Resource,
+ resource : Resource,
  quantity : Int) {
 
 

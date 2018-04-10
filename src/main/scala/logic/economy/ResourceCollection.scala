@@ -2,9 +2,12 @@ package logic.economy
 
 import logic.economy.Resources.Resource
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scalafx.scene.control.Label
+import scalafx.scene.layout.VBox
 
-class ResourceCollection {
+class ResourceCollection(name : String) {
 
   val resources : ListBuffer[ResourcePack] = ListBuffer.empty
 
@@ -62,10 +65,44 @@ class ResourceCollection {
 
   def quantityOf(resourceType : Resource) : Int = {
     resources.foldLeft(0)((total, pack) => {
-      if (pack.resource == resourceType)
+      if (pack.resource.getClass.getTypeName
+        .equals(resourceType.getClass.getTypeName))
         total + pack.quantity
       else total
     })
+  }
+
+  def resourceMap() : Map[Resource, Int] = {
+    val result : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
+
+    resources.foldLeft(result)((map, pack) => {
+      val oldQuantity =
+        if (map.contains(pack.resource)) map(pack.resource)
+        else 0
+
+      map.update(pack.resource, pack.quantity + oldQuantity)
+
+      map
+    }).toMap
+  }
+
+  private val panel = new VBox()
+  private val label = new Label()
+
+  panel.children = List(label)
+
+  def propertyPane() : VBox = {
+    val builder : StringBuilder = new StringBuilder
+
+    resourceMap().foldLeft(builder)((builder, resourceAndQuantity) => {
+      val (resource, quantity) = resourceAndQuantity
+
+      builder.append(resource.name + " : " + quantity + " " + resource.unit + "\n")
+    })
+
+    label.text = "=== " + name + " ===\n" + builder.toString()
+
+    panel
   }
 
 }

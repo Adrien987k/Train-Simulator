@@ -60,13 +60,18 @@ object GUI {
   private def makeCentralPain(): Node = {
     val leftSplit = new SplitPane
     leftSplit.orientation = Orientation.Vertical
+
     val globalInfoPane = new BorderPane
     globalInfoPane.center = GlobalInformationPanel.make()
+
     val localInfoPane = new BorderPane
+
     localInfoPane.center = LocalInformationPanel.make()
     leftSplit.items ++= List(globalInfoPane, localInfoPane)
-    val rightSplit = new SplitPane
 
+    leftSplit.setDividerPositions(0.25)
+
+    val rightSplit = new SplitPane
 
     rightSplit.orientation = Orientation.Vertical
     val allTrainPane = new BorderPane

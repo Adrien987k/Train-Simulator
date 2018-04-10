@@ -23,8 +23,8 @@ object FactoryFactory {
       case GARDEN =>
         new Factory(GARDEN, company, town,
           ListBuffer(
-            Recipe(List(), (VEGETABLE, 10000), new DateTime(30, 0)),
-            Recipe(List(), (FRUIT, 10000), new DateTime(30, 0))
+            //Recipe(List(), (VEGETABLE, 10000), new DateTime(30, 0)),
+            Recipe(List(), (FRUIT, 10000), new DateTime(5, 0))
           )
         )
 

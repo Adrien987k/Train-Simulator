@@ -2,12 +2,13 @@ package interface
 import logic.items.transport.vehicules.Vehicle
 
 import scalafx.scene.Node
-import scalafx.scene.control.Label
+import scalafx.scene.control.{Label, ScrollPane}
 import scalafx.scene.layout.BorderPane
 import scalafx.scene.text.{Font, FontWeight}
 
 object OneVehicleInformationPanel extends GUIComponent {
 
+  val mainPanel = new ScrollPane()
 
   val noInfoLabel : Label = new Label("No vehicle selected")
   var panel : BorderPane = new BorderPane
@@ -18,8 +19,11 @@ object OneVehicleInformationPanel extends GUIComponent {
     noInfoLabel.font = Font.font(null, FontWeight.Bold, 18)
 
     panel.center = noInfoLabel
-    panel.style = "-fx-background-color: lightGreen"
-    panel
+
+    mainPanel.content = panel
+    mainPanel.style = "-fx-background-color: lightGreen"
+
+    mainPanel
   }
 
   override def restart() : Unit = {

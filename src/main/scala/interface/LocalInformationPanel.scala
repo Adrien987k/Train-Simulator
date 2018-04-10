@@ -6,11 +6,13 @@ import logic.items.transport.vehicules.Vehicle
 import utils.Pos
 
 import scalafx.scene.Node
-import scalafx.scene.control.Label
+import scalafx.scene.control.{Label, ScrollPane}
 import scalafx.scene.layout.BorderPane
 import scalafx.scene.text.{Font, FontWeight}
 
 object LocalInformationPanel extends GUIComponent {
+
+  private val mainPane = new ScrollPane
 
   private val localInformationPane : BorderPane = new BorderPane
   private val noInfoLabel = new Label("No town selected")
@@ -20,10 +22,12 @@ object LocalInformationPanel extends GUIComponent {
   def make() : Node = {
     noInfoLabel.font = Font.font(null, FontWeight.Bold, 18)
 
-    localInformationPane.style = "-fx-background-color: lightCoral"
     localInformationPane.center = noInfoLabel
 
-    localInformationPane
+    mainPane.content = localInformationPane
+    mainPane.style = "-fx-background-color: lightCoral"
+
+    mainPane
   }
 
   override def restart() : Unit = {

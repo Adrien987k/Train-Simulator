@@ -35,13 +35,17 @@ class Factory
       } else {
         val production = new Production(recipe)
         production.start()
+
+        productions += production
       }
     })
 
     productions.foreach(production => {
       production.checkIsFinished match {
         case Some(pack) =>
+          println("Pack produces")
           town.warehouse.storeResourcePack(pack)
+          productions -= production
 
         case None =>
       }

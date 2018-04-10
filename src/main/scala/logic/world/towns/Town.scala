@@ -46,10 +46,10 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
   val maxNbFactory : Int = INIT_MAX_NB_FACTORY
 
-  val offer : ResourceCollection = new ResourceCollection
+  val offer : ResourceCollection = new ResourceCollection("Offer")
   val requests : TownRequests = new TownRequests
   val consumption : Consumption = Consumption.initialConsumption()
-  val warehouse : ResourceCollection = new ResourceCollection
+  val warehouse : ResourceCollection = new ResourceCollection("Warehouse")
 
   val requestFromOtherCities = new ListBuffer[Request]
 
@@ -75,6 +75,12 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     produce()
 
     consume()
+
+    computeCurrentRequestAndOffer()
+
+    searchResource()
+
+    answerRequests()
 
     true
   }
@@ -289,14 +295,36 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   }
 
   def consume() : Unit = {
-    consumption.resources.foreach(resourceTypeAndQuantity => {
-      val (resourceType, quantity) = resourceTypeAndQuantity
+    consumption.resources.foreach(resourceAndQuantity => {
+      val (resource, quantity) = resourceAndQuantity
 
-      val (_, missingQuantity) = warehouse.take(resourceType, quantity)
+      val (_, missingQuantity) = warehouse.take(resource, quantity)
 
       if (missingQuantity > 0) {
-        requests.update(resourceType, missingQuantity)
+        requests.addSome(resource, missingQuantity)
       }
+    })
+  }
+
+  def computeCurrentRequestAndOffer() : Unit = {
+    warehouse.resourceMap().foreach(resourceAndQuantity => {
+      val (resource, quantity) = resourceAndQuantity
+
+      val quantityConsumption =
+        if (consumption.resources.contains(resource))
+          consumption.resources(resource)
+        else 0
+
+      if (quantity > 3 * quantityConsumption) {
+        offer.storeResourcePack(warehouse.take(resource, quantity / 3)._1)
+      }
+    })
+
+    offer.resourceMap().foreach(resourceAndQuantity => {
+      val (resource, _) = resourceAndQuantity
+
+      if (requests.quantityOf(resource) > 0)
+        requests.removeSome(resource, Int.MaxValue)
     })
   }
 
@@ -311,7 +339,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     */
   def searchResource(transportFacility : TransportFacility) : Unit = {
     transportFacility.neighbours().foreach(tf => {
-      requests.requests.foreach(request => {
+      requests.resources.foreach(request => {
         searchResourceIn(tf.town, request)
       })
     })
@@ -332,16 +360,20 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     val packsTo : mutable.HashMap[Town, ListBuffer[ResourcePack]] = mutable.HashMap.empty
 
     requestFromOtherCities.foreach(request => {
-      val canOfferQuantity = offer.quantityOf(request.resourceType)
+      val canOfferQuantity = offer.quantityOf(request.resource)
 
       if (canOfferQuantity > 0) {
-        val (toSendPack, _) = offer.take(request.resourceType, request.quantity)
+        val (toSendPack, _) = offer.take(request.resource, request.quantity)
 
-        val list = packsTo(request.town)
+        if (packsTo.contains(request.town)) {
+          val list = packsTo(request.town)
 
-        list += toSendPack
+          list += toSendPack
 
-        packsTo.update(request.town, list)
+          packsTo.update(request.town, list)
+        } else {
+          packsTo += ((request.town, ListBuffer(toSendPack)))
+        }
       }
     })
 
@@ -373,33 +405,46 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
   mainPanel.top = townPanel
 
-  private val transportFacilitiesVBox = new VBox()
+  private val elementsVBox = new VBox()
 
-  mainPanel.center = transportFacilitiesVBox
+  mainPanel.center = elementsVBox
 
   override def propertyPane() : Node = {
     populationLabel.text  = "Population : " + population
     propTravelerLabel.text = "Proportion of traveler : " + proportionTraveler
     posLabel.text = "position : " + pos
 
-    if (hasStation && !transportFacilitiesVBox.children.contains(station.get.propertyPane()))
-      transportFacilitiesVBox.children.add(station.get.propertyPane())
+    if (!elementsVBox.children.contains(warehouse.propertyPane()))
+      elementsVBox.children.add(warehouse.propertyPane())
 
-    if (hasAirport && !transportFacilitiesVBox.children.contains(airport.get.propertyPane()))
-      transportFacilitiesVBox.children.add(airport.get.propertyPane())
+    if (!elementsVBox.children.contains(warehouse.propertyPane()))
+    elementsVBox.children.add(warehouse.propertyPane())
 
-    if (hasHarbor && !transportFacilitiesVBox.children.contains(harbor.get.propertyPane()))
-      transportFacilitiesVBox.children.add(harbor.get.propertyPane())
+    if (!elementsVBox.children.contains(offer.propertyPane()))
+      elementsVBox.children.add(offer.propertyPane())
 
-    if (hasGasStation && !transportFacilitiesVBox.children.contains(gasStation.get.propertyPane()))
-      transportFacilitiesVBox.children.add(gasStation.get.propertyPane())
+    if (!elementsVBox.children.contains(requests.propertyPane()))
+      elementsVBox.children.add(requests.propertyPane())
+
+    if (hasStation && !elementsVBox.children.contains(station.get.propertyPane()))
+    elementsVBox.children.add(station.get.propertyPane())
+
+    if (hasAirport && !elementsVBox.children.contains(airport.get.propertyPane()))
+    elementsVBox.children.add(airport.get.propertyPane())
+
+    if (hasHarbor && !elementsVBox.children.contains(harbor.get.propertyPane()))
+    elementsVBox.children.add(harbor.get.propertyPane())
+
+    if (hasGasStation && !elementsVBox.children.contains(gasStation.get.propertyPane()))
+    elementsVBox.children.add(gasStation.get.propertyPane())
 
     styleLabels(14)
 
     factories.foreach(factory => {
-      if (!transportFacilitiesVBox.children.contains(factory.propertyPane()))
-        transportFacilitiesVBox.children.add(factory.propertyPane())
+      if (!elementsVBox.children.contains(factory.propertyPane()))
+      elementsVBox.children.add(factory.propertyPane())
     })
+
 
     mainPanel
   }

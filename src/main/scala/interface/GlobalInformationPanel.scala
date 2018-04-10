@@ -16,10 +16,10 @@ object GlobalInformationPanel extends GUIComponent {
   val moneyLabel = new Label("money : 0")
   val ticketPriceLabel = new Label("Ticket price per Km : ")
   val warningLabel = new Label()
-  val nbTrainLabel = new Label("Total vehicles : 0")
+  val nbVehicleLabel = new Label("Total vehicles : 0")
   val totalPopulationLabel = new Label
 
-  val labels : List[Label] = List(mainLabel, timeLabel, moneyLabel, ticketPriceLabel, nbTrainLabel, totalPopulationLabel)
+  val labels : List[Label] = List(mainLabel, timeLabel, moneyLabel, ticketPriceLabel, nbVehicleLabel, totalPopulationLabel)
 
   def make() : VBox = {
     panel.children = labels
@@ -39,7 +39,7 @@ object GlobalInformationPanel extends GUIComponent {
     timeLabel.text = Game.world.gameDateTime.time()
     moneyLabel.text = "Money : " + Game.world.company.money.toInt
     ticketPriceLabel.text = "Ticket price per Km : " + Game.world.company.ticketPricePerKm
-    nbTrainLabel.text = "Trains : " + Game.world.company.vehicles.size
+    nbVehicleLabel.text = "Total vehicles  : " + Game.world.company.vehicles.size
     totalPopulationLabel.text = "Population : " + Game.world.totalPopulation
   }
 

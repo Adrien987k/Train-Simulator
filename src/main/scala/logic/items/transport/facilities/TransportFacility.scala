@@ -116,7 +116,8 @@ abstract class TransportFacility
       sendResources(objective, packs)
     } catch {
       case e : CannotSendPassengerException =>
-        //TODO Change to an other exception
+      case e : ImpossibleActionException =>
+      //TODO Change to an other exception
     }
   }
 
@@ -279,6 +280,7 @@ abstract class TransportFacility
 
     town.population += vehicle.unloadPassenger()
     town.warehouse.storeResourcePacks(vehicle.unloadResources())
+    town.computeCurrentRequestAndOffer()
 
     vehicles += vehicle
   }
