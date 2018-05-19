@@ -7,22 +7,22 @@ import scala.collection.mutable.ListBuffer
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 
-class ResourceCollection(name : String) {
+class ResourceCollection() {
 
-  val resources : ListBuffer[ResourcePack] = ListBuffer.empty
+  private val packs : ListBuffer[ResourcePack] = ListBuffer.empty
 
   def storeResourcePacks(resourcePacks : ListBuffer[ResourcePack]) : Unit = {
-    resources ++= resourcePacks
+    packs ++= resourcePacks
   }
 
   def storeResourcePack(resourcePack : ResourcePack) : Unit = {
-    resources += resourcePack
+    packs += resourcePack
   }
 
   def take(resourceType : Resource, quantity : Int) : (ResourcePack , Int) = {
     var remainingToTake = quantity
 
-    resources.foreach(resource => {
+    packs.foreach(resource => {
       if (resource.resource == resourceType && remainingToTake > 0) {
         if (remainingToTake <= resource.quantity) {
           resource.quantity -= remainingToTake
@@ -33,15 +33,15 @@ class ResourceCollection(name : String) {
       }
     })
 
-    resources.foreach(resource => {
-      if (resource.quantity == 0) resources -= resource
+    packs.foreach(resource => {
+      if (resource.quantity == 0) packs -= resource
     })
 
     (new ResourcePack(resourceType, quantity - remainingToTake),
      remainingToTake)
   }
 
-  def takeAll(resources : List[(Resource, Int)]) : List[ResourcePack] = {
+  def takeSeveral(resources : List[(Resource, Int)]) : List[ResourcePack] = {
     val resultPacks : ListBuffer[ResourcePack] = ListBuffer.empty
 
     resources.foldLeft(resultPacks)((packs, resourceAndQuantity) => {
@@ -51,6 +51,13 @@ class ResourceCollection(name : String) {
 
       packs
     }).toList
+  }
+
+  def takeAll() : List[ResourcePack] = {
+    val result : ListBuffer[ResourcePack] = ListBuffer.empty
+    packs.copyToBuffer(result)
+    packs.clear()
+    result.toList
   }
 
   def available(resources : List[(Resource, Int)]) : Boolean = {
@@ -64,7 +71,7 @@ class ResourceCollection(name : String) {
   }
 
   def quantityOf(resourceType : Resource) : Int = {
-    resources.foldLeft(0)((total, pack) => {
+    packs.foldLeft(0)((total, pack) => {
       if (pack.resource.getClass.getTypeName
         .equals(resourceType.getClass.getTypeName))
         total + pack.quantity
@@ -72,10 +79,16 @@ class ResourceCollection(name : String) {
     })
   }
 
-  def resourceMap() : Map[Resource, Int] = {
+  def totalWeight : Double = {
+    packs.foldLeft(0.0)((total, pack) => {
+      total + pack.weight()
+    })
+  }
+
+  def resourceMap() : ResourceMap = {
     val result : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
 
-    resources.foldLeft(result)((map, pack) => {
+    val map = packs.foldLeft(result)((map, pack) => {
       val oldQuantity =
         if (map.contains(pack.resource)) map(pack.resource)
         else 0
@@ -84,6 +97,8 @@ class ResourceCollection(name : String) {
 
       map
     }).toMap
+
+    new ResourceMap(map)
   }
 
   private val panel = new VBox()
@@ -91,18 +106,6 @@ class ResourceCollection(name : String) {
 
   panel.children = List(label)
 
-  def propertyPane() : VBox = {
-    val builder : StringBuilder = new StringBuilder
-
-    resourceMap().foldLeft(builder)((builder, resourceAndQuantity) => {
-      val (resource, quantity) = resourceAndQuantity
-
-      builder.append(resource.name + " : " + quantity + " " + resource.unit + "\n")
-    })
-
-    label.text = "=== " + name + " ===\n" + builder.toString()
-
-    panel
-  }
+  def propertyPane() : VBox = resourceMap().propertyPane()
 
 }

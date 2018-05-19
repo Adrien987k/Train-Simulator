@@ -5,7 +5,6 @@ import logic.items.{ItemTypes, VehicleCategories}
 import logic.items.VehicleCategories.VehicleCategory
 import logic.items.production.FactoryTypes
 import logic.items.transport.roads.RoadTypes.{HIGHWAY, RAIL}
-import logic.world.Shop
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -55,16 +54,17 @@ object ItemsButtonBar extends GUIComponent {
     val buttons = ListBuffer.empty[Button]
 
     ItemTypes.onSaleItemsForVehicleCategory(vehicleCategory).foldLeft(buttons)(
-      (buttons, item) => {
+      (buttons, itemType) => {
 
-        val itemButton = new Button(item.name + " " + Shop.itemPrice(item) + "$" +
-          (item match {case RAIL | HIGHWAY => " per KM" case _ => ""}))
+        //TODO take price from XML
+        val itemButton = new Button(itemType.name + itemType.price + "$" +
+          (itemType match {case RAIL | HIGHWAY => " per KM" case _ => ""}))
 
         itemButton.style = buildModeButton.style()
 
         itemButton.onAction = _ => {
           if (buildMode) {
-            select(item, itemButton)
+            select(itemType, itemButton)
           }
         }
 

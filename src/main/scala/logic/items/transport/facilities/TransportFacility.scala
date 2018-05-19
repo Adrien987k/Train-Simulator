@@ -2,13 +2,13 @@ package logic.items.transport.facilities
 
 import interface.GlobalInformationPanel
 import logic.exceptions.{AlreadyMaxLevelException, CannotBuildItemException, CannotSendPassengerException, ImpossibleActionException}
-import logic.economy.ResourcePack
-import logic.items.Facility
+import logic.economy.Cargo
+import logic.items.{EvolutionPlan, Facility}
 import logic.items.transport.facilities.TransportFacilityTypes.TransportFacilityType
 import logic.items.transport.roads.Road
 import logic.items.transport.vehicules.VehicleTypes.VehicleType
 import logic.items.transport.vehicules.{Vehicle, VehicleFactory}
-import logic.world.{Company, Shop}
+import logic.world.Company
 import logic.world.towns.Town
 
 import scala.collection.mutable
@@ -19,14 +19,22 @@ import scalafx.scene.layout.VBox
 import scalafx.scene.paint.Color
 import scalafx.scene.text.{Font, FontWeight}
 
+case class TransportFacilityEvolutionPlan
+(capacities : List[Double],
+ override val basePrice : Double,
+ override val pricePerLevel : Double
+) extends EvolutionPlan(
+  List(capacities), basePrice, pricePerLevel
+)
+
 abstract class TransportFacility
 (val transportFacilityType : TransportFacilityType,
  override val company : Company,
  override val town : Town,
- private var _capacity : Int)
-  extends Facility(transportFacilityType, company, town) {
+ override val evolutionPlan : TransportFacilityEvolutionPlan)
+  extends Facility(transportFacilityType, company, town, evolutionPlan) {
 
-  def capacity : Int = _capacity
+  private var _capacity : Int = evolutionPlan.level(level).head.toInt
 
   private var waitingPassengers : mutable.HashMap[TransportFacility, Int] = mutable.HashMap.empty
 
@@ -34,6 +42,8 @@ abstract class TransportFacility
   private val roads : ListBuffer[Road] = ListBuffer.empty
 
   private val waitingVehicles : ListBuffer[Vehicle] = ListBuffer.empty
+
+  def capacity : Int = _capacity
 
   /**
     * @return True if vehicle capacity is reached
@@ -111,16 +121,15 @@ abstract class TransportFacility
     neighbourList
   }
 
-  def trySendResources(objective : TransportFacility, packs : ListBuffer[ResourcePack]) : Unit = {
+  def trySendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Unit = {
     try {
-      sendResources(objective, packs)
+      sendCargoes(objective, cargoes)
     } catch {
-      case e : CannotSendPassengerException =>
       case e : ImpossibleActionException =>
       //TODO Change to an other exception
+      e.getMessage
     }
   }
-
 
   /**
     * Try to send @nbPassenger to @objective
@@ -154,7 +163,7 @@ abstract class TransportFacility
 
     getRoadTo(objective) match {
       case Some(road) =>
-        if (road.nbVehicle == road.DEFAULT_CAPACITY)
+        if (road.nbVehicle == road.capacity)
           throw new CannotSendPassengerException(nbPassenger)
 
         val vehicleOpt = availableVehicle()
@@ -178,13 +187,13 @@ abstract class TransportFacility
     }
   }
 
-  private def sendResources(objective : TransportFacility, packs : ListBuffer[ResourcePack]) : Unit = {
+  private def sendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Unit = {
     if (vehicles.isEmpty)
       throw new ImpossibleActionException("Cannot send resources")
 
     getRoadTo(objective) match {
       case Some(road) =>
-        if (road.nbVehicle == road.DEFAULT_CAPACITY)
+        if (road.nbVehicle == road.capacity)
           throw new ImpossibleActionException("")
 
         val vehicleOpt = availableVehicle(true)
@@ -193,7 +202,7 @@ abstract class TransportFacility
 
         val vehicle = vehicleOpt.get
 
-        loadResources(vehicle, objective, packs)
+        loadCargoes(vehicle, objective, cargoes)
 
         try {
           putOnRoad(vehicle, road)
@@ -239,20 +248,20 @@ abstract class TransportFacility
     * @return The number of loaded passenger
     */
   def loadPassenger(vehicle: Vehicle, objective : TransportFacility, nbPassenger : Int) : Int = {
-    var loadedPassenger = vehicle.loadPassenger(nbPassenger)
+    val loadedPassenger = vehicle.loadPassenger(nbPassenger)
 
     val remainingPassenger = nbPassenger - loadedPassenger
     if (remainingPassenger > 0) waitingPassengers += ((objective, remainingPassenger))
 
-    town.population -= loadedPassenger
+    town.takePeople(loadedPassenger)
 
     vehicle.setObjective(objective)
 
     loadedPassenger
   }
 
-  def loadResources(vehicle : Vehicle, objective : TransportFacility, packs : ListBuffer[ResourcePack]) : Unit = {
-    vehicle.loadResources(packs)
+  def loadCargoes(vehicle : Vehicle, objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Unit = {
+    vehicle.loadCargoes(cargoes)
 
     vehicle.setObjective(objective)
   }
@@ -278,8 +287,11 @@ abstract class TransportFacility
 
     vehicle.unsetObjective()
 
-    town.population += vehicle.unloadPassenger()
-    town.warehouse.storeResourcePacks(vehicle.unloadResources())
+    town.receivePeople(vehicle.unloadPassenger())
+
+    val cargoes = vehicle.unloadCargoes()
+    town.receiveCargoes(cargoes)
+
     town.computeCurrentRequestAndOffer()
 
     vehicles += vehicle
@@ -337,13 +349,11 @@ abstract class TransportFacility
     * Give +2 capacity to this station
     */
   override def evolve() : Unit = {
-    if (!company.canBuyEvolution(transportFacilityType, level + 1))
-      throw new CannotBuildItemException("Not enough money to evolve" + transportFacilityType.name)
+    super.evolve()
 
-    _capacity += level
-    level += 1
+    _capacity += evolutionPlan.level(level).head.toInt
 
-    company.buyEvolution(transportFacilityType, level + 1)
+    company.buy(evolvePrice)
   }
 
   /* For the GUI */
@@ -355,7 +365,7 @@ abstract class TransportFacility
   val vehiclesLabel = new Label()
   val waitingPassengerLabel = new Label()
 
-  val evolveButton = new Button("Evolve : " + Shop.evolutionPrice(transportFacilityType, 1) + "$")
+  val evolveButton = new Button("Evolve : " + evolvePrice + "$")
   evolveButton.font = Font.font(null, FontWeight.ExtraBold, 19)
   evolveButton.textFill = Color.Green
 
@@ -374,7 +384,7 @@ abstract class TransportFacility
     }
 
     evolveButton.text =
-      "Evolve : " + Shop.evolutionPrice(transportFacilityType, level) + "$"
+      "Evolve : " + evolvePrice + "$"
 
   }
 

@@ -6,7 +6,19 @@ import scala.collection.mutable
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 
-class ResourceMap(name : String) {
+class ResourceMap() {
+
+  def this(map : mutable.HashMap[Resource, Int]) {
+    this()
+
+    resources ++= map
+  }
+
+  def this(map : Map[Resource, Int]) {
+    this()
+
+    resources ++= map
+  }
 
   val resources : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
 
@@ -38,6 +50,25 @@ class ResourceMap(name : String) {
     else 0
   }
 
+  def merge(otherMap : ResourceMap) : ResourceMap = {
+    val result = resources.foldLeft(otherMap.resources)((map, resource_quantity) => {
+      val (resource, quantity) = resource_quantity
+      val oldQuantity =
+        if (map.contains(resource)) map(resource)
+        else 0
+
+      map.update(resource, quantity + oldQuantity)
+
+      map
+    })
+
+    new ResourceMap(result)
+  }
+
+
+
+  /* GUI */
+
   private val panel = new VBox()
   private val label = new Label()
 
@@ -52,7 +83,7 @@ class ResourceMap(name : String) {
       builder.append(resource.name + " : " + quantity + " " + resource.unit + "\n")
     })
 
-    label.text = "=== " + name + " ===\n" + builder.toString()
+    label.text = builder.toString()
 
     panel
   }

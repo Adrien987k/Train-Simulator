@@ -7,9 +7,9 @@ import logic.items.transport.vehicules.VehicleTypes._
 
 object ItemTypes {
 
-  abstract class ItemType(val name : String) {}
+  abstract class ItemType(val name : String, val price : Double) {}
 
-  abstract class FacilityType(name : String) extends ItemType(name)
+  abstract class FacilityType(name : String, price : Double) extends ItemType(name, price)
 
   def items() : List[ItemType] = {
     List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, LINE, STATION, AIRPORT)

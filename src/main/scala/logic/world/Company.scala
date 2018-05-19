@@ -59,7 +59,7 @@ class Company(world : World) {
   }
 
   def refillFuel(vehicle : Vehicle) : Unit = {
-    money -= Shop.fuelPrice(vehicle.engine.engineType)
+    money -= vehicle.totalWeight
 
     vehicle.refillFuel()
   }
@@ -87,16 +87,16 @@ class Company(world : World) {
   }
 
   private def place(itemType : ItemType, updatable : Updatable) : Unit = {
-    if (!canBuy(itemType)) throw new CannotBuildItemException("Not enough money")
+    if (!canBuy(itemType.price)) throw new CannotBuildItemException("Not enough money")
 
     (itemType, updatable) match {
       case (tfType : TransportFacilityType, town : Town) =>
         town.buildTransportFacility(tfType)
-        buy(itemType)
+        buy(itemType.price)
 
       case (vehicleType : VehicleType, town : Town) =>
         town.buildVehicle(vehicleType)
-        buy(itemType)
+        buy(itemType.price)
 
       case (roadType : RoadType, town : Town) =>
         tryBuildRoad(roadType, town)
@@ -122,11 +122,11 @@ class Company(world : World) {
       case Some(lastTransportFacility) =>
         quantity = lastTransportFacility.pos.dist(currentTransportFacility.pos).toInt
 
-        if (!canBuy(roadType, quantity)) throw new CannotBuildItemException("Not enough money")
+        if (!canBuy(roadType.price, quantity)) throw new CannotBuildItemException("Not enough money")
 
         buildRoad(roadType, lastTransportFacility, currentTransportFacility)
 
-        buy(roadType, quantity)
+        buy(roadType.price, quantity)
 
         lastTransportFacilityOpt = None
 
@@ -171,35 +171,15 @@ class Company(world : World) {
     })
   }
 
-  def canBuy(itemType : ItemType, quantity : Int = 1) : Boolean = {
-    val price = Shop.itemPrice(itemType, quantity)
-    money - price >= 0
+  def canBuy(amount : Double, quantity : Int = 1) : Boolean = {
+    money - amount * quantity >= 0
   }
 
-  def buy(itemType : ItemType, quantity : Int = 1) : Unit = {
-    val price = Shop.itemPrice(itemType, quantity)
-    if (money - price < 0)
+  def buy(amount : Double, quantity : Int = 1) : Unit = {
+    if (money - amount * quantity < 0)
       throw new CannotBuildItemException("Not enough money")
 
-    money -= price
-  }
-
-  def canBuyEvolution(itemType : ItemType, level : Int) : Boolean = {
-    val price = Shop.evolutionPrice(itemType, level)
-    money - price >= 0
-  }
-
-  def buyEvolution(itemType : ItemType, level : Int) : Unit = {
-    val price = Shop.evolutionPrice(itemType, level)
-    if (money - price < 0)
-      throw new CannotBuildItemException("Not enough money to buy " + itemType.name + " evolution")
-
-    money -= price
-  }
-
-  def canBuyInfrastructure(itemType : ItemType, level : Int = 1) : Boolean = {
-    val price = Shop.evolutionPrice(itemType, level)
-    money - price >= 0
+    money -= amount * quantity
   }
 
   /**

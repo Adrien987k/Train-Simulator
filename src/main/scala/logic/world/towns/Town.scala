@@ -1,7 +1,7 @@
 package logic.world.towns
 
 import game.Game
-import logic.economy.Resources.Resource
+import logic.economy.Resources.{BOXED, DRY_BULK, LIQUID, Resource}
 import logic.{PointUpdatable, UpdateRate}
 import logic.economy._
 import logic.exceptions.CannotBuildItemException
@@ -32,28 +32,28 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   val INIT_MAX_NB_FACTORY = 3
 
   var station : Option[Station] = None
-
   var airport : Option[Airport] = None
   var harbor : Option[Harbor] = None
   var gasStation : Option[GasStation] = None
 
-  var population : Int = MIN_POPULATION +
+  private var _population : Int = MIN_POPULATION +
       new Random().nextInt(MAX_POPULATION + 1 - MIN_POPULATION)
 
-  var proportionTraveler : Double = DEFAULT_PROPORTION_TRAVELER
+  private val proportionTraveler : Double = DEFAULT_PROPORTION_TRAVELER
 
-  val factories : ListBuffer[Factory] = ListBuffer.empty
+  private val factories : ListBuffer[Factory] = ListBuffer.empty
 
-  val maxNbFactory : Int = INIT_MAX_NB_FACTORY
+  private val maxNbFactory : Int = INIT_MAX_NB_FACTORY
 
-  val offer : ResourceCollection = new ResourceCollection("Offer")
-  val requests : TownRequests = new TownRequests
-  val consumption : Consumption = Consumption.initialConsumption()
-  val warehouse : ResourceCollection = new ResourceCollection("Warehouse")
+  private val offer : ResourceCollection = new ResourceCollection
+  private val requests : ResourceMap = new ResourceMap
+  private val consumption : ResourceMap = Consumption.initialConsumption()
+  val warehouse : ResourceCollection = new ResourceCollection
 
-  val requestFromOtherCities = new ListBuffer[Request]
+  private val requestFromOtherCities = new ListBuffer[Request]
 
   def name : String = _name
+  def population : Int = _population
 
   def hasStation : Boolean = station.nonEmpty
   def hasAirport : Boolean = airport.nonEmpty
@@ -63,7 +63,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   override def step() : Boolean = {
     if(!super.step()) return false
 
-    val traveler = (proportionTraveler * population / 100).toInt
+    val traveler = (proportionTraveler * _population / 100).toInt
     if (traveler != 0)
       sendPeopleToNeighbours(traveler)
 
@@ -143,7 +143,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   }
 
   def buildFactory(factoryType : FactoryType) : Unit = {
-    if (!Game.world.company.canBuy(factoryType))
+    if (!Game.world.company.canBuy(factoryType.price))
       throw new CannotBuildItemException("Not enough money")
 
     if (factories.lengthCompare(maxNbFactory) == 0)
@@ -151,7 +151,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
     factories += FactoryFactory.make(factoryType, Game.world.company, this)
 
-    Game.world.company.buy(factoryType)
+    Game.world.company.buy(factoryType.price)
   }
 
   /**
@@ -235,6 +235,10 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     sendPeopleToNeighboursBy(toAirport, airport)
   }
 
+  def takePeople(nbPassenger : Int) : Unit = _population -= nbPassenger
+
+  def receivePeople(nbPassenger : Int) : Unit = _population += nbPassenger
+
   /**
     * Send a list of resource packs to a town
     *
@@ -242,13 +246,44 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     * @param packs the packs to send
     */
   def sendResource(town : Town, packs : ListBuffer[ResourcePack]) : Unit = {
+    //TODO do something with cargoes / Take them from somewhere
+    val cargoDryBulk = new Cargo(DRY_BULK)
+    val cargoLiquid = new Cargo(LIQUID)
+    val cargoBoxed = new Cargo(BOXED)
+
+    packs.foldLeft(None)((None, pack) => {
+      pack.resource.resourceType match {
+        case DRY_BULK => cargoDryBulk.store(ListBuffer(pack))
+        case LIQUID => cargoLiquid.store(ListBuffer(pack))
+        case BOXED => cargoBoxed.store(ListBuffer(pack))
+      }
+
+      None
+    })
+
+    val cargoes = ListBuffer(cargoDryBulk, cargoLiquid, cargoBoxed)
+
     transportFacilities().foreach(tfOpt => {
       tfOpt.foreach(tf => {
 
         if (neighboursOf(tfOpt).contains(town))
-          tf.trySendResources(town.transportFacilityOfType(tf.transportFacilityType).get, packs)
+          tf.trySendCargoes(town.transportFacilityOfType(tf.transportFacilityType).get, cargoes)
       })
     })
+  }
+
+  /**
+    * Receive new cargoes and manage them
+    *
+    * @param cargoes The cargoes to manage
+    */
+  def receiveCargoes(cargoes : ListBuffer[Cargo]) : Unit = {
+    val packs = cargoes.foldLeft(ListBuffer.empty[ResourcePack])((packs, cargo) => {
+      packs ++= cargo.takeAll()
+    })
+
+    //TODO do somthing with cargoes
+    warehouse.storeResourcePacks(packs)
   }
 
   /**
@@ -307,7 +342,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   }
 
   def computeCurrentRequestAndOffer() : Unit = {
-    warehouse.resourceMap().foreach(resourceAndQuantity => {
+    warehouse.resourceMap().resources.foreach(resourceAndQuantity => {
       val (resource, quantity) = resourceAndQuantity
 
       val quantityConsumption =
@@ -320,7 +355,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
       }
     })
 
-    offer.resourceMap().foreach(resourceAndQuantity => {
+    offer.resourceMap().resources.foreach(resourceAndQuantity => {
       val (resource, _) = resourceAndQuantity
 
       if (requests.quantityOf(resource) > 0)
@@ -393,6 +428,9 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   private val propTravelerLabel = new Label()
   private val posLabel = new Label()
 
+  private val facilitiesVBox = new VBox
+  private val factoriesVBox = new VBox
+
   labels = List(nameLabel,
     populationLabel,
     propTravelerLabel,
@@ -403,46 +441,55 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
   townPanel.children = labels
 
+  private var consumptionNode : Node = consumption.propertyPane()
+  private var warehouseNode : Node = warehouse.propertyPane()
+  private var offerNode : Node = offer.propertyPane()
+  private var requestsNode : Node = requests.propertyPane()
+
+  private val facilitiesNodes =
+    List(
+      new Label("=== Consumption ===\n"),
+      consumptionNode,
+      new Label("=== Warehouse ===\n"),
+      warehouseNode,
+      new Label("=== Offer ===\n"),
+      offerNode,
+      new Label("=== Requests ===\n"),
+      requestsNode)
+
+  facilitiesNodes.foreach(facilitiesVBox.children.add(_))
+
   mainPanel.top = townPanel
-
-  private val elementsVBox = new VBox()
-
-  mainPanel.center = elementsVBox
+  mainPanel.center = facilitiesVBox
+  mainPanel.bottom = factoriesVBox
 
   override def propertyPane() : Node = {
-    populationLabel.text  = "Population : " + population
+    populationLabel.text  = "Population : " + _population
     propTravelerLabel.text = "Proportion of traveler : " + proportionTraveler
     posLabel.text = "position : " + pos
 
-    if (!elementsVBox.children.contains(warehouse.propertyPane()))
-      elementsVBox.children.add(warehouse.propertyPane())
+    consumptionNode = consumption.propertyPane()
+    warehouseNode = warehouse.propertyPane()
+    offerNode = offer.propertyPane()
+    requestsNode = requests.propertyPane()
 
-    if (!elementsVBox.children.contains(warehouse.propertyPane()))
-    elementsVBox.children.add(warehouse.propertyPane())
+    if (hasStation && !facilitiesVBox.children.contains(station.get.propertyPane()))
+    facilitiesVBox.children.add(station.get.propertyPane())
 
-    if (!elementsVBox.children.contains(offer.propertyPane()))
-      elementsVBox.children.add(offer.propertyPane())
+    if (hasAirport && !facilitiesVBox.children.contains(airport.get.propertyPane()))
+    facilitiesVBox.children.add(airport.get.propertyPane())
 
-    if (!elementsVBox.children.contains(requests.propertyPane()))
-      elementsVBox.children.add(requests.propertyPane())
+    if (hasHarbor && !facilitiesVBox.children.contains(harbor.get.propertyPane()))
+    facilitiesVBox.children.add(harbor.get.propertyPane())
 
-    if (hasStation && !elementsVBox.children.contains(station.get.propertyPane()))
-    elementsVBox.children.add(station.get.propertyPane())
-
-    if (hasAirport && !elementsVBox.children.contains(airport.get.propertyPane()))
-    elementsVBox.children.add(airport.get.propertyPane())
-
-    if (hasHarbor && !elementsVBox.children.contains(harbor.get.propertyPane()))
-    elementsVBox.children.add(harbor.get.propertyPane())
-
-    if (hasGasStation && !elementsVBox.children.contains(gasStation.get.propertyPane()))
-    elementsVBox.children.add(gasStation.get.propertyPane())
+    if (hasGasStation && !facilitiesVBox.children.contains(gasStation.get.propertyPane()))
+    facilitiesVBox.children.add(gasStation.get.propertyPane())
 
     styleLabels(14)
 
     factories.foreach(factory => {
-      if (!elementsVBox.children.contains(factory.propertyPane()))
-      elementsVBox.children.add(factory.propertyPane())
+      if (!factoriesVBox.children.contains(factory.propertyPane()))
+      factoriesVBox.children.add(factory.propertyPane())
     })
 
 

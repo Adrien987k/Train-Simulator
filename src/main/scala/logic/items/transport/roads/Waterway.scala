@@ -3,7 +3,6 @@ package logic.items.transport.roads
 import logic.Updatable
 import logic.items.transport.facilities.Harbor
 import logic.items.transport.roads.RoadTypes.RoadType
-import logic.items.transport.vehicules.Ship
 import logic.world.Company
 
 class Waterway
@@ -11,13 +10,7 @@ class Waterway
  override val company: Company,
  val harborA : Harbor,
  val harborB : Harbor,
- override val speedLimit : Double)
-  extends Road(roadType, company, harborA, harborB, speedLimit) with Updatable {
-
-  def nbShips : Int = super.nbVehicle
-
-  def addShip(ship : Ship) : Unit = super.addVehicle(ship)
-
-  def removeShip(ship : Ship) : Unit = super.removeVehicle(ship)
+ override val evolutionPlan: RoadEvolutionPlan)
+  extends Road(roadType, company, harborA, harborB, evolutionPlan) {
 
 }

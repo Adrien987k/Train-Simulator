@@ -1,11 +1,9 @@
 package interface
 
-import game.Game
 import logic.items.transport.vehicules.Vehicle
 
 import scala.collection.mutable
 import scalafx.Includes._
-import scalafx.collections.ObservableBuffer.{Add, Remove}
 import scalafx.event.ActionEvent
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, ScrollPane}

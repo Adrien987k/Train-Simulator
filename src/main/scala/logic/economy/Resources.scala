@@ -2,7 +2,11 @@ package logic.economy
 
 object Resources {
 
-  sealed abstract class ResourceType
+  sealed abstract class ResourceType extends Comparable[ResourceType] {
+    override def compareTo(o: ResourceType): Int = {
+      if(this.getClass.getName.equals(o.getClass.getName)) 0 else -1
+    }
+  }
 
   case object DRY_BULK extends ResourceType
   case object LIQUID extends ResourceType

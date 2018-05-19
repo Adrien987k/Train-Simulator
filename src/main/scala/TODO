@@ -1,12 +1,7 @@
 
-FUTURE
-+ Design
+Bugs :
 
-+ Improve Town/TF/Carriage evolutions
-  - Refactor code
-  - Object Evolution and its hierarchy
-  - Better display and evolution for TF/Roads
-  - Evolution for Resource Carriage
-
-URGENT
-+ Better price / payment
+Cannot build line on waterway
+Right side of window
+Display resources
+Production

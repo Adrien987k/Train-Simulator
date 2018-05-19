@@ -2,9 +2,7 @@ package logic.items
 
 object VehicleCategories {
 
-  sealed class VehicleCategory {
-
-  }
+  sealed class VehicleCategory
 
   case object Trains extends VehicleCategory
   case object Planes extends VehicleCategory

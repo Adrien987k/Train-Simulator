@@ -2,20 +2,17 @@ package logic.items.transport.vehicules
 
 import game.Game
 import interface.{ItemsButtonBar, WorldCanvas}
-import logic.economy.ResourcePack
-import logic.economy.Resources.Resource
+import logic.economy.Cargo
 import logic.exceptions.ImpossibleActionException
 import logic.{PointUpdatable, UpdateRate}
-import logic.items.Item
+import logic.items.{EvolutionPlan, Item}
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.roads.Road
 import logic.items.transport.vehicules.VehicleTypes.VehicleType
-import logic.items.transport.vehicules.components.{Carriage, Engine, PassengerCarriage, ResourceCarriage}
 import logic.world.Company
 import logic.world.towns.Town
 import utils.{Dir, Pos}
 
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
@@ -25,10 +22,9 @@ import scalafx.scene.text.{Font, FontWeight}
 abstract class Vehicle
 (val vehicleType : VehicleType,
  override val company : Company,
- val engine : Engine,
- val carriages : ListBuffer[Carriage],
- var currentTransportFacility : Option[TransportFacility])
-  extends Item(vehicleType, company) with PointUpdatable {
+ var currentTransportFacility : Option[TransportFacility],
+ override val evolutionPlan : EvolutionPlan)
+  extends Item(vehicleType, company, evolutionPlan) with PointUpdatable {
 
   updateRate(UpdateRate.VEHICLE_UPDATE)
 
@@ -67,7 +63,10 @@ abstract class Vehicle
           transportFacility.unload(this)
 
         } else {
-          val speed = currentSpeed()
+          var speed = currentSpeed()
+          if (currentRoad.nonEmpty && speed > currentRoad.get.speedLimit)
+            speed = currentRoad.get.speedLimit
+
           pos.x += dir.x * speed
           pos.y += dir.y * speed
 
@@ -79,40 +78,53 @@ abstract class Vehicle
     true
   }
 
-  def currentSpeed() : Double = {
-    var speed = engine.tractiveEffort(totalWeight)
+  /**
+    * @return The maximum speed this vehicle can reach
+    */
+  def maxSpeed() : Double
 
-    if (currentRoad.nonEmpty && speed > currentRoad.get.speedLimit)
-      speed = currentRoad.get.speedLimit
+  /**
+    * @return The current speed of this vehicle
+    */
+  def currentSpeed() : Double
 
-    speed
-  }
+  /**
+    * @return The total weight of this vehicle
+    */
+  def totalWeight : Double
 
-  def totalWeight : Double = {
-    carriages.foldLeft(0.0)((total, carriage) =>
-      total + carriage.weight
-    )
-  }
+  /**
+    * reFill the fuel level of this vehicle
+    */
+  def refillFuel()
 
-  def refillFuel() : Unit = {
-    engine.refillFuelLevel()
-  }
+  /**
+    * Consume some fuel
+    */
+  def consume() : Unit
 
-  def consume() : Unit = {
-    engine.consume(totalWeight)
-
-    if (engine.fuelLevel <= 0) crash()
-  }
-
+  /**
+    * Crash this vehicle
+    * It disappears of the map
+    */
   def crash() : Unit = {
-    println("Crash")
     //TODO GUI.crash(pos)
 
     _crashed = true
   }
 
+  /**
+    * @return True if this vehicle is able to
+    *         transport resources
+    */
   def canTransportResource : Boolean
 
+  /**
+    * Set an objective to this vehicle
+    * The objective is the next transport facility to reach
+    *
+    * @param transportFacility The objective
+    */
   def setObjective(transportFacility : TransportFacility) : Unit = {
     if (goalTransportFacility.nonEmpty) return
 
@@ -123,14 +135,28 @@ abstract class Vehicle
     dir.normalize()
   }
 
+  /**
+    * Remove the current objective
+    */
   def unsetObjective() : Unit = {
     goalTransportFacility = None
   }
 
+  /**
+    * Set a destination to this vehicle
+    * A destination is the final town to reach
+    *
+    * @param town The destination
+    */
   def setDestination(town : Town) : Unit = {
     destination = town.transportFacilityForVehicleType(vehicleType)
   }
 
+  /**
+    * Move this vehicle from its facility to the road [Road]
+    *
+    * @param road The road to enter
+    */
   def enterRoad(road : Road) : Unit = {
     if (road.isFull) throw new ImpossibleActionException("Road is full")
     currentRoad match {
@@ -144,6 +170,9 @@ abstract class Vehicle
     }
   }
 
+  /**
+    * make this vehicle leave its current road
+    */
   def leaveRoad() : Unit = {
     currentRoad match {
       case Some(road) =>
@@ -153,128 +182,58 @@ abstract class Vehicle
     }
   }
 
-  override def evolve() : Unit = engine.evolve()
+  /**
+    * Evolve this vehicle to the superior level
+    * It improve its characteristics
+    */
+  override def evolve() : Unit = super.evolve()
 
   /**
     * @param nbPassenger The number of passenger to load
     * @return The number of loaded passenger
     */
-  def loadPassenger(nbPassenger : Int) : Int = {
-    var remainingPassenger = nbPassenger
-
-    carriages.foreach {
-      case passengerCarriage : PassengerCarriage =>
-        if (remainingPassenger > 0) {
-          remainingPassenger -=
-            passengerCarriage.loadPassenger(remainingPassenger)
-        }
-
-      case _ =>
-    }
-
-    nbPassenger - remainingPassenger
-  }
-
-  def loadResources(packs : ListBuffer[ResourcePack]) : Unit = {
-    packs.foreach(pack => {
-      carriages.foreach {
-        case resourceCarriage : ResourceCarriage =>
-          if (resourceCarriage.resourceType == pack.resource.resourceType) {
-            resourceCarriage.addResourcePack(pack)
-          }
-          //TODO Case not enough place in the vehicle
-
-        case _ =>
-      }
-    })
-
-  }
+  def loadPassenger(nbPassenger : Int) : Int
 
   /**
     * Empty the train of its passengers
     *
     * @return The number of passenger in the train
     */
-  def unloadPassenger() : Int = {
-    carriages.foldLeft(0)((total, carriage) => {
-      carriage match {
-        case passengerCarriage : PassengerCarriage =>
-          total + passengerCarriage.unloadPassenger()
+  def unloadPassenger() : Int
 
-        case _ => total
-      }
-    })
-  }
+  /**
+    * @return The total number of passenger in the train
+    */
+  def nbPassenger() : Int
+
+  /**
+    * @return The total passenger capacity of this train
+    */
+  def passengerCapacity() : Int
+
+  /**
+    * Load the resources packs in this vehicle
+    *
+    * @param cargoes The cargos to load
+    */
+  def loadCargoes(cargoes : ListBuffer[Cargo])
 
   /**
     * Empty the train of its resources
     *
     * @return The resources
     */
-  def unloadResources() : ListBuffer[ResourcePack] = {
-    val resources : ListBuffer[ResourcePack] = ListBuffer.empty
-
-    carriages.foldLeft(resources)((resources, carriage) => {
-      carriage match {
-        case resourceCarriage : ResourceCarriage =>
-          resources ++= resourceCarriage.takeResources()
-
-        case _ => resources
-      }
-    })
-  }
+  def unloadCargoes() : ListBuffer[Cargo]
 
   /**
-    * @return The total number of passenger in the train
+    * @return A String with all the information to display
+    *         about this vehicle
     */
-  def nbPassenger() : Int = {
-    carriages.foldLeft(0)((total, carriage) => {
-      carriage match {
-        case passengerCarriage : PassengerCarriage =>
-          total + passengerCarriage.nbPassenger
-        case _ => total
-      }
-    })
-  }
-
-  /**
-    * @return The total passenger capacity of this train
-    */
-  def passengerCapacity() : Int = {
-    carriages.foldLeft(0)((total, carriage) => {
-      carriage match {
-        case passengerCarriage : PassengerCarriage =>
-          total + passengerCarriage.maxCapacity
-        case _ => total
-      }
-    })
-  }
-
-  def carriagesInfo() : String = {
-    val builder : StringBuilder = new StringBuilder
-    val resourceMap : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
-
-    carriages.foldLeft(resourceMap)((resourceMap, carriage) => {
-      carriage match {
-        case resourceCarriage : ResourceCarriage =>
-          resourceMap.++=(resourceCarriage.resourceMap())
-          resourceMap
-
-        case _ =>
-          resourceMap
-      }
-    })
-
-    resourceMap.foldLeft(builder)((builder, resourceAndQuantity) => {
-      val (resource, quantity) = resourceAndQuantity
-
-      builder.append(resource.name + " : " + quantity + " " + resource.unit + "\n")
-    }).toString()
-  }
+  def carriagesPropertyPane() : Node
 
   val pane = new BorderPane
 
-  val panel = new VBox()
+  val panel = new VBox
 
   val typeLabel = new Label(vehicleType.name)
   val speedLabel = new Label()
@@ -283,8 +242,6 @@ abstract class Vehicle
   val posLabel = new Label()
   val goalStationLabel = new Label()
   val destinationLabel = new Label()
-
-  val carriageInfoLabel = new Label()
 
   labels = List(typeLabel,
     speedLabel,
@@ -302,9 +259,12 @@ abstract class Vehicle
 
   val chooseDestPanel = new Button("Choose destination")
 
+  var carriageInfo : Node = new Label("")
+  panel.children.add(carriageInfo)
+
   override def propertyPane() : Node = {
     typeLabel.text = "=== " + vehicleType.name + " ==="
-    speedLabel.text = "Max Speed : " + engine.maxSpeed
+    speedLabel.text = "Max Speed : " + maxSpeed()
     maxPassengerLabel.text = "Max passengers : " + passengerCapacity
     nbPassengerLabel.text = "Passengers : " + nbPassenger
     posLabel.text = "Position : " + pos
@@ -337,14 +297,7 @@ abstract class Vehicle
     if (!panel.children.contains(chooseDestPanel))
       panel.children.add(chooseDestPanel)
 
-    pane.center = engine.propertyPane()
-
-    carriageInfoLabel.text = "=== resources ===\n" + carriagesInfo()
-    carriageInfoLabel.font = Font.font(null, FontWeight.Bold, 14)
-
-    if (!panel.children.contains(carriageInfoLabel))
-    panel.children.add(carriageInfoLabel)
-
+    carriageInfo = carriagesPropertyPane()
 
     pane
   }

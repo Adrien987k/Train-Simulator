@@ -1,6 +1,6 @@
 package logic.items.production
 
-import logic.items.Facility
+import logic.items.{EvolutionPlan, Facility}
 import logic.items.production.FactoryTypes.FactoryType
 import logic.world.Company
 import logic.world.towns.Town
@@ -15,7 +15,8 @@ class Factory
  override val company : Company,
  override val town : Town,
  val recipes : ListBuffer[Recipe] = ListBuffer.empty)
-  extends Facility(factoryType, company, town) {
+  extends Facility(factoryType, company, town,
+    new EvolutionPlan(List(), 0.0, 0.0)) {
 
   val productions : ListBuffer[Production] = ListBuffer.empty
 
@@ -24,7 +25,7 @@ class Factory
     recipes.foreach(recipe => {
       if (recipe.input.nonEmpty) {
         if (town.warehouse.available(recipe.input)) {
-          val packs =  town.warehouse.takeAll(recipe.input)
+          val packs =  town.warehouse.takeSeveral(recipe.input)
 
           val production = new Production(recipe)
           production.start(packs)
