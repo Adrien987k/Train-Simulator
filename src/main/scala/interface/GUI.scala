@@ -2,6 +2,7 @@ package interface
 
 import game.Game
 import logic.world.towns.Town
+import org.lodgon.openmapfx.core.{DefaultBaseMapProvider, LayeredMap}
 
 import scala.collection.mutable.ListBuffer
 import scalafx.application.JFXApp.PrimaryStage
@@ -15,6 +16,7 @@ import scalafx.scene.control._
 object GUI {
 
   def makePrimaryStage(): PrimaryStage = {
+
     val stage = new PrimaryStage {
       title = "Train simulator"
       scene = new Scene(1200, 700) {
@@ -69,7 +71,7 @@ object GUI {
     localInfoPane.center = LocalInformationPanel.make()
     leftSplit.items ++= List(globalInfoPane, localInfoPane)
 
-    leftSplit.setDividerPositions(0.25)
+    leftSplit.setDividerPositions(0.20)
 
     val rightSplit = new SplitPane
 

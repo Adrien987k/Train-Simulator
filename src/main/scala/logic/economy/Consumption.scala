@@ -7,10 +7,9 @@ object Consumption {
   def initialConsumption() : ResourceMap = {
     val consumption = new ResourceMap()
 
-    consumption.addSome(ALUMINIUM, 2000)
-    consumption.addSome(BAKED_GOOD, 1500)
-    consumption.addSome(GRAIN, 2000)
-    consumption.addSome(TEXTILE, 250)
+    consumption.addSome(ALUMINIUM, 200)
+    consumption.addSome(BAKED_GOOD, 150)
+    consumption.addSome(TEXTILE, 25)
 
     consumption
   }

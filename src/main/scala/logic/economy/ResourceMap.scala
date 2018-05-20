@@ -20,7 +20,11 @@ class ResourceMap() {
     resources ++= map
   }
 
-  val resources : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
+  var resources : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
+
+  def putMap(map : mutable.HashMap[Resource, Int]) : Unit = {
+    resources = map
+  }
 
   def addSome(resource : Resource, quantity : Int) : Unit = {
     val oldQuantity =
@@ -41,6 +45,10 @@ class ResourceMap() {
       resources.remove(resource)
     else
       resources.update(resource, oldQuantity - quantity)
+  }
+
+  def removeAll(resource : Resource) : Unit = {
+    removeSome(resource, Integer.MAX_VALUE)
   }
 
   def quantityOf(resource : Resource) : Int = {

@@ -160,7 +160,7 @@ class Company(world : World) {
   /**
     * @return True if a road already exist between [transportFacilityA] and [transportFacilityB]
     */
-  private def roadAlreadyExists(townA : Town, townB : Town) : Boolean = {
+  def roadAlreadyExists(townA : Town, townB : Town) : Boolean = {
     roads.exists(road => {
       road.roadType match {
         case LINE => return false

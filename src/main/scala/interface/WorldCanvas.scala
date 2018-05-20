@@ -20,7 +20,7 @@ import scalafx.scene.paint.Color
 
 object WorldCanvas extends GUIComponent {
 
-  var canvas = new Canvas(Game.world.MAP_WIDTH, Game.world.MAP_HEIGHT)
+  var canvas = new Canvas(2000, 2000)
   var gc : GraphicsContext = canvas.graphicsContext2D
 
   var items : ListBuffer[Item] = ListBuffer.empty
@@ -35,8 +35,12 @@ object WorldCanvas extends GUIComponent {
   def make() : Node = {
     val scrollPane = new ScrollPane
     scrollPane.content = canvas
-    canvas.width <== scrollPane.width
-    canvas.height <== scrollPane.height
+
+    scrollPane.pannable = true
+
+    scrollPane.setHvalue(scrollPane.getHmin + (scrollPane.getHmax - scrollPane.getHmin) / 2)
+    scrollPane.setVvalue(scrollPane.getVmin + (scrollPane.getVmax - scrollPane.getVmin) / 2)
+
     scrollPane
   }
 

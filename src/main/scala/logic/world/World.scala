@@ -15,11 +15,11 @@ class World() {
   (val townA : Town,
    val townB : Town) { }
 
-  val MAP_WIDTH = 700
-  val MAP_HEIGHT = 700
+  val MAP_WIDTH = 2000
+  val MAP_HEIGHT = 2000
 
-  val INIT_NB_TOWNS = 10
-  val APPARITION_WATERWAY = 3
+  val INIT_NB_TOWNS = 50
+  val APPARITION_WATERWAY = 0.5
 
   val rand = new Random
 
@@ -89,9 +89,9 @@ class World() {
     for (townA <- towns) {
       for (townB <- towns) {
         if (townA != townB) {
-          val randInt = rand.nextInt(100)
+          val randDouble = rand.nextDouble() * 100.0
 
-          if (randInt < APPARITION_WATERWAY && townA != townB && !existNaturalWaterWay(townA, townB)) {
+          if (randDouble < APPARITION_WATERWAY && townA != townB && !existNaturalWaterWay(townA, townB)) {
             naturalWaterways += new NaturalWaterway(townA, townB)
           }
         }

@@ -11,7 +11,7 @@ class Production(val recipe : Recipe) {
   def start(input : List[ResourcePack]) : Unit = {
     //TODO Check input = recipe.input
 
-    startTime = Game.world.gameDateTime
+    startTime = Game.world.gameDateTime.copy()
   }
 
   def start() : Unit = {

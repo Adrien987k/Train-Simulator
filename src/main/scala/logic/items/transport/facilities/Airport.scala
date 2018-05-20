@@ -1,4 +1,5 @@
 package logic.items.transport.facilities
+import game.Game
 import logic.items.transport.facilities.TransportFacilityTypes.TransportFacilityType
 import logic.items.transport.roads.RoadTypes.LINE
 import logic.items.transport.vehicules.VehicleTypes.PlaneType
@@ -13,7 +14,9 @@ class Airport
   extends TransportFacility(transportFacilityType, company, town, evolutionPlan) {
 
   company.getAirports.foreach(airport =>
-    company.buildRoad(LINE, this, airport)
+    if (!company.roadAlreadyExists(town, airport.town) &&
+      !Game.world.existNaturalWaterWay(town, airport.town))
+      company.buildRoad(LINE, this, airport)
   )
 
   def buildPlane(planeType : PlaneType) : Boolean = {

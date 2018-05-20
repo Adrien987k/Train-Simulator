@@ -335,8 +335,12 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
       val (_, missingQuantity) = warehouse.take(resource, quantity)
 
-      if (missingQuantity > 0) {
+      if (missingQuantity > 0
+        && requests.quantityOf(resource) * 2 <= consumption.quantityOf(resource)) {
         requests.addSome(resource, missingQuantity)
+      } else if (missingQuantity == 0) {
+        println("REMOVE ALL 1 " + resource.name)
+        requests.removeAll(resource)
       }
     })
   }
@@ -345,10 +349,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     warehouse.resourceMap().resources.foreach(resourceAndQuantity => {
       val (resource, quantity) = resourceAndQuantity
 
-      val quantityConsumption =
-        if (consumption.resources.contains(resource))
-          consumption.resources(resource)
-        else 0
+      val quantityConsumption = consumption.quantityOf(resource)
 
       if (quantity > 3 * quantityConsumption) {
         offer.storeResourcePack(warehouse.take(resource, quantity / 3)._1)
@@ -358,8 +359,10 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     offer.resourceMap().resources.foreach(resourceAndQuantity => {
       val (resource, _) = resourceAndQuantity
 
-      if (requests.quantityOf(resource) > 0)
-        requests.removeSome(resource, Int.MaxValue)
+      if (requests.quantityOf(resource) > 0) {
+        println("REMOVE ALL 2 " + resource.name)
+        requests.removeAll(resource)
+      }
     })
   }
 

@@ -4,7 +4,6 @@ import logic.economy.Resources.Resource
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 
 class ResourceCollection() {
@@ -22,14 +21,15 @@ class ResourceCollection() {
   def take(resourceType : Resource, quantity : Int) : (ResourcePack , Int) = {
     var remainingToTake = quantity
 
-    packs.foreach(resource => {
-      if (resource.resource == resourceType && remainingToTake > 0) {
-        if (remainingToTake <= resource.quantity) {
-          resource.quantity -= remainingToTake
+    packs.foreach(pack => {
+      if (pack.resource == resourceType && remainingToTake > 0) {
+        println("PASS : " + pack.resource.name)
+        if (remainingToTake <= pack.quantity) {
+          pack.quantity -= remainingToTake
           remainingToTake = 0
         }
 
-        remainingToTake -= resource.quantity
+        remainingToTake -= pack.quantity
       }
     })
 
@@ -85,6 +85,8 @@ class ResourceCollection() {
     })
   }
 
+  private val resMap = new ResourceMap
+
   def resourceMap() : ResourceMap = {
     val result : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
 
@@ -96,16 +98,14 @@ class ResourceCollection() {
       map.update(pack.resource, pack.quantity + oldQuantity)
 
       map
-    }).toMap
+    })
 
-    new ResourceMap(map)
+    resMap.putMap(map)
+    resMap
   }
 
-  private val panel = new VBox()
-  private val label = new Label()
-
-  panel.children = List(label)
-
-  def propertyPane() : VBox = resourceMap().propertyPane()
+  def propertyPane() : VBox = {
+    resourceMap().propertyPane()
+  }
 
 }
