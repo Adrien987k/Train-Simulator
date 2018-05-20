@@ -9,12 +9,11 @@ class EvolutionPlan
 
   def isMaxLevel(lev : Int) : Boolean = {
 
-    val reached = planLists.foldLeft(0)((reached, plan) => {
-      if (plan.lengthCompare(lev) >= 0) reached + 1
-      else reached
+    val max = planLists.foldLeft(0)((max, plan) => {
+      math.max(max, plan.size)
     })
 
-    reached >= planLists.size
+    lev >= max
   }
 
   def level(lev : Int) : List[Double] = {

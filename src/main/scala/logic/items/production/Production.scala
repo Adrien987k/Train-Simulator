@@ -11,13 +11,13 @@ class Production(val recipe : Recipe) {
   def start(input : List[ResourcePack]) : Unit = {
     //TODO Check input = recipe.input
 
-    startTime = Game.world.gameDateTime.copy()
+    startTime = Game.world.time()
   }
 
   def start() : Unit = {
     if (recipe.input.nonEmpty) return
 
-    startTime = Game.world.gameDateTime.copy()
+    startTime = Game.world.time()
   }
 
   def checkIsFinished : Option[ResourcePack] = {
@@ -26,7 +26,7 @@ class Production(val recipe : Recipe) {
     println("SUM : " + DateTime.sum(startTime, recipe.time))
     println("WORLD TIME : " + Game.world.gameDateTime + "\n")*/
 
-    if (DateTime.sum(startTime, recipe.time).compareTo(Game.world.gameDateTime) == 0)
+    if (DateTime.sum(startTime, recipe.time).compareTo(Game.world.time()) == 0)
       Some(new ResourcePack(recipe.output._1, recipe.output._2))
 
     else None

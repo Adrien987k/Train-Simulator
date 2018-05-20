@@ -1,7 +1,5 @@
 package logic.items.transport.facilities
 
-import interface.GlobalInformationPanel
-import logic.exceptions.{AlreadyMaxLevelException, CannotBuildItemException, CannotSendPassengerException, ImpossibleActionException}
 import logic.economy.Cargo
 import logic.items.{EvolutionPlan, Facility}
 import logic.items.transport.facilities.TransportFacilityTypes.TransportFacilityType
@@ -10,14 +8,12 @@ import logic.items.transport.vehicules.VehicleTypes.VehicleType
 import logic.items.transport.vehicules.{Vehicle, VehicleFactory}
 import logic.world.Company
 import logic.world.towns.Town
+import utils.{Failure, Result, Success}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node
-import scalafx.scene.control.{Button, Label}
-import scalafx.scene.layout.VBox
-import scalafx.scene.paint.Color
-import scalafx.scene.text.{Font, FontWeight}
+import scalafx.scene.control.Label
 
 case class TransportFacilityEvolutionPlan
 (capacities : List[Double],
@@ -90,14 +86,18 @@ abstract class TransportFacility
     *
     * @param vehicleType the type of vehicle to build
     */
-  protected def buildVehicle(vehicleType : VehicleType) : Unit = {
-    if (isFull) throw new CannotBuildItemException("This facility is full")
+  protected def buildVehicle(vehicleType : VehicleType) : Result = {
+    if (isFull) Failure("This facility is full")
 
     val vehicle = VehicleFactory.make(vehicleType, company, this)
 
     company.addVehicle(vehicle)
 
     vehicles += vehicle
+
+    stats.newEvent(vehicleType.name + " built")
+
+    Success()
   }
 
   /**
@@ -121,33 +121,25 @@ abstract class TransportFacility
     neighbourList
   }
 
-  def trySendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Unit = {
-    try {
-      sendCargoes(objective, cargoes)
-    } catch {
-      case e : ImpossibleActionException =>
-      //TODO Change to an other exception
-      e.getMessage
-    }
-  }
-
   /**
     * Try to send @nbPassenger to @objective
     *
     * @param objective The transport facility objective
     * @param nbPassenger The number of passenger to send
     */
-  def trySendPassenger(objective : TransportFacility, nbPassenger : Int) : Unit = {
-    try {
-      sendPassenger(objective, nbPassenger)
-    } catch {
-      case e : CannotSendPassengerException =>
-        val newWaitingPassengers = Integer.parseInt(e.getMessage)
-        waitingPassengers += ((objective, newWaitingPassengers))
-        return
-    }
+  def trySendPassenger(objective : TransportFacility, nbPassenger : Int) : Result = {
+    sendPassenger(objective, nbPassenger) match {
+      case Success() =>
+        waitingPassengers -= objective
+        stats.newEvent("Sent passengers to " + objective.town.name, nbPassenger)
+        Success()
 
-    waitingPassengers -= objective
+      case Failure(reason) =>
+        val newWaitingPassengers = Integer.parseInt(reason)
+        waitingPassengers += ((objective, newWaitingPassengers))
+        stats.newEvent("Fail sending passengers to " + objective.town.name, newWaitingPassengers)
+        Failure(reason)
+    }
   }
 
   /**
@@ -156,64 +148,77 @@ abstract class TransportFacility
     * @param objective The transport facility objective
     * @param nbPassenger The number of passenger to send
     */
-  private def sendPassenger(objective : TransportFacility, nbPassenger : Int) : Unit = {
-    if (vehicles.isEmpty) {
-      throw new CannotSendPassengerException(nbPassenger)
-    }
+  private def sendPassenger(objective : TransportFacility, nbPassenger : Int) : Result = {
+    if (vehicles.isEmpty)
+      Failure(nbPassenger.toString)
 
     getRoadTo(objective) match {
       case Some(road) =>
         if (road.nbVehicle == road.capacity)
-          throw new CannotSendPassengerException(nbPassenger)
+          Failure(nbPassenger.toString)
 
         val vehicleOpt = availableVehicle()
         if (vehicleOpt.isEmpty)
-          throw new CannotSendPassengerException(nbPassenger)
+          Failure(nbPassenger.toString)
 
         val vehicle = vehicleOpt.get
 
         loadPassenger(vehicle, objective, nbPassenger)
 
-        try {
-          putOnRoad(vehicle, road)
-        } catch {
-          case ImpossibleActionException(_) =>
+        putOnRoad(vehicle, road) match {
+          case Success() => Success()
+
+          case _ =>
             unload(vehicle)
-            throw new CannotSendPassengerException(nbPassenger)
+            Failure(nbPassenger.toString)
         }
 
       case None =>
-        throw new CannotSendPassengerException(nbPassenger)
+        Failure(nbPassenger.toString)
     }
   }
 
-  private def sendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Unit = {
+  def trySendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Result = {
+    sendCargoes(objective, cargoes) match {
+      case Success() =>
+        stats.newEvent("Cargoes sent to " + objective.town.name, cargoes.size)
+        Success()
+
+      case Failure(reason) =>
+        stats.newEvent("Fail to send cargoes to " + objective.town.name
+          + " " + reason, cargoes.size)
+        Failure(reason)
+    }
+  }
+
+  private def sendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Result = {
     if (vehicles.isEmpty)
-      throw new ImpossibleActionException("Cannot send resources")
+      Failure("No available vehicle")
 
     getRoadTo(objective) match {
       case Some(road) =>
         if (road.nbVehicle == road.capacity)
-          throw new ImpossibleActionException("")
+          Failure("Road is full")
 
         val vehicleOpt = availableVehicle(true)
         if (vehicleOpt.isEmpty)
-          throw new ImpossibleActionException("No available resource transport vehicle")
+          Failure("No available resource transport vehicle")
 
         val vehicle = vehicleOpt.get
 
         loadCargoes(vehicle, objective, cargoes)
 
-        try {
-          putOnRoad(vehicle, road)
-        } catch {
-          case ImpossibleActionException(_) =>
+        putOnRoad(vehicle, road) match {
+          case Success() =>
+            Success()
+
+          case failure =>
             unload(vehicle)
-            throw new ImpossibleActionException("Cannot pu on road")
+            failure
         }
 
       case None =>
-        throw new ImpossibleActionException("No road to transport facility")
+        Failure("No road to transport facility")
     }
   }
 
@@ -300,21 +305,23 @@ abstract class TransportFacility
   /**
     * @param vehicle Send this vehicle to its destination if it have one
     */
-  def sendToDestination(vehicle : Vehicle) : Unit = {
+  def sendToDestination(vehicle : Vehicle) : Result = {
     company.indicateNextObjective(vehicle)
 
     vehicle.goalTransportFacility match {
       case Some(goal) =>
         val road = getRoadTo(goal).get
 
-        try {
-          putOnRoad(vehicle, road)
-        } catch {
-          case ImpossibleActionException(_) =>
+        putOnRoad(vehicle, road) match {
+          case Success() => Success()
+
+          case failure =>
             waitingVehicles += vehicle
+            failure
         }
 
-      case None =>
+
+      case None => Failure("Vehicle does not have goal")
     }
   }
 
@@ -322,7 +329,7 @@ abstract class TransportFacility
     * @param vehicle The vehicle to put it on the [road]
     * @param road The road to put the vehicle
     */
-  private def putOnRoad(vehicle : Vehicle, road : Road) : Unit = {
+  private def putOnRoad(vehicle : Vehicle, road : Road) : Result = {
     company.refillFuel(vehicle)
 
     if (vehicles.contains(vehicle)) vehicles -= vehicle
@@ -330,9 +337,14 @@ abstract class TransportFacility
 
     vehicle.currentTransportFacility = None
 
-    vehicle.enterRoad(road)
+    vehicle.enterRoad(road) match {
+      case Success() =>
+        makePassengerPay(vehicle.nbPassenger(), road.length)
+        Success()
 
-    makePassengerPay(vehicle.nbPassenger(), road.length)
+      case failure => failure
+    }
+
   }
 
   /**
@@ -342,7 +354,11 @@ abstract class TransportFacility
     * @param distance The distance they passengers will travel
     */
   private def makePassengerPay(nbPassenger : Int, distance : Double) : Unit = {
-    company.money += nbPassenger * distance * company.ticketPricePerKm
+    val earn = nbPassenger.toDouble * distance * company.ticketPricePerKm
+
+    company.earn(earn)
+
+    stats.newEvent("Money earn", earn)
   }
 
   /**
@@ -358,39 +374,16 @@ abstract class TransportFacility
 
   /* For the GUI */
 
-  val panel = new VBox()
-
   val transportFacilityLabel = new Label("=== " + transportFacilityType.name + " ===")
   val capacityLabel = new Label()
   val vehiclesLabel = new Label()
   val waitingPassengerLabel = new Label()
 
-  val evolveButton = new Button("Evolve : " + evolvePrice + "$")
-  evolveButton.font = Font.font(null, FontWeight.ExtraBold, 19)
-  evolveButton.textFill = Color.Green
+  labels = List(transportFacilityLabel, capacityLabel, vehiclesLabel,
+    waitingPassengerLabel)
 
-  evolveButton.onAction = _ => {
-    try {
-      evolve()
-    } catch {
-      case _ : AlreadyMaxLevelException =>
-        if (!levelIsMax) {
-          if (panel.children.contains(evolveButton))
-            panel.children.remove(evolveButton)
-        }
-
-      case _ : CannotBuildItemException =>
-        GlobalInformationPanel.displayWarningMessage("Not enough money")
-    }
-
-    evolveButton.text =
-      "Evolve : " + evolvePrice + "$"
-
-  }
-
-  labels = List(transportFacilityLabel, capacityLabel, vehiclesLabel, waitingPassengerLabel)
-
-  panel.children = labels ++ List(evolveButton)
+  panel.children.addAll(transportFacilityLabel, capacityLabel, vehiclesLabel,
+    waitingPassengerLabel, evolveButton, statsButton)
 
   styleLabels(14)
 

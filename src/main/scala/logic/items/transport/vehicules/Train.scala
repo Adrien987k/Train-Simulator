@@ -9,6 +9,7 @@ import logic.world.Company
 
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node
+import scalafx.scene.layout.BorderPane
 
 case class TrainEvolutionPlan
 (weights : List[Double])
@@ -55,11 +56,11 @@ class Train
   override def evolve() : Unit = {
     super.evolve()
 
-    engine.evolve()
-
     val values = evolutionPlan.level(level)
 
     weight = values.head
+
+    company.buy(evolvePrice)
   }
 
   override def loadPassenger(nbPassenger : Int) : Int = {
@@ -138,10 +139,24 @@ class Train
     })
   }
 
+  override def canTransportResource : Boolean = true
+
+  private val trainPane = new BorderPane
+
+  override def propertyPane() : Node = {
+    trainPane.top = super.propertyPane()
+
+    trainPane.center = engine.propertyPane()
+
+    trainPane
+  }
+
+  private val resMap = new ResourceMap
+
   override def carriagesPropertyPane() : Node = {
     val resourceMap = new ResourceMap
 
-    carriages.foldLeft(resourceMap)((resourceMap, carriage) => {
+    val map = carriages.foldLeft(resourceMap)((resourceMap, carriage) => {
       carriage match {
         case resourceCarriage : ResourceCarriage =>
           resourceMap.merge(resourceCarriage.resourceMap())
@@ -149,9 +164,11 @@ class Train
         case _ =>
           resourceMap
       }
-    }).propertyPane()
-  }
+    })
 
-  override def canTransportResource : Boolean = true
+    resMap.putMap(map.resources)
+
+    resMap.propertyPane()
+  }
 
 }

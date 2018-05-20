@@ -105,6 +105,6 @@ class Plane
   override def unloadCargoes(): ListBuffer[Cargo] = ListBuffer.empty
 
   override def carriagesPropertyPane() : Node = {
-    new Label("=== resources ===\n")
+    new Label("")
   }
 }

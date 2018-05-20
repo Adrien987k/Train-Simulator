@@ -10,14 +10,16 @@ import logic.items.production.{Factory, FactoryFactory}
 import logic.items.transport.facilities.TransportFacilityTypes._
 import logic.items.transport.facilities._
 import logic.items.transport.vehicules.VehicleTypes._
-import utils.Pos
+import statistics.Statistics
+import utils.{Failure, Pos, Result, Success}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scalafx.scene.Node
-import scalafx.scene.control.Label
+import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.{BorderPane, VBox}
+import scalafx.scene.text.{Font, FontWeight}
 
 class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
@@ -51,6 +53,8 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   val warehouse : ResourceCollection = new ResourceCollection
 
   private val requestFromOtherCities = new ListBuffer[Request]
+
+  private val stats = new Statistics("city")
 
   def name : String = _name
   def population : Int = _population
@@ -127,6 +131,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
         case None =>
           val tf = TransportFacilityFactory.make(tfType, Game.world.company, this)
           Game.world.company.addTransportFacility(tf)
+          stats.newEvent(tfType.name + " built")
           tf
       }
     }
@@ -151,6 +156,8 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
     factories += FactoryFactory.make(factoryType, Game.world.company, this)
 
+    stats.newEvent(factoryType.name + " built")
+
     Game.world.company.buy(factoryType.price)
   }
 
@@ -161,24 +168,35 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     *
     * @param vehicleType The type of vehicle to build
     */
-  def buildVehicle(vehicleType : VehicleType) : Unit = {
+  def buildVehicle(vehicleType : VehicleType) : Result = {
+    var result : Result = Success()
+
     vehicleType match {
       case DIESEL_TRAIN | ELECTRIC_TRAIN =>
-        if (!hasStation) throw new CannotBuildItemException("This town does not have a Station")
-        station.get.buildTrain(vehicleType.asInstanceOf[TrainType])
+        if (!hasStation) Failure("This town does not have a Station")
+        result = station.get.buildTrain(vehicleType.asInstanceOf[TrainType])
 
       case BOEING | CONCORDE =>
-        if (!hasAirport) throw new CannotBuildItemException("This town does not have an airport")
-        airport.get.buildPlane(vehicleType.asInstanceOf[PlaneType])
+        if (!hasAirport) Failure("This town does not have an airport")
+        result = airport.get.buildPlane(vehicleType.asInstanceOf[PlaneType])
 
       case LINER | CRUISE_BOAT =>
-        if (!hasHarbor) throw new CannotBuildItemException("This town does not have an harbor")
-        harbor.get.buildShip(vehicleType.asInstanceOf[ShipType])
+        if (!hasHarbor) Failure("This town does not have an harbor")
+        result = harbor.get.buildShip(vehicleType.asInstanceOf[ShipType])
 
       case TRUCK =>
-        if (!hasGasStation) throw new CannotBuildItemException("This town does not have a gas station")
-        gasStation.get.buildTruck(vehicleType.asInstanceOf[TruckType])
+        if (!hasGasStation) Failure("This town does not have a gas station")
+        result = gasStation.get.buildTruck(vehicleType.asInstanceOf[TruckType])
     }
+
+    result match {
+      case Success() =>
+        stats.newEvent(vehicleType.name + " built")
+        Success()
+
+      case failure => failure
+    }
+
   }
 
   private def sendPeopleToNeighboursBy(nbPassenger : Int, tfOpt : Option[TransportFacility]) : Unit = {
@@ -235,9 +253,17 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     sendPeopleToNeighboursBy(toAirport, airport)
   }
 
-  def takePeople(nbPassenger : Int) : Unit = _population -= nbPassenger
+  def takePeople(nbPassenger : Int) : Unit = {
+    _population -= nbPassenger
 
-  def receivePeople(nbPassenger : Int) : Unit = _population += nbPassenger
+    stats.newEvent("People leaving the city", nbPassenger)
+  }
+
+  def receivePeople(nbPassenger : Int) : Unit = {
+    _population += nbPassenger
+
+    stats.newEvent("People arriving to the city", nbPassenger)
+  }
 
   /**
     * Send a list of resource packs to a town
@@ -267,7 +293,14 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
       tfOpt.foreach(tf => {
 
         if (neighboursOf(tfOpt).contains(town))
-          tf.trySendCargoes(town.transportFacilityOfType(tf.transportFacilityType).get, cargoes)
+          tf.trySendCargoes(town.transportFacilityOfType(tf.transportFacilityType).get,
+            cargoes) match {
+            case Success() =>
+              stats.newEvent("Request answered", town.name)
+
+            case Failure(reason) =>
+
+          }
       })
     })
   }
@@ -284,6 +317,8 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
     //TODO do somthing with cargoes
     warehouse.storeResourcePacks(packs)
+
+    stats.newEvent("Received packs", packs.size)
   }
 
   /**
@@ -335,11 +370,14 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
       val (_, missingQuantity) = warehouse.take(resource, quantity)
 
+      if (missingQuantity > 0) {
+        stats.newEvent("City missing resource", new ResourcePack(resource, quantity))
+      }
+
       if (missingQuantity > 0
         && requests.quantityOf(resource) * 2 <= consumption.quantityOf(resource)) {
         requests.addSome(resource, missingQuantity)
       } else if (missingQuantity == 0) {
-        println("REMOVE ALL 1 " + resource.name)
         requests.removeAll(resource)
       }
     })
@@ -360,7 +398,6 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
       val (resource, _) = resourceAndQuantity
 
       if (requests.quantityOf(resource) > 0) {
-        println("REMOVE ALL 2 " + resource.name)
         requests.removeAll(resource)
       }
     })
@@ -392,6 +429,8 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
   def takeRequestFromOtherTown(request : Request) : Unit = {
     requestFromOtherCities += request
+
+    stats.newEvent("Request received", request)
   }
 
   def answerRequests() : Unit = {
@@ -431,8 +470,15 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   private val propTravelerLabel = new Label()
   private val posLabel = new Label()
 
+  private val statsButton = new Button("City Statistics")
+
   private val facilitiesVBox = new VBox
   private val factoriesVBox = new VBox
+
+  statsButton.font = Font.font(null, FontWeight.Bold, 18)
+  statsButton.onAction = _ => {
+    stats.show()
+  }
 
   labels = List(nameLabel,
     populationLabel,
@@ -442,7 +488,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
   styleLabels()
 
-  townPanel.children = labels
+  townPanel.children = labels ++ List(statsButton)
 
   private var consumptionNode : Node = consumption.propertyPane()
   private var warehouseNode : Node = warehouse.propertyPane()

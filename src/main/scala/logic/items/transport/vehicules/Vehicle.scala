@@ -3,7 +3,6 @@ package logic.items.transport.vehicules
 import game.Game
 import interface.{ItemsButtonBar, WorldCanvas}
 import logic.economy.Cargo
-import logic.exceptions.ImpossibleActionException
 import logic.{PointUpdatable, UpdateRate}
 import logic.items.{EvolutionPlan, Item}
 import logic.items.transport.facilities.TransportFacility
@@ -11,12 +10,12 @@ import logic.items.transport.roads.Road
 import logic.items.transport.vehicules.VehicleTypes.VehicleType
 import logic.world.Company
 import logic.world.towns.Town
-import utils.{Dir, Pos}
+import utils._
 
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
-import scalafx.scene.layout.{BorderPane, VBox}
+import scalafx.scene.layout.BorderPane
 import scalafx.scene.text.{Font, FontWeight}
 
 abstract class Vehicle
@@ -57,6 +56,8 @@ abstract class Vehicle
     goalTransportFacility match {
       case Some(transportFacility) =>
         if (pos.inRange(transportFacility.pos, 10)) {
+
+          stats.newEvent("Traveled in KM", currentRoad.get.length)
 
           leaveRoad()
 
@@ -133,6 +134,8 @@ abstract class Vehicle
     dir.x = transportFacility.pos.x - pos.x
     dir.y = transportFacility.pos.y - pos.y
     dir.normalize()
+
+    stats.newEvent("Objective set to " + transportFacility.town.name)
   }
 
   /**
@@ -150,6 +153,8 @@ abstract class Vehicle
     */
   def setDestination(town : Town) : Unit = {
     destination = town.transportFacilityForVehicleType(vehicleType)
+
+    stats.newEvent("Destination set to " + town.name)
   }
 
   /**
@@ -157,16 +162,18 @@ abstract class Vehicle
     *
     * @param road The road to enter
     */
-  def enterRoad(road : Road) : Unit = {
-    if (road.isFull) throw new ImpossibleActionException("Road is full")
+  def enterRoad(road : Road) : Result = {
+    if (road.isFull) Failure("Road is full")
     currentRoad match {
       case Some(_) =>
-        throw new ImpossibleActionException("Train already in a road")
+        Failure("Train already in a road")
       case None =>
         currentTransportFacility = None
         road.addVehicle(this)
 
         currentRoad = Some(road)
+
+        Success()
     }
   }
 
@@ -233,31 +240,31 @@ abstract class Vehicle
 
   val pane = new BorderPane
 
-  val panel = new VBox
-
   val typeLabel = new Label(vehicleType.name)
-  val speedLabel = new Label()
-  val maxPassengerLabel = new Label()
-  val nbPassengerLabel = new Label()
-  val posLabel = new Label()
-  val goalStationLabel = new Label()
-  val destinationLabel = new Label()
+  val speedLabel = new Label
+  val maxPassengerLabel = new Label
+  val nbPassengerLabel = new Label
+  val posLabel = new Label
+  val goalTransportFacilityLabel = new Label
+  val destinationLabel = new Label
+  val levelLabel = new Label
 
   labels = List(typeLabel,
     speedLabel,
     maxPassengerLabel,
     nbPassengerLabel,
     posLabel,
-    goalStationLabel,
-    destinationLabel)
+    goalTransportFacilityLabel,
+    destinationLabel,
+    levelLabel)
 
-  panel.children = labels
+  panel.children = labels ++ List(evolveButton, statsButton)
 
   styleLabels()
 
   pane.top = panel
 
-  val chooseDestPanel = new Button("Choose destination")
+  private val chooseDestButton = new Button("Choose destination")
 
   var carriageInfo : Node = new Label("")
   panel.children.add(carriageInfo)
@@ -268,34 +275,26 @@ abstract class Vehicle
     maxPassengerLabel.text = "Max passengers : " + passengerCapacity
     nbPassengerLabel.text = "Passengers : " + nbPassenger
     posLabel.text = "Position : " + pos
+    levelLabel.text = "Level : " + level + (if (evolutionPlan.isMaxLevel(level)) " Level max" else "")
 
-    if (goalTransportFacility.nonEmpty) {
-      goalStationLabel.text = "Next goal : " + goalTransportFacility.get.town.name
+    if (goalTransportFacility.nonEmpty)
+      goalTransportFacilityLabel.text = "Next goal : " + goalTransportFacility.get.town.name
 
-      if (!panel.children.contains(goalStationLabel))
-        panel.children.add(goalStationLabel)
-    }
+    destinationLabel.text =
+      if (destination.nonEmpty) "Destination : " + destination.get.town.name
+      else ""
 
-    if (destination.nonEmpty) {
-      destinationLabel.text = "Destination : " + destination.get.town.name
-
-      if (!panel.children.contains(destinationLabel))
-        panel.children.add(destinationLabel)
-    } else {
-      destinationLabel.text = ""
-    }
-
-    chooseDestPanel.font = Font.font(null, FontWeight.Bold, 18)
-
-    chooseDestPanel.onAction = _ => {
+    chooseDestButton.font = Font.font(null, FontWeight.Bold, 18)
+    chooseDestButton.onAction = _ => {
       if (!ItemsButtonBar.buildMode) {
         Game.world.company.selectVehicle(this)
         WorldCanvas.activeDestinationChoice()
       }
     }
 
-    if (!panel.children.contains(chooseDestPanel))
-      panel.children.add(chooseDestPanel)
+    if (!panel.children.contains(chooseDestButton))
+      panel.children.add(chooseDestButton)
+
 
     carriageInfo = carriagesPropertyPane()
 

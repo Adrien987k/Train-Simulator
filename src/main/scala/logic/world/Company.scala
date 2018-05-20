@@ -14,15 +14,15 @@ import logic.items.production.FactoryTypes.FactoryType
 import logic.items.transport.facilities.TransportFacilityTypes._
 import logic.items.transport.roads.RoadTypes.{LINE, RoadType, WATERWAY}
 import logic.items.transport.vehicules.VehicleTypes.VehicleType
-import utils.Pos
+import utils.{Failure, Pos, Result, Success}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class Company(world : World) {
 
-  var money = 2000000.0
-  var ticketPricePerKm = 0.01
+  private var _money = 2000000.0
+  private val _ticketPricePerKm = 0.01
 
   val vehicles : ListBuffer[Vehicle] = ListBuffer.empty
   val transportFacilities : ListBuffer[TransportFacility] = ListBuffer.empty
@@ -30,6 +30,9 @@ class Company(world : World) {
 
   private var lastTransportFacilityOpt : Option[TransportFacility] = None
   private var selectedVehicle : Option[Vehicle] = None
+
+  def money : Double = _money
+  def ticketPricePerKm : Double = _ticketPricePerKm
 
   def step() : Unit = {
     vehicles.foreach(_.step())
@@ -59,7 +62,7 @@ class Company(world : World) {
   }
 
   def refillFuel(vehicle : Vehicle) : Unit = {
-    money -= vehicle.totalWeight
+    _money -= vehicle.totalWeight / 1000
 
     vehicle.refillFuel()
   }
@@ -78,16 +81,17 @@ class Company(world : World) {
       case None => return
     }
 
-    try {
-      place(itemType, updatable)
-    } catch {
-      case e : CannotBuildItemException =>
-      GlobalInformationPanel.displayWarningMessage(e.getMessage)
+    place(itemType, updatable) match {
+      case Success() =>
+
+      case Failure(reason) =>
+        GlobalInformationPanel.displayWarningMessage(reason)
     }
   }
 
-  private def place(itemType : ItemType, updatable : Updatable) : Unit = {
-    if (!canBuy(itemType.price)) throw new CannotBuildItemException("Not enough money")
+  private def place(itemType : ItemType, updatable : Updatable) : Result = {
+    if (!canBuy(itemType.price))
+      return Failure("Not enough money")
 
     (itemType, updatable) match {
       case (tfType : TransportFacilityType, town : Town) =>
@@ -106,6 +110,8 @@ class Company(world : World) {
 
       case _ =>
     }
+
+    Success()
   }
 
   private def tryBuildRoad(roadType : RoadType, town : Town) : Unit = {
@@ -172,14 +178,18 @@ class Company(world : World) {
   }
 
   def canBuy(amount : Double, quantity : Int = 1) : Boolean = {
-    money - amount * quantity >= 0
+    _money - (amount * quantity) >= 0
   }
 
   def buy(amount : Double, quantity : Int = 1) : Unit = {
-    if (money - amount * quantity < 0)
+    if (_money - (amount * quantity) < 0)
       throw new CannotBuildItemException("Not enough money")
 
-    money -= amount * quantity
+    _money -= amount * quantity
+  }
+
+  def earn(amount : Double) : Unit = {
+    _money += amount
   }
 
   /**

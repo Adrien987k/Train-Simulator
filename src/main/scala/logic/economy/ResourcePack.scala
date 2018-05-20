@@ -1,8 +1,11 @@
 package logic.economy
 
 import logic.economy.Resources.{BoxedResource, DryBulkResource, LiquidResource, Resource}
+import statistics.StatValue
 
-class ResourcePack(val resource : Resource, var quantity : Int) {
+class ResourcePack
+(val resource : Resource,
+ var quantity : Int) extends StatValue {
 
   private var _costOneUnit : Double = resource.defaultCost
 
@@ -25,6 +28,9 @@ class ResourcePack(val resource : Resource, var quantity : Int) {
       quantity += resourcePack.quantity
     }
   }
+
+  override def info() : String =
+    resource.name + ": " + quantity + " " + resource.unit
 
 }
 

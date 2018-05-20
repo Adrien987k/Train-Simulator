@@ -4,6 +4,7 @@ import logic.items.transport.facilities.TransportFacilityTypes.TransportFacility
 import logic.items.transport.vehicules.VehicleTypes.TrainType
 import logic.world.Company
 import logic.world.towns.Town
+import utils.Result
 
 class Station
 (override val transportFacilityType : TransportFacilityType,
@@ -12,9 +13,8 @@ class Station
  override val evolutionPlan : TransportFacilityEvolutionPlan)
   extends TransportFacility(transportFacilityType, company, town, evolutionPlan) {
 
-  def buildTrain(trainType : TrainType) : Boolean = {
+  def buildTrain(trainType : TrainType) : Result = {
     buildVehicle(trainType)
-    true
   }
 
 }

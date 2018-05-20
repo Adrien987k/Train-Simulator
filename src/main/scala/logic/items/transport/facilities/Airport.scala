@@ -5,6 +5,7 @@ import logic.items.transport.roads.RoadTypes.LINE
 import logic.items.transport.vehicules.VehicleTypes.PlaneType
 import logic.world.Company
 import logic.world.towns.Town
+import utils.Result
 
 class Airport
 (override val transportFacilityType : TransportFacilityType,
@@ -19,9 +20,8 @@ class Airport
       company.buildRoad(LINE, this, airport)
   )
 
-  def buildPlane(planeType : PlaneType) : Boolean = {
+  def buildPlane(planeType : PlaneType) : Result = {
     buildVehicle(planeType)
-    true
   }
 
 }

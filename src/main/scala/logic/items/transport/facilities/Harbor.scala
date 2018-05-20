@@ -6,6 +6,7 @@ import logic.items.transport.roads.RoadTypes.WATERWAY
 import logic.items.transport.vehicules.VehicleTypes.ShipType
 import logic.world.Company
 import logic.world.towns.Town
+import utils.Result
 
 class Harbor
 (override val transportFacilityType : TransportFacilityType,
@@ -25,9 +26,8 @@ class Harbor
     }
   })
 
-  def buildShip(shipType : ShipType) : Boolean = {
+  def buildShip(shipType : ShipType) : Result = {
     buildVehicle(shipType)
-    true
   }
 
 }

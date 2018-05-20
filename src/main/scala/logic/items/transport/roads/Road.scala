@@ -70,8 +70,6 @@ abstract class Road
     company.buy(evolvePrice, length.toInt)
   }
 
-  val panel = new VBox()
-
   val roadLabel = new Label("=== " + roadType.name + " ===")
   val maxCapLabel = new Label("Max capacity : " + capacity)
   val nbPlaneLabel = new Label()

@@ -109,12 +109,18 @@ class Ship
     result
   }
 
+  private val resMap = new ResourceMap
+
   override def carriagesPropertyPane() : Node = {
     val resourceMap = new ResourceMap
 
-    cargoes.foldLeft(resourceMap)((map, cargo) => {
+    val map = cargoes.foldLeft(resourceMap)((map, cargo) => {
       cargo.resourceMap().merge(map)
-    }).propertyPane()
+    })
+
+    resMap.putMap(map.resources)
+
+    resMap.propertyPane()
   }
 
 }

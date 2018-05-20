@@ -45,27 +45,6 @@ class ResourceCarriage
     company.buy(evolvePrice)
   }
 
-  /*
-  def addResourcePack(resourcePack : ResourcePack) : Unit = {
-    if (resourcePack.resource.resourceType != resourceType) return
-
-    val resourcesWeight = resources.foldLeft(0.0)((total, resPack) => total + resPack.weight)
-    if (resourcePack.weight + resourcesWeight > _weight) {
-
-    }
-
-    resources += resourcePack
-  }
-
-  def takeResources() : ListBuffer[ResourcePack] = {
-    val resourcesResult = resources
-
-    resources = ListBuffer.empty
-
-    resourcesResult
-  }
-  */
-
   def resourceMap() : ResourceMap = {
     val result = new ResourceMap()
 

@@ -8,7 +8,6 @@ import logic.world.towns.Town
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node
 import scalafx.scene.control.Label
-import scalafx.scene.layout.VBox
 
 class Factory
 (val factoryType : FactoryType,
@@ -23,28 +22,24 @@ class Factory
   override def step() : Boolean = {
 
     recipes.foreach(recipe => {
-      if (recipe.input.nonEmpty) {
-        if (town.warehouse.available(recipe.input)) {
-          val packs = town.warehouse.takeSeveral(recipe.input)
+      val packs =
+        if (recipe.input.nonEmpty && town.warehouse.available(recipe.input))
+          town.warehouse.takeSeveral(recipe.input)
+        else List()
 
-          val production = new Production(recipe)
-          production.start(packs)
+      val production = new Production(recipe)
+      production.start(packs)
 
-          productions += production
-        }
+      stats.newEvent("Start Production", recipe)
 
-      } else {
-        val production = new Production(recipe)
-        production.start()
-
-        productions += production
-      }
+      productions += production
     })
 
     productions.foreach(production => {
       production.checkIsFinished match {
         case Some(pack) =>
-          println("Pack produces")
+          stats.newEvent("Pack produced", pack)
+
           town.warehouse.storeResourcePack(pack)
           productions -= production
 
@@ -61,20 +56,21 @@ class Factory
 
   /* GUI */
 
-  val panel = new VBox()
   val factoryLabel = new Label("=== " + factoryType.name + " ===")
-  val producingLabel = new Label()
+  val producingLabel = new Label
+  val levelLabel = new Label
 
-  labels = List(factoryLabel, producingLabel)
-
-  panel.children = labels
+  labels = List(factoryLabel, producingLabel, levelLabel)
+  panel.children.addAll(factoryLabel, producingLabel, levelLabel, statsButton)
 
   styleLabels(14)
 
-  override def propertyPane(): Node = {
+  override def propertyPane() : Node = {
     if (productions.nonEmpty)
       producingLabel.text = "Currently producing"
     else producingLabel.text = ""
+
+    levelLabel.text = "Level : " + level
 
     panel
   }

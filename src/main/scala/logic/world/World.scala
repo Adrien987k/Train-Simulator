@@ -15,20 +15,20 @@ class World() {
   (val townA : Town,
    val townB : Town) { }
 
-  val MAP_WIDTH = 2000
-  val MAP_HEIGHT = 2000
+  private val MAP_WIDTH = 2000
+  private val MAP_HEIGHT = 2000
 
-  val INIT_NB_TOWNS = 50
-  val APPARITION_WATERWAY = 0.5
+  private val INIT_NB_TOWNS = 50
+  private val APPARITION_WATERWAY = 0.5
 
-  val rand = new Random
+  private val rand = new Random
 
   var towns : ListBuffer[Town] = ListBuffer.empty
   var naturalWaterways : ListBuffer[NaturalWaterway] = ListBuffer.empty
 
   var company : Company = new Company(this)
 
-  var gameDateTime : DateTime = new DateTime
+  private val gameDateTime : DateTime = new DateTime
 
   def start() : Unit = {
     init()
@@ -63,6 +63,8 @@ class World() {
     company.step()
     towns.foreach(_.step())
   }
+
+  def time() : DateTime = gameDateTime.copy()
 
   /**
     * @return True if there exists a natural waterway between [townA] and [townB]

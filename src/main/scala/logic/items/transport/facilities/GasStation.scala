@@ -5,6 +5,7 @@ import logic.items.transport.roads.Highway
 import logic.items.transport.vehicules.VehicleTypes.TruckType
 import logic.world.Company
 import logic.world.towns.Town
+import utils.Result
 
 class GasStation
 (override val transportFacilityType : TransportFacilityType,
@@ -17,9 +18,8 @@ class GasStation
     super.connectRoad(highway)
   }
 
-  def buildTruck(truckType : TruckType) : Boolean = {
+  def buildTruck(truckType : TruckType) : Result = {
     buildVehicle(truckType)
-    true
   }
 
   def availableTrucks : Int = super.availableVehicles

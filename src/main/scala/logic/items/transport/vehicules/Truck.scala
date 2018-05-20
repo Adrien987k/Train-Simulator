@@ -33,14 +33,6 @@ class Truck
 
   private var cargoOpt : Option[Cargo] = None
 
-  def enterHighway(highway : Highway) : Unit = {
-    super.enterRoad(highway)
-  }
-
-  def leaveHighway() : Unit = {
-    super.leaveRoad()
-  }
-
   def haveCargo : Boolean = cargoOpt.nonEmpty
 
   def loadCargo(cargo : Cargo) : Unit = {
