@@ -75,7 +75,7 @@ case class NoValue() extends StatValue {
 
 class Statistics(title : String) {
 
-  private val NB_EVENT_DISPLAYED = 25
+  private val NB_EVENT_DISPLAYED = 20
   private val DIALOG_WIDTH = 1200
   private val DIALOG_HEIGHT = 500
   private val FONT_SIZE = 14

@@ -3,6 +3,7 @@ package logic.world
 import logic.Updatable
 import logic.world.towns.Town
 import interface.{GUI, ItemsStyle}
+import statistics.Statistics
 import utils.{DateTime, Pos}
 
 import scala.collection.mutable.ListBuffer
@@ -20,6 +21,8 @@ class World() {
 
   private val INIT_NB_TOWNS = 50
   private val APPARITION_WATERWAY = 0.5
+
+  private val stats = new Statistics("World")
 
   private val rand = new Random
 
@@ -85,7 +88,7 @@ class World() {
     for (i <- 0 to INIT_NB_TOWNS) {
       val x = rand.nextInt(areaWidth - ItemsStyle.INIT_TOWN_SIZE * 2) + (i * areaWidth) + ItemsStyle.INIT_TOWN_SIZE
       val y = rand.nextInt(MAP_HEIGHT - ItemsStyle.INIT_TOWN_SIZE * 2) + ItemsStyle.INIT_TOWN_SIZE
-      towns += new Town(new Pos(x, y), "Town " + i)
+      towns += new Town(this, new Pos(x, y), "Town " + i)
     }
 
     for (townA <- towns) {
@@ -99,6 +102,8 @@ class World() {
         }
       }
     }
+
+    stats.newEvent("New random map generated")
   }
 
   /**
@@ -136,6 +141,7 @@ class World() {
   def totalPopulation() : Int = {
     val inTowns = towns.foldLeft(0)((total, town) => total + town.population + town.nbWaitingPassengers)
     val inTrains = company.vehicles.foldLeft(0)((total, vehicle) => total + vehicle.nbPassenger())
+
     inTowns + inTrains
   }
 

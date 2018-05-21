@@ -11,26 +11,6 @@ object ItemTypes {
 
   abstract class FacilityType(name : String, price : Double) extends ItemType(name, price)
 
-  def items() : List[ItemType] = {
-    List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, LINE, STATION, AIRPORT)
-  }
-
-  def onSaleItems() : List[ItemType] = {
-    List(BOEING,
-      CONCORDE,
-      DIESEL_TRAIN,
-      ELECTRIC_TRAIN,
-      TRUCK,
-      LINER,
-      CRUISE_BOAT,
-      RAIL,
-      HIGHWAY,
-      STATION,
-      AIRPORT,
-      HARBOR,
-      GAS_STATION)
-  }
-
   def onSaleItemsForVehicleCategory(vehicleCategory : VehicleCategory) : List[ItemType] = {
     vehicleCategory match {
       case VehicleCategories.Trains => List(DIESEL_TRAIN, ELECTRIC_TRAIN, RAIL, STATION)

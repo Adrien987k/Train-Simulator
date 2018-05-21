@@ -1,24 +1,44 @@
 package logic.world
 
-import game.Game
 import logic.items.transport.facilities._
 import logic.items.transport.roads.{Road, RoadFactory}
 import logic.items.transport.vehicules.Vehicle
 import logic.world.towns.Town
 import interface.{AllVehiclesInformationPanel, GlobalInformationPanel, OneVehicleInformationPanel, WorldCanvas}
 import logic.Updatable
+import logic.economy.{Cargo, ResourcePack}
+import logic.economy.Resources.{BOXED, DRY_BULK, LIQUID}
 import logic.items.ItemTypes
 import logic.items.ItemTypes._
 import logic.items.production.FactoryTypes.FactoryType
 import logic.items.transport.facilities.TransportFacilityTypes._
 import logic.items.transport.roads.RoadTypes.{LINE, RoadType, WATERWAY}
 import logic.items.transport.vehicules.VehicleTypes.VehicleType
+import statistics.{StatValue, Statistics}
 import utils.{Failure, Pos, Result, Success}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class Company(world : World) {
+
+  private case class Contract
+  (from : Town,
+   to : Town,
+   packs : ListBuffer[ResourcePack])
+    extends StatValue {
+    override def info() : String = {
+      val sb = packs.foldLeft(new StringBuilder)((sb, pack) => {
+        sb.append("\n" + pack.info())
+      })
+
+      "from: " + from.name + " | to: " + to.name + sb.toString()
+    }
+
+    override def mean(l : ListBuffer[StatValue]) : StatValue = l.head
+
+    override def sum(v : StatValue): StatValue = v
+  }
 
   private var _money = 2000000.0
   private val _ticketPricePerKm = 0.01
@@ -30,12 +50,19 @@ class Company(world : World) {
   private var lastTransportFacilityOpt : Option[TransportFacility] = None
   private var selectedVehicle : Option[Vehicle] = None
 
+  private val contracts : ListBuffer[Contract] = ListBuffer.empty
+
+  private val stats = new Statistics("Company")
+  private val contractStats = new Statistics("Contracts")
+
   def money : Double = _money
   def ticketPricePerKm : Double = _ticketPricePerKm
 
   def step() : Unit = {
     vehicles.foreach(_.step())
     roads.foreach(_.step())
+
+    answerContract()
   }
 
   def addVehicle(vehicle : Vehicle) : Unit = {
@@ -64,6 +91,8 @@ class Company(world : World) {
     _money -= vehicle.totalWeight / 1000
 
     vehicle.refillFuel()
+
+    stats.newEvent("refill fuel of " + vehicle.vehicleType.name)
   }
 
   /**
@@ -82,6 +111,7 @@ class Company(world : World) {
 
     place(itemType, updatable) match {
       case Success() =>
+        stats.newEvent(itemType.name + " built")
 
       case Failure(reason) =>
         GlobalInformationPanel.displayWarningMessage(reason)
@@ -172,6 +202,7 @@ class Company(world : World) {
       world.updatableAt(pos) match {
         case Some(town : Town) =>
           vehicle.setDestination(town)
+          stats.newEvent("Set destination of " + vehicle.vehicleType.name + " to " + town.name)
 
         case _ =>
       }
@@ -202,11 +233,15 @@ class Company(world : World) {
 
     _money -= amount * quantity
 
+    stats.newEvent("purchase", amount * quantity)
+
     Success()
   }
 
   def earn(amount : Double) : Unit = {
     _money += amount
+
+    stats.newEvent("Earn", amount)
   }
 
   /**
@@ -219,7 +254,7 @@ class Company(world : World) {
   def buildRoad(roadType : RoadType, transportFacilityA : TransportFacility, transportFacilityB : TransportFacility) : Result = {
     if (transportFacilityA == transportFacilityB) return Failure("Cannot build road from to the same town")
 
-    if (roadType != WATERWAY && Game.world.existNaturalWaterWay(transportFacilityA.town, transportFacilityB.town))
+    if (roadType != WATERWAY && world.existNaturalWaterWay(transportFacilityA.town, transportFacilityB.town))
       return Failure("Cannot build road on waterway")
 
     if (roadAlreadyExists(transportFacilityA.town, transportFacilityB.town))
@@ -275,6 +310,59 @@ class Company(world : World) {
     result.asInstanceOf[ListBuffer[TransportFacility]]
   }
 
+  def createContract(from : Town, to : Town, packs : ListBuffer[ResourcePack]) : Unit = {
+    val contract = Contract(from, to, packs)
+
+    contracts.find(contractTaken => {
+      contract.from == contractTaken.from &&
+      contract.to == contractTaken.to
+    }) match {
+      case Some(_) => return
+      case None =>
+    }
+
+    contracts += contract
+
+    stats.newEvent("Contract created from " + from.name + " to " + to.name)
+    contractStats.newEvent("Contract", contract)
+  }
+
+  def answerContract() : Unit = {
+    contracts.foreach(contract => {
+      //TODO do something with cargoes / Take them from somewhere
+      val cargoDryBulk = new Cargo(DRY_BULK)
+      val cargoLiquid = new Cargo(LIQUID)
+      val cargoBoxed = new Cargo(BOXED)
+
+      contract.packs.foldLeft(None)((None, pack) => {
+        pack.resource.resourceType match {
+          case DRY_BULK => cargoDryBulk.store(ListBuffer(pack))
+          case LIQUID => cargoLiquid.store(ListBuffer(pack))
+          case BOXED => cargoBoxed.store(ListBuffer(pack))
+        }
+
+        None
+      })
+
+      val cargoes = ListBuffer(cargoDryBulk, cargoLiquid, cargoBoxed)
+
+      contract.from.transportFacilities().foreach(tfOpt => {
+        tfOpt.foreach(tf => {
+
+          if (contract.from.neighboursOf(tfOpt).contains(contract.to))
+            tf.trySendCargoes(contract.to.transportFacilityOfType(tf.transportFacilityType).get,
+              cargoes) match {
+              case Success() =>
+                stats.newEvent("Vehicle sent for contract", contract)
+                contracts -= contract
+
+              case Failure(_) =>
+
+            }
+        })
+      })
+    })
+  }
 
   /**
     * Found the shortest path between [vehicle] current transport facility
@@ -362,5 +450,9 @@ class Company(world : World) {
 
     var prec : Node = _
   }
+
+  def showStatistics() : Unit = stats.show()
+
+  def showContractStatistics() : Unit = contractStats.show()
 
 }

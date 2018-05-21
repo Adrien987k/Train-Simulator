@@ -1,7 +1,6 @@
 package logic.world.towns
 
-import game.Game
-import logic.economy.Resources.{BOXED, DRY_BULK, LIQUID, Resource}
+import logic.economy.Resources.Resource
 import logic.{PointUpdatable, UpdateRate}
 import logic.economy._
 import logic.items.production.FactoryTypes.FactoryType
@@ -9,6 +8,7 @@ import logic.items.production.{Factory, FactoryFactory}
 import logic.items.transport.facilities.TransportFacilityTypes._
 import logic.items.transport.facilities._
 import logic.items.transport.vehicules.VehicleTypes._
+import logic.world.World
 import statistics.Statistics
 import utils.{Failure, Pos, Result, Success}
 
@@ -20,7 +20,11 @@ import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.{BorderPane, VBox}
 import scalafx.scene.text.{Font, FontWeight}
 
-class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
+class Town
+(val world : World,
+ _pos : Pos,
+ private var _name : String)
+  extends PointUpdatable {
 
   updateRate(UpdateRate.TOWN_UPDATE)
   pos = _pos
@@ -30,7 +34,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   val MAX_POPULATION = 1000000
   val MIN_POPULATION = 10
   val DEFAULT_PROPORTION_TRAVELER = 0.1
-  val INIT_MAX_NB_FACTORY = 3
+  val INIT_MAX_NB_FACTORY = 5
 
   var station : Option[Station] = None
   var airport : Option[Airport] = None
@@ -128,14 +132,14 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
           (None, Failure("This town already have " + itemNameForError))
 
         case None =>
-          val tf = TransportFacilityFactory.make(tfType, Game.world.company, this)
-          Game.world.company.addTransportFacility(tf)
+          val tf = TransportFacilityFactory.make(tfType, world.company, this)
+          world.company.addTransportFacility(tf)
           stats.newEvent(tfType.name + " built")
           (Some(tf), Success())
       }
     }
 
-    buildInternal(transportFacilityOfType(tfType), " this facility") match {
+    buildInternal(transportFacilityOfType(tfType), tfType.name) match {
       case (Some(tf), result : Result) =>
           tfType match {
             case STATION => station = Some(tf.asInstanceOf[Station])
@@ -150,17 +154,17 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   }
 
   def buildFactory(factoryType : FactoryType) : Result = {
-    if (!Game.world.company.canBuy(factoryType.price))
+    if (!world.company.canBuy(factoryType.price))
       return Failure("Not enough money")
 
     if (factories.lengthCompare(maxNbFactory) == 0)
       return Failure("Max number of factory reached")
 
-    factories += FactoryFactory.make(factoryType, Game.world.company, this)
+    factories += FactoryFactory.make(factoryType, world.company, this)
 
     stats.newEvent(factoryType.name + " built")
 
-    Game.world.company.buy(factoryType.price)
+    world.company.buy(factoryType.price)
 
     Success()
   }
@@ -176,19 +180,19 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     var result : Result = Success()
 
     vehicleType match {
-      case DIESEL_TRAIN | ELECTRIC_TRAIN =>
+      case _ : TrainType =>
         if (!hasStation) return Failure("This town does not have a Station")
         result = station.get.buildTrain(vehicleType.asInstanceOf[TrainType])
 
-      case BOEING | CONCORDE =>
+      case _ : PlaneType =>
         if (!hasAirport) return Failure("This town does not have an airport")
         result = airport.get.buildPlane(vehicleType.asInstanceOf[PlaneType])
 
-      case LINER | CRUISE_BOAT =>
+      case _ : ShipType =>
         if (!hasHarbor) return Failure("This town does not have an harbor")
         result = harbor.get.buildShip(vehicleType.asInstanceOf[ShipType])
 
-      case TRUCK =>
+      case _ : TruckType =>
         if (!hasGasStation) return Failure("This town does not have a gas station")
         result = gasStation.get.buildTruck(vehicleType.asInstanceOf[TruckType])
     }
@@ -270,46 +274,6 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   }
 
   /**
-    * Send a list of resource packs to a town
-    *
-    * @param town where to send the resources
-    * @param packs the packs to send
-    */
-  def sendResource(town : Town, packs : ListBuffer[ResourcePack]) : Unit = {
-    //TODO do something with cargoes / Take them from somewhere
-    val cargoDryBulk = new Cargo(DRY_BULK)
-    val cargoLiquid = new Cargo(LIQUID)
-    val cargoBoxed = new Cargo(BOXED)
-
-    packs.foldLeft(None)((None, pack) => {
-      pack.resource.resourceType match {
-        case DRY_BULK => cargoDryBulk.store(ListBuffer(pack))
-        case LIQUID => cargoLiquid.store(ListBuffer(pack))
-        case BOXED => cargoBoxed.store(ListBuffer(pack))
-      }
-
-      None
-    })
-
-    val cargoes = ListBuffer(cargoDryBulk, cargoLiquid, cargoBoxed)
-
-    transportFacilities().foreach(tfOpt => {
-      tfOpt.foreach(tf => {
-
-        if (neighboursOf(tfOpt).contains(town))
-          tf.trySendCargoes(town.transportFacilityOfType(tf.transportFacilityType).get,
-            cargoes) match {
-            case Success() =>
-              stats.newEvent("Request answered", town.name)
-
-            case Failure(_) =>
-
-          }
-      })
-    })
-  }
-
-  /**
     * Receive new cargoes and manage them
     *
     * @param cargoes The cargoes to manage
@@ -346,7 +310,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     }
   }
 
-  private def neighboursOf(transportFacilityOpt : Option[TransportFacility]) : ListBuffer[Town] = {
+  def neighboursOf(transportFacilityOpt : Option[TransportFacility]) : ListBuffer[Town] = {
     transportFacilityOpt match {
       case Some(tf) => tf.neighbours().map(tf => tf.town)
       case None => ListBuffer()
@@ -461,7 +425,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     packsTo.foreach(townAndPacks => {
       val (town, packs) = townAndPacks
 
-      sendResource(town, packs)
+      world.company.createContract(this, town, packs)
     })
   }
 
