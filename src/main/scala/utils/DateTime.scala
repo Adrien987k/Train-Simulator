@@ -40,6 +40,11 @@ class DateTime
     days = 1
   }
 
+  def load(node : scala.xml.NodeSeq) : Unit = {
+    hours = (node \"@hours").text.toInt
+    days = (node \"@days").text.toInt
+  }
+
   def normalize() : Unit = {
     if (hours > 23) {
       days += (hours - 23) / 24

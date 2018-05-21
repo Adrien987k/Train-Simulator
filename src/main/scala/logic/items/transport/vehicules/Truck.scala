@@ -31,7 +31,9 @@ class Truck
 
   private var _fuelLevel : Double = 0.0
 
-  private var cargoOpt : Option[Cargo] = None
+  def fuelLevel : Double = _fuelLevel
+
+  var cargoOpt : Option[Cargo] = None
 
   def haveCargo : Boolean = cargoOpt.nonEmpty
 

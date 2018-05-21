@@ -8,7 +8,7 @@ import scalafx.scene.layout.VBox
 
 class ResourceCollection() {
 
-  private val packs : ListBuffer[ResourcePack] = ListBuffer.empty
+  val packs : ListBuffer[ResourcePack] = ListBuffer.empty
 
   def storeResourcePacks(resourcePacks : ListBuffer[ResourcePack]) : Unit = {
     packs ++= resourcePacks

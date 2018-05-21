@@ -21,7 +21,7 @@ import scala.collection.mutable.ListBuffer
 
 class Company(world : World) {
 
-  private var _money = 2000000.0
+  var _money = 2000000.0
   private val _ticketPricePerKm = 0.01
 
   val vehicles : ListBuffer[Vehicle] = ListBuffer.empty

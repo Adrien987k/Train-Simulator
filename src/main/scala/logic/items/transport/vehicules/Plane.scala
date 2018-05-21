@@ -36,6 +36,8 @@ class Plane
   private var _nbPassenger : Int = 0
   private var _fuelLevel : Double = 0
 
+  def fuelLevel : Double = _fuelLevel
+
   override def canTransportResource : Boolean = false
 
   override def maxSpeed() : Double = maxSpeedVar

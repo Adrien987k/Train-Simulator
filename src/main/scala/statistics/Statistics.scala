@@ -30,14 +30,14 @@ case class NoValue() extends StatValue
 
 class Statistics(title : String) {
 
-  private case class Event
+  case class Event
   (time : DateTime,
    name : String,
    value : StatValue) {
 
   }
 
-  private val events : ListBuffer[Event] = ListBuffer.empty
+  val events : ListBuffer[Event] = ListBuffer.empty
 
   def newEvent(name : String, v : Double) : Unit =
     events += Event(Game.world.time(), name, DoubleValue(v))

@@ -1,15 +1,18 @@
 package logic.world
 
-import logic.Updatable
+import logic.{Loadable, Updatable}
 import logic.world.towns.Town
 import interface.{GUI, ItemsStyle}
+import logic.items.transport.facilities.TransportFacilityFactory
+import logic.items.transport.facilities.TransportFacilityTypes.{AIRPORT, GAS_STATION, HARBOR, STATION}
+import logic.items.transport.roads.RoadTypes.{HIGHWAY, LINE, RAIL, WATERWAY}
 import utils.{DateTime, Pos}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scalafx.animation.AnimationTimer
 
-class World() {
+class World() extends Loadable{
 
   class NaturalWaterway
   (val townA : Town,
@@ -28,7 +31,7 @@ class World() {
 
   var company : Company = new Company(this)
 
-  private val gameDateTime : DateTime = new DateTime
+  val gameDateTime : DateTime = new DateTime
 
   def start() : Unit = {
     init()
@@ -57,6 +60,22 @@ class World() {
     gameDateTime.restart()
   }
 
+  override def load(node : scala.xml.Node) : Unit = {
+    loadWorld(node)
+
+    GUI.initWorldCanvas(towns)
+
+    val timer = AnimationTimer { _ =>
+      update()
+
+      GUI.update()
+
+      Thread.sleep(50)
+    }
+
+    timer.start()
+  }
+
   def update() : Unit = {
     gameDateTime.update()
 
@@ -65,6 +84,18 @@ class World() {
   }
 
   def time() : DateTime = gameDateTime.copy()
+
+  def loadWorld(node : scala.xml.Node) : Unit = {
+    towns = ListBuffer.empty
+    naturalWaterways = ListBuffer.empty
+
+    company = new Company(this)
+
+    for (<Money>{money}</Money> <- node \"Money") {company._money = money.text.toDouble}
+
+    generateLoadMap(node)
+    gameDateTime.load(node \"Date")
+  }
 
   /**
     * @return True if there exists a natural waterway between [townA] and [townB]
@@ -100,6 +131,63 @@ class World() {
       }
     }
   }
+
+  def loadNaturalWaterway(nameTownA : String, nameTownB : String) : Unit = {
+    towns.foreach(townA => if (nameTownA == townA.name) {towns.foreach(townB => if (nameTownB == townB.name) {naturalWaterways += new NaturalWaterway(townA,townB)})} )
+  }
+
+  def loadConnection(road : scala.xml.Node, townA : Town, townB : Town) : Unit = {
+    road match {
+      case <Rail></Rail> =>
+        val transportFacilityA = TransportFacilityFactory.make(STATION, company, townA)
+        val transportFacilityB = TransportFacilityFactory.make(STATION, company, townB)
+        company.buildRoad(RAIL, transportFacilityA, transportFacilityB)
+
+      case <Line></Line> =>
+        val transportFacilityA = TransportFacilityFactory.make(AIRPORT, company, townA)
+        val transportFacilityB = TransportFacilityFactory.make(AIRPORT, company, townB)
+        company.buildRoad(LINE, transportFacilityA, transportFacilityB)
+
+      case <Waterway></Waterway> =>
+        val transportFacilityA = TransportFacilityFactory.make(HARBOR, company, townA)
+        val transportFacilityB = TransportFacilityFactory.make(HARBOR, company, townB)
+        company.buildRoad(WATERWAY, transportFacilityA, transportFacilityB)
+
+      case <Highway></Highway> =>
+        val transportFacilityA = TransportFacilityFactory.make(GAS_STATION, company, townA)
+        val transportFacilityB = TransportFacilityFactory.make(GAS_STATION, company, townB)
+        company.buildRoad(HIGHWAY, transportFacilityA, transportFacilityB)
+    }
+  }
+
+  def generateLoadMap(node : scala.xml.Node) : Unit = {
+    node match {
+      case <Map>{subnode @ _*}</Map> =>
+        for (city @ <City>{_*}</City> <- subnode) {
+          val x = (city \"@x").text.toDouble
+          val y = (city \"@y").text.toDouble
+          val name = (city \"@name").text
+          val population = (city \"@population").text.toInt
+          val town = new Town(new Pos(x, y), name)
+          town.initPopulation(population)
+          town.loadCity(city, company)
+          towns += town
+        }
+        for (waterway @ <NaturalWaterway>{_*}</NaturalWaterway> <- subnode) {
+          val nameTownA = (waterway \"@townA").text
+          val nameTownB = (waterway \"@townB").text
+          loadNaturalWaterway(nameTownA, nameTownB)
+        }
+        for (<Connection>{road @ _*}</Connection> <- subnode) {
+          for (nodeRoad <- road) {
+            val nameTownA = (nodeRoad \"@townA").text
+            val nameTownB = (nodeRoad \"@townB").text
+            towns.foreach(townA => if (nameTownA == townA.name) {towns.foreach(townB => if (nameTownB == townB.name) {loadConnection(nodeRoad, townA, townB)})} )
+          }
+        }
+    }
+  }
+
 
   /**
     * Try to find an element at the position [pos] in the world map

@@ -49,11 +49,11 @@ object GUI {
     }
 
     saveItem.onAction = (_ : ActionEvent) => {
-      //TODO save the current map in a file
+      Game.save()
     }
 
     loadItem.onAction = (_ : ActionEvent) => {
-      //TODO load a map from a file
+      Game.load()
     }
 
     exitItem.onAction = (_ : ActionEvent) => {

@@ -4,6 +4,7 @@ import logic.items.{EvolutionPlan, Facility}
 import logic.items.production.FactoryTypes.FactoryType
 import logic.world.Company
 import logic.world.towns.Town
+import utils.DateTime
 
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node
@@ -52,6 +53,20 @@ class Factory
 
   override def evolve() : Unit = {
 
+  }
+
+  def loadProduction (node: scala.xml.Node) : Unit = {
+    node match {
+      case <Factory>{subnode@_*}</Factory> =>
+        for (production @ <Production>{_*}</Production> <- subnode) {
+          var day = (production \ "@startday").text.toInt
+          var hour = (production \ "@starthour").text.toInt
+          val recipe = this.recipes((production \ "@recipe").text.toInt)
+          var newProduction = new Production(recipe)
+          newProduction.startTime = new DateTime(day, hour)
+          productions += newProduction
+        }
+    }
   }
 
   /* GUI */

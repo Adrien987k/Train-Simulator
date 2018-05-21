@@ -1,8 +1,9 @@
 package logic.world.towns
 
+
 import game.Game
 import logic.economy.Resources.{BOXED, DRY_BULK, LIQUID, Resource}
-import logic.{PointUpdatable, UpdateRate}
+import logic.{Loadable, PointUpdatable, UpdateRate}
 import logic.economy._
 import logic.exceptions.CannotBuildItemException
 import logic.items.production.FactoryTypes.FactoryType
@@ -10,8 +11,9 @@ import logic.items.production.{Factory, FactoryFactory}
 import logic.items.transport.facilities.TransportFacilityTypes._
 import logic.items.transport.facilities._
 import logic.items.transport.vehicules.VehicleTypes._
-import statistics.Statistics
-import utils.{Failure, Pos, Result, Success}
+import logic.world.Company
+import statistics._
+import utils._
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -21,7 +23,7 @@ import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.{BorderPane, VBox}
 import scalafx.scene.text.{Font, FontWeight}
 
-class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
+class Town(_pos : Pos, private var _name : String) extends PointUpdatable with Loadable {
 
   updateRate(UpdateRate.TOWN_UPDATE)
   pos = _pos
@@ -43,18 +45,18 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
   private val proportionTraveler : Double = DEFAULT_PROPORTION_TRAVELER
 
-  private val factories : ListBuffer[Factory] = ListBuffer.empty
+  val factories : ListBuffer[Factory] = ListBuffer.empty
 
   private val maxNbFactory : Int = INIT_MAX_NB_FACTORY
 
-  private val offer : ResourceCollection = new ResourceCollection
-  private val requests : ResourceMap = new ResourceMap
-  private val consumption : ResourceMap = Consumption.initialConsumption()
+  val offer : ResourceCollection = new ResourceCollection
+  val requests : ResourceMap = new ResourceMap
+  val consumption : ResourceMap = Consumption.initialConsumption()
   val warehouse : ResourceCollection = new ResourceCollection
 
   private val requestFromOtherCities = new ListBuffer[Request]
 
-  private val stats = new Statistics("city")
+  val stats = new Statistics("city")
 
   def name : String = _name
   def population : Int = _population
@@ -63,6 +65,90 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
   def hasAirport : Boolean = airport.nonEmpty
   def hasHarbor : Boolean = harbor.nonEmpty
   def hasGasStation : Boolean = gasStation.nonEmpty
+
+  def initPopulation (newPopulation : Int) : Unit = _population = newPopulation
+
+  def loadWarehouse(node : scala.xml.NodeSeq) : Unit = {
+    node match {
+      case <Warehouse>{subnode @ _*}</Warehouse> =>
+        for (resource @ <Resource>{_*}</Resource> <- subnode) {
+          val resourceType = (resource \"@type").text
+          val quantity = (resource \"@quantity").text.toInt
+          val resourcePack = Resources.loadResource(resourceType, quantity)
+          warehouse.storeResourcePack(resourcePack)
+        }
+    }
+  }
+
+  def loadOffer(node : scala.xml.NodeSeq) : Unit = {
+    node match {
+      case <Offer>{subnode @ _*}</Offer> =>
+        for (resource @ <Resource>{_*}</Resource> <- subnode) {
+          val resourceType = (resource \"@type").text
+          val quantity = (resource \"@quantity").text.toInt
+          val resourcePack = Resources.loadResource(resourceType, quantity)
+          offer.storeResourcePack(resourcePack)
+        }
+    }
+  }
+
+  def loadRequest(node : scala.xml.NodeSeq) : Unit = {
+    node match {
+      case <Request>{subnode @ _*}</Request> =>
+        for (resource @ <Resource>{_*}</Resource> <- subnode) {
+          val resourceType = (resource \"@type").text
+          val quantity = (resource \"@quantity").text.toInt
+          Resources.addResourceMap(requests, resourceType, quantity)
+        }
+    }
+  }
+
+  def loadConsumption (node : scala.xml.NodeSeq) : Unit = {
+    node match {
+      case <Consumption>{subnode @ _*}</Consumption> =>
+        for (resource @ <Resource>{_*}</Resource> <- subnode) {
+          val resourceType = (resource \"@type").text
+          val quantity = (resource \"@quantity").text.toInt
+          Resources.addResourceMap(consumption, resourceType, quantity)
+        }
+    }
+  }
+
+  def loadStatistic (node : scala.xml.NodeSeq) : Unit = {
+    node match {
+      case <Statistic>{subnode @ _*}</Statistic> =>
+        for (event @ <Event>{_*}</Event> <- subnode) {
+          val day = (event \"@day").text.toInt
+          val hour = (event \"@hour").text.toInt
+          val date = new DateTime(day, hour)
+          val name = (event \"@name").text
+          val typeValue = (event \"@type").text
+          val value = (event \"@value").text
+        }
+    }
+  }
+
+  def loadCity (node : scala.xml.Node, company: Company) : Unit = {
+    node match {
+      case <City>{subnode @ _*}</City> =>
+        for (factory @ <Factory>{_*}</Factory> <- subnode) {
+          val name = (factory \"@type").text
+          var newFactory = FactoryFactory.loadFactory(name, company, this)
+          newFactory.loadProduction(factory)
+          factories += newFactory
+        }
+        for (warehouse @ <Warehouse>{_*}</Warehouse> <- subnode) loadWarehouse(warehouse)
+        for (offer @ <Offer>{_*}</Offer> <- subnode) loadOffer(offer)
+        for (request @ <Request>{_*}</Request> <- subnode) loadRequest(request)
+        for (consumption @ <Consumption>{_*}</Consumption> <- subnode) loadConsumption(consumption)
+        for (statistic @ <Statistic>{_*}</Statistic> <- subnode) loadStatistic(statistic)
+    }
+
+    if ((node \"Airport") != scala.xml.NodeSeq.Empty) buildTransportFacility(AIRPORT)
+    if ((node \"Port") != scala.xml.NodeSeq.Empty) buildTransportFacility(HARBOR)
+    if ((node \"GasStation") != scala.xml.NodeSeq.Empty) buildTransportFacility(GAS_STATION)
+    if ((node \"Station") != scala.xml.NodeSeq.Empty) buildTransportFacility(STATION)
+  }
 
   override def step() : Boolean = {
     if(!super.step()) return false

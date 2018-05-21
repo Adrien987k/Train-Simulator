@@ -38,7 +38,9 @@ class Ship
   private var _nbPassenger : Int = 0
   private var _fuelLevel : Double = 0
 
-  private var cargoes : ListBuffer[Cargo] = ListBuffer.empty
+  def fuelLevel : Double = _fuelLevel
+
+  var cargoes : ListBuffer[Cargo] = ListBuffer.empty
 
   override def canTransportResource : Boolean = true
 

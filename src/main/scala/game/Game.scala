@@ -24,4 +24,15 @@ object Game {
     _world.get.start()
   }
 
+  def save () : Unit = {
+    scala.xml.XML.save("save.xml", Save.createNode)
+  }
+
+  def load() : Unit = {
+    GUI.restart()
+    val node = scala.xml.XML.loadFile("save.xml")
+    _world = Some (new World)
+    _world.get.load(node)
+  }
+
 }
