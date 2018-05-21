@@ -1,7 +1,6 @@
 package logic.world
 
 import game.Game
-import logic.exceptions.CannotBuildItemException
 import logic.items.transport.facilities._
 import logic.items.transport.roads.{Road, RoadFactory}
 import logic.items.transport.vehicules.Vehicle
@@ -95,18 +94,26 @@ class Company(world : World) {
 
     (itemType, updatable) match {
       case (tfType : TransportFacilityType, town : Town) =>
-        town.buildTransportFacility(tfType)
-        buy(itemType.price)
+        town.buildTransportFacility(tfType) match {
+          case Success() =>
+            return buy(itemType.price)
+
+          case failure => return failure
+        }
 
       case (vehicleType : VehicleType, town : Town) =>
-        town.buildVehicle(vehicleType)
-        buy(itemType.price)
+        town.buildVehicle(vehicleType) match {
+          case Success() =>
+            return buy(itemType.price)
+
+          case failure => return failure
+        }
 
       case (roadType : RoadType, town : Town) =>
-        tryBuildRoad(roadType, town)
+        return tryBuildRoad(roadType, town)
 
       case (factoryType : FactoryType, town : Town) =>
-        town.buildFactory(factoryType)
+        return town.buildFactory(factoryType)
 
       case _ =>
     }
@@ -114,13 +121,13 @@ class Company(world : World) {
     Success()
   }
 
-  private def tryBuildRoad(roadType : RoadType, town : Town) : Unit = {
+  private def tryBuildRoad(roadType : RoadType, town : Town) : Result = {
     var quantity = 0
 
     val transportFacilityType = ItemTypes.transportFacilityTypeFromRoadType(roadType)
 
     if (!town.hasTransportFacilityOfType(transportFacilityType))
-      throw new CannotBuildItemException("This town does not have " + transportFacilityType.name)
+      return Failure("This town does not have " + transportFacilityType.name)
 
     val currentTransportFacility = town.transportFacilityOfType(transportFacilityType).get
 
@@ -128,16 +135,24 @@ class Company(world : World) {
       case Some(lastTransportFacility) =>
         quantity = lastTransportFacility.pos.dist(currentTransportFacility.pos).toInt
 
-        if (!canBuy(roadType.price, quantity)) throw new CannotBuildItemException("Not enough money")
+        if (!canBuy(roadType.price, quantity)) return Failure("Not enough money")
 
-        buildRoad(roadType, lastTransportFacility, currentTransportFacility)
+        buildRoad(roadType, lastTransportFacility, currentTransportFacility) match {
+          case Success() =>
+
+          case failure => return failure
+        }
 
         buy(roadType.price, quantity)
 
         lastTransportFacilityOpt = None
 
+        Success()
+
       case None =>
         lastTransportFacilityOpt = Some(currentTransportFacility)
+
+        Success()
     }
   }
 
@@ -181,11 +196,13 @@ class Company(world : World) {
     _money - (amount * quantity) >= 0
   }
 
-  def buy(amount : Double, quantity : Int = 1) : Unit = {
+  def buy(amount : Double, quantity : Int = 1) : Result = {
     if (_money - (amount * quantity) < 0)
-      throw new CannotBuildItemException("Not enough money")
+      Failure("Not enough money")
 
     _money -= amount * quantity
+
+    Success()
   }
 
   def earn(amount : Double) : Unit = {
@@ -199,14 +216,14 @@ class Company(world : World) {
     * @param transportFacilityA The first facility to connect
     * @param transportFacilityB The second facility to connect
     */
-  def buildRoad(roadType : RoadType, transportFacilityA : TransportFacility, transportFacilityB : TransportFacility) : Unit = {
-    if (transportFacilityA == transportFacilityB) return
+  def buildRoad(roadType : RoadType, transportFacilityA : TransportFacility, transportFacilityB : TransportFacility) : Result = {
+    if (transportFacilityA == transportFacilityB) return Failure("Cannot build road from to the same town")
 
     if (roadType != WATERWAY && Game.world.existNaturalWaterWay(transportFacilityA.town, transportFacilityB.town))
-      throw new CannotBuildItemException("Cannot build road on waterway")
+      return Failure("Cannot build road on waterway")
 
     if (roadAlreadyExists(transportFacilityA.town, transportFacilityB.town))
-      throw new CannotBuildItemException("Road already exists there")
+      return Failure ("Road already exists there")
 
     val road = RoadFactory.make(roadType, this, transportFacilityA, transportFacilityB)
 
@@ -214,6 +231,8 @@ class Company(world : World) {
 
     transportFacilityA.connectRoad(road)
     transportFacilityB.connectRoad(road)
+
+    Success()
   }
 
   /**

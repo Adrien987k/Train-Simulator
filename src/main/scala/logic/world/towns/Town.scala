@@ -4,7 +4,6 @@ import game.Game
 import logic.economy.Resources.{BOXED, DRY_BULK, LIQUID, Resource}
 import logic.{PointUpdatable, UpdateRate}
 import logic.economy._
-import logic.exceptions.CannotBuildItemException
 import logic.items.production.FactoryTypes.FactoryType
 import logic.items.production.{Factory, FactoryFactory}
 import logic.items.transport.facilities.TransportFacilityTypes._
@@ -122,43 +121,48 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
     *
     * @param tfType the transportFacility type
     */
-  def buildTransportFacility(tfType : TransportFacilityType) : Unit = {
-    def buildInternal(tfOpt : Option[TransportFacility], itemNameForError : String) : TransportFacility = {
+  def buildTransportFacility(tfType : TransportFacilityType) : Result = {
+    def buildInternal(tfOpt : Option[TransportFacility], itemNameForError : String) : (Option[TransportFacility], Result) = {
       tfOpt match {
         case Some(_) =>
-          throw new CannotBuildItemException("This town already have " + itemNameForError)
+          (None, Failure("This town already have " + itemNameForError))
 
         case None =>
           val tf = TransportFacilityFactory.make(tfType, Game.world.company, this)
           Game.world.company.addTransportFacility(tf)
           stats.newEvent(tfType.name + " built")
-          tf
+          (Some(tf), Success())
       }
     }
 
-    tfType match {
-      case STATION => station = Some(buildInternal(station, "a station").asInstanceOf[Station])
+    buildInternal(transportFacilityOfType(tfType), " this facility") match {
+      case (Some(tf), result : Result) =>
+          tfType match {
+            case STATION => station = Some(tf.asInstanceOf[Station])
+            case AIRPORT => airport = Some(tf.asInstanceOf[Airport])
+            case HARBOR => harbor = Some(tf.asInstanceOf[Harbor])
+            case GAS_STATION => gasStation = Some(tf.asInstanceOf[GasStation])
+          }
+        result
 
-      case AIRPORT => airport = Some(buildInternal(airport, "an airport").asInstanceOf[Airport])
-
-      case HARBOR => harbor = Some(buildInternal(harbor, "an harbor").asInstanceOf[Harbor])
-
-      case GAS_STATION => gasStation = Some(buildInternal(gasStation, "a gas station").asInstanceOf[GasStation])
+      case(None, failure) => failure
     }
   }
 
-  def buildFactory(factoryType : FactoryType) : Unit = {
+  def buildFactory(factoryType : FactoryType) : Result = {
     if (!Game.world.company.canBuy(factoryType.price))
-      throw new CannotBuildItemException("Not enough money")
+      return Failure("Not enough money")
 
     if (factories.lengthCompare(maxNbFactory) == 0)
-      throw new CannotBuildItemException("Max number of factory reached")
+      return Failure("Max number of factory reached")
 
     factories += FactoryFactory.make(factoryType, Game.world.company, this)
 
     stats.newEvent(factoryType.name + " built")
 
     Game.world.company.buy(factoryType.price)
+
+    Success()
   }
 
   /**
@@ -173,19 +177,19 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
 
     vehicleType match {
       case DIESEL_TRAIN | ELECTRIC_TRAIN =>
-        if (!hasStation) Failure("This town does not have a Station")
+        if (!hasStation) return Failure("This town does not have a Station")
         result = station.get.buildTrain(vehicleType.asInstanceOf[TrainType])
 
       case BOEING | CONCORDE =>
-        if (!hasAirport) Failure("This town does not have an airport")
+        if (!hasAirport) return Failure("This town does not have an airport")
         result = airport.get.buildPlane(vehicleType.asInstanceOf[PlaneType])
 
       case LINER | CRUISE_BOAT =>
-        if (!hasHarbor) Failure("This town does not have an harbor")
+        if (!hasHarbor) return Failure("This town does not have an harbor")
         result = harbor.get.buildShip(vehicleType.asInstanceOf[ShipType])
 
       case TRUCK =>
-        if (!hasGasStation) Failure("This town does not have a gas station")
+        if (!hasGasStation) return Failure("This town does not have a gas station")
         result = gasStation.get.buildTruck(vehicleType.asInstanceOf[TruckType])
     }
 
@@ -298,7 +302,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable {
             case Success() =>
               stats.newEvent("Request answered", town.name)
 
-            case Failure(reason) =>
+            case Failure(_) =>
 
           }
       })

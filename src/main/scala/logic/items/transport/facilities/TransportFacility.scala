@@ -150,16 +150,16 @@ abstract class TransportFacility
     */
   private def sendPassenger(objective : TransportFacility, nbPassenger : Int) : Result = {
     if (vehicles.isEmpty)
-      Failure(nbPassenger.toString)
+      return Failure(nbPassenger.toString)
 
     getRoadTo(objective) match {
       case Some(road) =>
         if (road.nbVehicle == road.capacity)
-          Failure(nbPassenger.toString)
+          return Failure(nbPassenger.toString)
 
         val vehicleOpt = availableVehicle()
         if (vehicleOpt.isEmpty)
-          Failure(nbPassenger.toString)
+          return Failure(nbPassenger.toString)
 
         val vehicle = vehicleOpt.get
 
@@ -193,16 +193,16 @@ abstract class TransportFacility
 
   private def sendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Result = {
     if (vehicles.isEmpty)
-      Failure("No available vehicle")
+      return Failure("No available vehicle")
 
     getRoadTo(objective) match {
       case Some(road) =>
         if (road.nbVehicle == road.capacity)
-          Failure("Road is full")
+          return Failure("Road is full")
 
         val vehicleOpt = availableVehicle(true)
         if (vehicleOpt.isEmpty)
-          Failure("No available resource transport vehicle")
+          return Failure("No available resource transport vehicle")
 
         val vehicle = vehicleOpt.get
 

@@ -55,7 +55,10 @@ abstract class Vehicle
 
     goalTransportFacility match {
       case Some(transportFacility) =>
-        if (pos.inRange(transportFacility.pos, 10)) {
+        var speed = currentSpeed()
+
+        if (pos.inRange(transportFacility.pos, speed + 1)) {
+          pos = transportFacility.pos.copy()
 
           stats.newEvent("Traveled in KM", currentRoad.get.length)
 
@@ -64,7 +67,6 @@ abstract class Vehicle
           transportFacility.unload(this)
 
         } else {
-          var speed = currentSpeed()
           if (currentRoad.nonEmpty && speed > currentRoad.get.speedLimit)
             speed = currentRoad.get.speedLimit
 

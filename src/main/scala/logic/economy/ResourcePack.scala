@@ -3,6 +3,8 @@ package logic.economy
 import logic.economy.Resources.{BoxedResource, DryBulkResource, LiquidResource, Resource}
 import statistics.StatValue
 
+import scala.collection.mutable.ListBuffer
+
 class ResourcePack
 (val resource : Resource,
  var quantity : Int) extends StatValue {
@@ -32,6 +34,9 @@ class ResourcePack
   override def info() : String =
     resource.name + ": " + quantity + " " + resource.unit
 
+  override def mean(l : ListBuffer[StatValue]) : ResourcePack = this
+
+  override def sum(v : StatValue) : ResourcePack = this
 }
 
 class DryBulkResourcePack(resourceType : DryBulkResource, quantity : Int)
