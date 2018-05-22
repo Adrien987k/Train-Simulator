@@ -12,14 +12,14 @@ import scalafx.scene.text.{Font, FontWeight}
 
 abstract class StatValue {
   def info() : String
-  def mean(l : ListBuffer[StatValue]) : StatValue
+  def average(l : ListBuffer[StatValue]) : StatValue
   def sum(v : StatValue) : StatValue
 }
 
 case class IntValue(value : Int) extends StatValue {
   override def info() : String = value.toString
 
-  override def mean(l : ListBuffer[StatValue]) : StatValue = {
+  override def average(l : ListBuffer[StatValue]) : StatValue = {
     val sum = l.foldLeft(value)((sum, intValue) => {
       intValue match {
         case IntValue(iv) => sum + iv
@@ -41,7 +41,7 @@ case class IntValue(value : Int) extends StatValue {
 case class DoubleValue(value : Double) extends StatValue {
   override def info() : String = value.toString
 
-  override def mean(l : ListBuffer[StatValue]) : StatValue = {
+  override def average(l : ListBuffer[StatValue]) : StatValue = {
     val sum = l.foldLeft(value)((sum, intValue) => {
       intValue match {
         case DoubleValue(dv) => sum + dv
@@ -62,13 +62,13 @@ case class DoubleValue(value : Double) extends StatValue {
 
 case class StringValue(v : String) extends StatValue {
   override def info() : String = v.toString
-  override def mean(l : ListBuffer[StatValue]) : StatValue = l.head
+  override def average(l : ListBuffer[StatValue]) : StatValue = l.head
   override def sum(v : StatValue) : StatValue = v
 }
 
 case class NoValue() extends StatValue {
   override def info() : String = ""
-  override def mean(l : ListBuffer[StatValue]) : StatValue= l.head
+  override def average(l : ListBuffer[StatValue]) : StatValue= l.head
   override def sum(v : StatValue) : StatValue = v
 }
 
@@ -88,9 +88,6 @@ class Statistics(title : String) {
   }
 
   private val events : ListBuffer[Event] = ListBuffer.empty
-
-  def newEvent(name : String, v : Double) : Unit =
-    events += Event(Game.world.time(), name, DoubleValue(v))
 
   def newEvent(name : String, v : Int) : Unit =
     events += Event(Game.world.time(), name, IntValue(v))
@@ -148,14 +145,14 @@ class Statistics(title : String) {
     toDisplayEvents.foreach(event => {
       val sb = new StringBuilder
 
-      sb.append("TIME: " + event.time.time() + " | ")
-      sb.append("EVENT: " + event.name + " | ")
+      sb.append(event.time.time() + " | ")
+      sb.append(event.name + " | ")
 
       event.value match {
         case _ : NoValue =>
 
         case _ =>
-          sb.append("VALUE: " + event.value.info())
+          sb.append(event.value.info())
       }
 
       val label = new Label(sb.toString())
@@ -179,7 +176,7 @@ class Statistics(title : String) {
         l
       })
 
-      val mean = events.head.value.mean(values)
+      val mean = events.head.value.average(values)
 
       val sum = values.foldLeft(values.head)((sum, value) => {
         sum.sum(value)
@@ -197,6 +194,10 @@ class Statistics(title : String) {
 
       rightPane.children.add(label)
     })
+  }
+
+  def deactivateAverages() : Unit = {
+    pane.right = null
   }
 
 }

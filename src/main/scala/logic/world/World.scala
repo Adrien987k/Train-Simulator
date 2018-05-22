@@ -33,6 +33,9 @@ class World() {
 
   private val gameDateTime : DateTime = new DateTime
 
+  /**
+    * Start a new world
+    */
   def start() : Unit = {
     init()
 

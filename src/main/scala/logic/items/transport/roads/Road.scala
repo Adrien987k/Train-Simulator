@@ -48,6 +48,8 @@ abstract class Road
         vehicle.leaveRoad()
         vehicles -= vehicle
 
+        stats.newEvent(vehicle.vehicleType.name +  " crashed", 1)
+
         company.destroyVehicle(vehicle)
       }
     })
@@ -58,8 +60,17 @@ abstract class Road
   def nbVehicle : Int = vehicles.size
   def isFull : Boolean = capacity == vehicles.size
 
-  def addVehicle(vehicle : Vehicle) : Unit = vehicles += vehicle
-  def removeVehicle(vehicle: Vehicle) : Unit = vehicles -= vehicle
+  def addVehicle(vehicle : Vehicle) : Unit = {
+    vehicles += vehicle
+
+    stats.newEvent(vehicle.vehicleType.name + " entered")
+  }
+
+  def removeVehicle(vehicle: Vehicle) : Unit = {
+    vehicles -= vehicle
+
+    stats.newEvent(vehicle.vehicleType.name + " leaved")
+  }
 
   override def evolve() : Unit = {
     super.evolve()
@@ -76,9 +87,10 @@ abstract class Road
   val lengthLabel = new Label()
   val connectLabel = new Label()
 
-  labels = List(roadLabel, maxCapLabel, nbPlaneLabel, lengthLabel, connectLabel)
+  labels = List(roadLabel,
+    maxCapLabel, nbPlaneLabel, lengthLabel, connectLabel)
 
-  panel.children = labels
+  panel.children = labels ++ List(evolveButton, statsButton)
 
   styleLabels()
 

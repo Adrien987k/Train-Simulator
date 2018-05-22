@@ -1,5 +1,6 @@
 package logic.world.towns
 
+import game.Game
 import logic.economy.Resources.Resource
 import logic.{PointUpdatable, UpdateRate}
 import logic.economy._
@@ -31,6 +32,8 @@ class Town
 
   private val rand = new Random()
 
+  private val SEARCH_RADIUS = 1000
+
   val MAX_POPULATION = 1000000
   val MIN_POPULATION = 10
   val DEFAULT_PROPORTION_TRAVELER = 0.1
@@ -55,7 +58,7 @@ class Town
   private val consumption : ResourceMap = Consumption.initialConsumption()
   val warehouse : ResourceCollection = new ResourceCollection
 
-  private val requestFromOtherCities = new ListBuffer[Request]
+  private var requestFromOtherCities = new ListBuffer[Request]
 
   private val stats = new Statistics("city")
 
@@ -153,6 +156,12 @@ class Town
     }
   }
 
+  /**
+    * Build a factory in that town
+    *
+    * @param factoryType The type of factory to build
+    * @return Success or failure
+    */
   def buildFactory(factoryType : FactoryType) : Result = {
     if (!world.company.canBuy(factoryType.price))
       return Failure("Not enough money")
@@ -332,15 +341,22 @@ class Town
     factories.foreach(_.step())
   }
 
+  /**
+    * Consume resources from consumption
+    * If not enough resource is available,
+    * create requests for that resource
+    */
   def consume() : Unit = {
     consumption.resources.foreach(resourceAndQuantity => {
       val (resource, quantity) = resourceAndQuantity
 
-      val (_, missingQuantity) = warehouse.take(resource, quantity)
+      var (_, missingQuantity) = warehouse.take(resource, quantity)
 
-      if (missingQuantity > 0) {
+      if (missingQuantity > 0)
+        missingQuantity = offer.take(resource, missingQuantity)._2
+
+      if (missingQuantity > 0)
         stats.newEvent("City missing resource", new ResourcePack(resource, quantity))
-      }
 
       if (missingQuantity > 0
         && requests.quantityOf(resource) * 2 <= consumption.quantityOf(resource)) {
@@ -371,36 +387,47 @@ class Town
     })
   }
 
+  /**
+    * Search the nearby cities for requested resources
+    */
   def searchResource() : Unit = {
-    transportFacilities().foreach(tfOpt => {
-      tfOpt.foreach(searchResource)
+    Game.world.towns.foreach(town => {
+      if (town.pos.dist(pos) < SEARCH_RADIUS) {
+        requests.resources.foreach(request => {
+          searchResourceIn(town, request)
+        })
+      }
     })
   }
 
   /**
-    * Search the neighbours cities for missing resources in the city
+    * Search for requested resources in [town]
+    *
+    * @param town The town where to search
+    * @param request The request to send
     */
-  def searchResource(transportFacility : TransportFacility) : Unit = {
-    transportFacility.neighbours().foreach(tf => {
-      requests.resources.foreach(request => {
-        searchResourceIn(tf.town, request)
-      })
-    })
-  }
-
-  def searchResourceIn(town : Town, request : (Resource, Int)) : Unit = {
+  private def searchResourceIn(town : Town, request : (Resource, Int)) : Unit = {
     if (town.offer.quantityOf(request._1) > 0) {
+      println("request " + request._1.name + " " + request._2)
 
       town.takeRequestFromOtherTown(Request(this, request._1, request._2))
     }
   }
 
+  /**
+    * Take a request from another city
+    *
+    * @param request The request to take
+    */
   def takeRequestFromOtherTown(request : Request) : Unit = {
     requestFromOtherCities += request
 
     stats.newEvent("Request received", request)
   }
 
+  /**
+    * Try answer as much as possible requests from other cities
+    */
   def answerRequests() : Unit = {
     val packsTo : mutable.HashMap[Town, ListBuffer[ResourcePack]] = mutable.HashMap.empty
 
@@ -425,7 +452,11 @@ class Town
     packsTo.foreach(townAndPacks => {
       val (town, packs) = townAndPacks
 
-      world.company.createContract(this, town, packs)
+      requestFromOtherCities = requestFromOtherCities.filter(request => {
+        request.town != town
+      })
+
+      world.company.createContract(this, town, packs, pos.dist(town.pos))
     })
   }
 

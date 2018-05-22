@@ -14,7 +14,7 @@ case class Recipe
   override def info() : String =
     output._1.name + " quantity: " + output._2
 
-  override def mean(l : ListBuffer[StatValue]) : StatValue = l.head
+  override def average(l : ListBuffer[StatValue]) : StatValue = l.head
 
   override def sum(v : StatValue) : StatValue = v
 }

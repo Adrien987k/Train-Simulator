@@ -50,10 +50,6 @@ class Factory
     true
   }
 
-  override def evolve() : Unit = {
-
-  }
-
   /* GUI */
 
   val factoryLabel = new Label("=== " + factoryType.name + " ===")

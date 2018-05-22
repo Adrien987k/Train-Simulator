@@ -34,7 +34,7 @@ class ResourcePack
   override def info() : String =
     resource.name + ": " + quantity + " " + resource.unit
 
-  override def mean(l : ListBuffer[StatValue]) : ResourcePack = this
+  override def average(l : ListBuffer[StatValue]) : ResourcePack = this
 
   override def sum(v : StatValue) : ResourcePack = this
 }

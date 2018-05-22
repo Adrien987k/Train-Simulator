@@ -14,31 +14,13 @@ import logic.items.production.FactoryTypes.FactoryType
 import logic.items.transport.facilities.TransportFacilityTypes._
 import logic.items.transport.roads.RoadTypes.{LINE, RoadType, WATERWAY}
 import logic.items.transport.vehicules.VehicleTypes.VehicleType
-import statistics.{StatValue, Statistics}
+import statistics.Statistics
 import utils.{Failure, Pos, Result, Success}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class Company(world : World) {
-
-  private case class Contract
-  (from : Town,
-   to : Town,
-   packs : ListBuffer[ResourcePack])
-    extends StatValue {
-    override def info() : String = {
-      val sb = packs.foldLeft(new StringBuilder)((sb, pack) => {
-        sb.append("\n" + pack.info())
-      })
-
-      "from: " + from.name + " | to: " + to.name + sb.toString()
-    }
-
-    override def mean(l : ListBuffer[StatValue]) : StatValue = l.head
-
-    override def sum(v : StatValue): StatValue = v
-  }
 
   private var _money = 2000000.0
   private val _ticketPricePerKm = 0.01
@@ -54,6 +36,7 @@ class Company(world : World) {
 
   private val stats = new Statistics("Company")
   private val contractStats = new Statistics("Contracts")
+  contractStats.deactivateAverages()
 
   def money : Double = _money
   def ticketPricePerKm : Double = _ticketPricePerKm
@@ -87,6 +70,9 @@ class Company(world : World) {
     transportFacilities += transportFacility
   }
 
+  /**
+    * @param vehicle refill fuel of that vehicle
+    */
   def refillFuel(vehicle : Vehicle) : Unit = {
     _money -= vehicle.totalWeight / 1000
 
@@ -227,21 +213,32 @@ class Company(world : World) {
     _money - (amount * quantity) >= 0
   }
 
+  /**
+    * @param amount The amount of money for one element
+    * @param quantity The number of elements
+    * @return Success or failure
+    */
   def buy(amount : Double, quantity : Int = 1) : Result = {
-    if (_money - (amount * quantity) < 0)
+    val totalAmount = amount * quantity
+
+    if (_money - totalAmount < 0)
       Failure("Not enough money")
 
-    _money -= amount * quantity
+    _money -= totalAmount
 
-    stats.newEvent("purchase", amount * quantity)
+    stats.newEvent("purchase", totalAmount.toInt)
 
     Success()
   }
 
+  /**
+    * @param amount The amount of money to earn
+    */
   def earn(amount : Double) : Unit = {
     _money += amount
 
-    stats.newEvent("Earn", amount)
+    if (amount > 0)
+      stats.newEvent("Earn", amount.toInt)
   }
 
   /**
@@ -310,16 +307,26 @@ class Company(world : World) {
     result.asInstanceOf[ListBuffer[TransportFacility]]
   }
 
-  def createContract(from : Town, to : Town, packs : ListBuffer[ResourcePack]) : Unit = {
-    val contract = Contract(from, to, packs)
+  /**
+    * Create a new contract between a town and the company
+    * for transport resources
+    *
+    * @param from The town where to start
+    * @param to The town where to deliver resources
+    * @param packs The resources to deliver
+    */
+  def createContract(from : Town, to : Town, packs : ListBuffer[ResourcePack], reward : Double) : Unit = {
 
     contracts.find(contractTaken => {
-      contract.from == contractTaken.from &&
-      contract.to == contractTaken.to
+      from == contractTaken.from &&
+      to == contractTaken.to &&
+        contractTaken.status != FULFILLED
     }) match {
       case Some(_) => return
       case None =>
     }
+
+    val contract = Contract(from, to, packs, reward, CREATED)
 
     contracts += contract
 
@@ -327,40 +334,67 @@ class Company(world : World) {
     contractStats.newEvent("Contract", contract)
   }
 
+  /**
+    * Try to send vehicles in order to fulfill as more as possible contracts
+    */
   def answerContract() : Unit = {
     contracts.foreach(contract => {
-      //TODO do something with cargoes / Take them from somewhere
-      val cargoDryBulk = new Cargo(DRY_BULK)
-      val cargoLiquid = new Cargo(LIQUID)
-      val cargoBoxed = new Cargo(BOXED)
+      val shouldAnswer = contract.status match {
+        case VEHICLE_SENT => false
+        case FULFILLED => false
+        case _ => true
+      }
 
-      contract.packs.foldLeft(None)((None, pack) => {
-        pack.resource.resourceType match {
-          case DRY_BULK => cargoDryBulk.store(ListBuffer(pack))
-          case LIQUID => cargoLiquid.store(ListBuffer(pack))
-          case BOXED => cargoBoxed.store(ListBuffer(pack))
-        }
+      if (shouldAnswer) {
+        val cargoDryBulk = new Cargo(DRY_BULK)
+        val cargoLiquid = new Cargo(LIQUID)
+        val cargoBoxed = new Cargo(BOXED)
 
-        None
-      })
+        contract.packs.foldLeft(None)((None, pack) => {
+          pack.resource.resourceType match {
+            case DRY_BULK => cargoDryBulk.store(ListBuffer(pack))
+            case LIQUID => cargoLiquid.store(ListBuffer(pack))
+            case BOXED => cargoBoxed.store(ListBuffer(pack))
+          }
 
-      val cargoes = ListBuffer(cargoDryBulk, cargoLiquid, cargoBoxed)
-
-      contract.from.transportFacilities().foreach(tfOpt => {
-        tfOpt.foreach(tf => {
-
-          if (contract.from.neighboursOf(tfOpt).contains(contract.to))
-            tf.trySendCargoes(contract.to.transportFacilityOfType(tf.transportFacilityType).get,
-              cargoes) match {
-              case Success() =>
-                stats.newEvent("Vehicle sent for contract", contract)
-                contracts -= contract
-
-              case Failure(_) =>
-
-            }
+          None
         })
-      })
+
+        val cargoes = ListBuffer(cargoDryBulk, cargoLiquid, cargoBoxed)
+
+        contract.from.transportFacilities().foreach(tfOpt => {
+          tfOpt.foreach(tf => {
+
+            if (contract.from.neighboursOf(tfOpt).contains(contract.to))
+              tf.trySendCargoes(contract.to.transportFacilityOfType(tf.transportFacilityType).get,
+                cargoes, contract) match {
+                case Success() =>
+                  stats.newEvent("Vehicle sent for contract from " +
+                    contract.from.name + " to " + contract.to.name)
+                  contract.status = VEHICLE_SENT
+
+                case Failure(reason) =>
+                  println("FAILURE " + reason)
+
+              }
+          })
+        })
+      }
+    })
+  }
+
+  /**
+    * Check if this contract exists and fulfilled it
+    *
+    * @param contract The contract to check
+    */
+  def fulfillContract(contract : Contract) : Unit = {
+    contracts.foreach(contractTaken => {
+      if (contractTaken == contract) {
+        contract.status = FULFILLED
+
+        earn(contract.reward)
+      }
     })
   }
 

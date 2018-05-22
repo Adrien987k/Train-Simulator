@@ -14,7 +14,7 @@ case class Request
   override def info() : String =
     town.name + " need " + resource.name + " " + quantity + " " + resource.unit
 
-  override def mean(l : ListBuffer[StatValue]) : StatValue = l.head
+  override def average(l : ListBuffer[StatValue]) : StatValue = l.head
 
   override def sum(v : StatValue) : StatValue = v
 }
