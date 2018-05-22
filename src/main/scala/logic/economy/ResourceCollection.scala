@@ -6,6 +6,9 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.layout.VBox
 
+/**
+  * Represent a collection of resource packs
+  */
 class ResourceCollection() {
 
   val packs : ListBuffer[ResourcePack] = ListBuffer.empty
@@ -23,7 +26,6 @@ class ResourceCollection() {
 
     packs.foreach(pack => {
       if (pack.resource == resourceType && remainingToTake > 0) {
-        println("PASS : " + pack.resource.name)
         if (remainingToTake <= pack.quantity) {
           pack.quantity -= remainingToTake
           remainingToTake = 0

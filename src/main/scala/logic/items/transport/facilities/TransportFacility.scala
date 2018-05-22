@@ -6,7 +6,7 @@ import logic.items.transport.facilities.TransportFacilityTypes.TransportFacility
 import logic.items.transport.roads.Road
 import logic.items.transport.vehicules.VehicleTypes.VehicleType
 import logic.items.transport.vehicules.{Vehicle, VehicleFactory}
-import logic.world.Company
+import logic.world.{Company, Contract}
 import logic.world.towns.Town
 import utils.{Failure, Result, Success}
 
@@ -180,8 +180,17 @@ abstract class TransportFacility
     }
   }
 
-  def trySendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Result = {
-    sendCargoes(objective, cargoes) match {
+  /**
+    * Try to send [cargoes] from this facility to [objective]
+    * in order to fulfill [contract]
+    *
+    * @param objective The facility where to send cargoes
+    * @param cargoes The cargoes to send
+    * @param contract The contract related to this shipment
+    * @return Success or failure depending if the cargoes have actually been sent
+    */
+  def trySendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo], contract : Contract) : Result = {
+    sendCargoes(objective, cargoes, contract) match {
       case Success() =>
         stats.newEvent("Cargoes sent to " + objective.town.name, cargoes.size)
         Success()
@@ -193,7 +202,7 @@ abstract class TransportFacility
     }
   }
 
-  private def sendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo]) : Result = {
+  private def sendCargoes(objective : TransportFacility, cargoes : ListBuffer[Cargo], contract : Contract) : Result = {
     if (vehicles.isEmpty)
       return Failure("No available vehicle")
 
@@ -209,6 +218,7 @@ abstract class TransportFacility
         val vehicle = vehicleOpt.get
 
         loadCargoes(vehicle, objective, cargoes)
+        vehicle.setContract(contract)
 
         putOnRoad(vehicle, road) match {
           case Success() =>
@@ -216,6 +226,7 @@ abstract class TransportFacility
 
           case failure =>
             unload(vehicle)
+            vehicle.contractOpt = None
             failure
         }
 
@@ -296,6 +307,13 @@ abstract class TransportFacility
 
     town.receivePeople(vehicle.unloadPassenger())
 
+    vehicle.contractOpt match {
+      case Some(contract) =>
+        company.fulfillContract(contract)
+
+      case None =>
+    }
+
     val cargoes = vehicle.unloadCargoes()
     town.receiveCargoes(cargoes)
 
@@ -360,7 +378,7 @@ abstract class TransportFacility
 
     company.earn(earn)
 
-    stats.newEvent("Money earn", earn)
+    stats.newEvent("Money earn", earn.toInt)
   }
 
   /**

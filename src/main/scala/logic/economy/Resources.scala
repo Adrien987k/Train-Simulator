@@ -4,38 +4,38 @@ object Resources {
 
   sealed abstract class ResourceType extends Comparable[ResourceType] {
     override def compareTo(o: ResourceType): Int = {
-      if(this.getClass.getName.equals(o.getClass.getName)) 0 else -1
+      if (this.getClass.getName.equals(o.getClass.getName)) 0 else -1
     }
   }
 
   case object DRY_BULK extends ResourceType
+
   case object LIQUID extends ResourceType
+
   case object BOXED extends ResourceType
 
   sealed abstract class Resource
-  (val resourceType : ResourceType,
-   val name : String,
-   val unit : String,
-   val defaultCost : Double,
-   val minCost : Double,
-   val maxCost : Double,
-   val weight : Double) {
+  (val resourceType: ResourceType,
+   val name: String,
+   val unit: String,
+   val defaultCost: Double,
+   val minCost: Double,
+   val maxCost: Double,
+   val weight: Double) {
 
   }
 
   sealed abstract class DryBulkResource
-  (name : String, defaultCost: Double, minCost : Double, maxCost: Double, weight : Double)
-    extends Resource(DRY_BULK, name, "Liter", defaultCost, minCost, maxCost, weight)
-  {}
+  (name: String, defaultCost: Double, minCost: Double, maxCost: Double, weight: Double)
+    extends Resource(DRY_BULK, name, "Liter", defaultCost, minCost, maxCost, weight) {}
 
   sealed abstract class LiquidResource
-  (name : String, defaultCost : Double, minCost : Double, maxCost : Double, weight : Double)
-    extends Resource(LIQUID, name, "Liter", defaultCost, minCost, maxCost, weight)
-  {}
+  (name: String, defaultCost: Double, minCost: Double, maxCost: Double, weight: Double)
+    extends Resource(LIQUID, name, "Liter", defaultCost, minCost, maxCost, weight) {}
 
   sealed abstract class BoxedResource
-  (name : String, unit : String, defaultCost: Double, minCost : Double, maxCost: Double, weight : Double,
-   size : Int)
+  (name: String, unit: String, defaultCost: Double, minCost: Double, maxCost: Double, weight: Double,
+   size: Int)
     extends Resource(BOXED, name, unit, defaultCost, minCost, maxCost, weight) {}
 
   case object ALUMINIUM extends BoxedResource("aluminium", "box", 50.0, 25.0, 100.0, 10.0, 5)
@@ -136,11 +136,11 @@ object Resources {
 
   case object WOOL extends DryBulkResource("wool", 50.0, 20.0, 100.0, 5.0)
 
-  def resources() : List[Resource with Product with Serializable] = {
+  def resources(): List[Resource with Product with Serializable] = {
     List(ALUMINIUM, BAUXITE, COAL, GRAIN, BAKED_GOOD, SHEEP, WOOL, TEXTILE)
   }
 
-  def loadResource (name : String, quantity: Int) : ResourcePack = {
+  def loadResource(name: String, quantity: Int): ResourcePack = {
     name match {
       case "aluminium" => new ResourcePack(ALUMINIUM, quantity)
       case "aluminium wire" => new ResourcePack(ALUMINIUM_WIRE, quantity)
@@ -194,7 +194,7 @@ object Resources {
     }
   }
 
-  def addResourceMap (resourceMap: ResourceMap, name : String, quantity : Int) : Unit = {
+  def addResourceMap(resourceMap: ResourceMap, name: String, quantity: Int): Unit = {
     name match {
       case "aluminium" => resourceMap.addSome(ALUMINIUM, quantity)
       case "aluminium wire" => resourceMap.addSome(ALUMINIUM_WIRE, quantity)
@@ -246,6 +246,61 @@ object Resources {
       case "woodchip" => resourceMap.addSome(WOODCHIP, quantity)
       case "wool" => resourceMap.addSome(WOOL, quantity)
     }
-  }
 
+    def resources(): List[Resource] = {
+      List(
+        ALUMINIUM,
+        ALUMINIUM_WIRE,
+        BAKED_GOOD,
+        BAUXITE,
+        BEER,
+        BRICK,
+        CANNED_FOOD,
+        CATTLE,
+        CEMENT,
+        CHEMICAL,
+        CLAY,
+        COAL,
+        COPPER,
+        COPPER_WIRE,
+        COTTON,
+        ELECTRONICS,
+        FISH,
+        FRUIT,
+        FUEL,
+        FURNITURE,
+        GLASS,
+        GRAIN,
+        IRON,
+        LEATHER,
+        LIMESTONE,
+        LIQUOR,
+        LUMBER,
+        MARBLE,
+        MEAT,
+        MILK,
+        OIL,
+        PAPER,
+        PETROLEUM_PRODUCT,
+        PIG,
+        PLASTIC,
+        PRESS,
+        RUBBER,
+        SAND,
+        SHEEP,
+        STEEL,
+        STEEL_WIRE,
+        TEXTILE,
+        TIMBER,
+        TYRE,
+        VEGETABLE,
+        VEHICLE,
+        WINE,
+        WOODCHIP,
+        WOOL)
+
+    }
+  }
 }
+
+

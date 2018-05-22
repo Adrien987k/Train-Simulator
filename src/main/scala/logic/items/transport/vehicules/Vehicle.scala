@@ -8,7 +8,7 @@ import logic.items.{EvolutionPlan, Item}
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.roads.Road
 import logic.items.transport.vehicules.VehicleTypes.VehicleType
-import logic.world.Company
+import logic.world.{Company, Contract}
 import logic.world.towns.Town
 import utils._
 
@@ -33,7 +33,7 @@ abstract class Vehicle
     case None => new Pos(0, 0)
   }
 
-  var dir : Dir = new Dir(0, 0)
+  private var dir : Dir = new Dir(0, 0)
 
   /* The next facility to reach */
   var goalTransportFacility : Option[TransportFacility] = None
@@ -44,6 +44,9 @@ abstract class Vehicle
   var currentRoad : Option[Road] = None
 
   private var _crashed = false
+
+  /* The contract this vehicle is currently fulfilling */
+  var contractOpt : Option[Contract] = None
 
   def crashed : Boolean = _crashed
 
@@ -104,7 +107,7 @@ abstract class Vehicle
         if (pos.inRange(transportFacility.pos, speed + 1)) {
           pos = transportFacility.pos.copy()
 
-          stats.newEvent("Traveled in KM", currentRoad.get.length)
+          stats.newEvent("Traveled in KM", currentRoad.get.length.toInt * 10)
 
           leaveRoad()
 
@@ -201,6 +204,30 @@ abstract class Vehicle
     destination = town.transportFacilityForVehicleType(vehicleType)
 
     stats.newEvent("Destination set to " + town.name)
+  }
+
+  /**
+    * @param contract The contract this vehicle is fulfilling
+    */
+  def setContract(contract : Contract) : Unit = {
+    contractOpt = Some(contract)
+
+    stats.newEvent("Contract taken from "
+      + contract.from.name + " to " + contract.to.name)
+  }
+
+  /**
+    * Remove the contract this vehicle might have
+    */
+  def unsetContract() : Unit = {
+    contractOpt match {
+      case Some(contract) =>
+        stats.newEvent("Contract finished"
+          + contract.from.name + " to " + contract.to.name)
+        contractOpt = None
+
+      case None =>
+    }
   }
 
   /**
@@ -313,7 +340,7 @@ abstract class Vehicle
   private val chooseDestButton = new Button("Choose destination")
 
   var carriageInfo : Node = new Label("")
-  panel.children.add(carriageInfo)
+  panel.children.addAll(chooseDestButton, carriageInfo)
 
   override def propertyPane() : Node = {
     typeLabel.text = "=== " + vehicleType.name + " ==="
@@ -337,10 +364,6 @@ abstract class Vehicle
         WorldCanvas.activeDestinationChoice()
       }
     }
-
-    if (!panel.children.contains(chooseDestButton))
-      panel.children.add(chooseDestButton)
-
 
     carriageInfo = carriagesPropertyPane()
 

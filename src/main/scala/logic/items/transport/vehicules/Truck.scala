@@ -130,7 +130,8 @@ class Truck
       case Some(cargo) =>
         cargo.resourceMap().propertyPane()
 
-      case None => new Label("")
+      case None =>
+        new Label("")
     }
   }
 

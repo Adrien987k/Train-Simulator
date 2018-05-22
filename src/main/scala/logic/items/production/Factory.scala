@@ -52,10 +52,6 @@ class Factory
     true
   }
 
-  override def evolve() : Unit = {
-
-  }
-
   override def load(node: xml.Node): Unit = {
 
   }
@@ -81,7 +77,7 @@ class Factory
     }
   }
 
-  /* GUI */
+ /* GUI */
 
   val factoryLabel = new Label("=== " + factoryType.name + " ===")
   val producingLabel = new Label

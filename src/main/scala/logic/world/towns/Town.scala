@@ -2,9 +2,9 @@ package logic.world.towns
 
 
 import game.Game
-import game.Save._
-import logic.economy.Resources.{BOXED, DRY_BULK, LIQUID, Resource}
-import logic.{Loadable, PointUpdatable, UpdateRate}
+import logic.Loadable
+import logic.economy.Resources.Resource
+import logic.{PointUpdatable, UpdateRate}
 import logic.economy._
 import logic.items.production.FactoryTypes.FactoryType
 import logic.items.production.{Factory, FactoryFactory}
@@ -12,8 +12,10 @@ import logic.items.transport.facilities.TransportFacilityTypes._
 import logic.items.transport.facilities._
 import logic.items.transport.vehicules.VehicleTypes._
 import logic.world.Company
-import statistics._
 import utils._
+import logic.world.World
+import statistics.Statistics
+import utils.{Failure, Pos, Result, Success}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -23,17 +25,22 @@ import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.{BorderPane, VBox}
 import scalafx.scene.text.{Font, FontWeight}
 
-class Town(_pos : Pos, private var _name : String) extends PointUpdatable with Loadable {
-
+class Town
+(val world : World,
+ _pos : Pos,
+ private var _name : String)
+  extends PointUpdatable with Loadable {
   updateRate(UpdateRate.TOWN_UPDATE)
   pos = _pos
 
   private val rand = new Random()
 
+  private val SEARCH_RADIUS = 1000
+
   val MAX_POPULATION = 1000000
   val MIN_POPULATION = 10
   val DEFAULT_PROPORTION_TRAVELER = 0.1
-  val INIT_MAX_NB_FACTORY = 3
+  val INIT_MAX_NB_FACTORY = 5
 
   var station : Option[Station] = None
   var airport : Option[Airport] = None
@@ -54,7 +61,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable with L
   val consumption : ResourceMap = Consumption.initialConsumption()
   val warehouse : ResourceCollection = new ResourceCollection
 
-  private val requestFromOtherCities = new ListBuffer[Request]
+  private var requestFromOtherCities = new ListBuffer[Request]
 
   val stats = new Statistics("city")
 
@@ -244,14 +251,14 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable with L
           (None, Failure("This town already have " + itemNameForError))
 
         case None =>
-          val tf = TransportFacilityFactory.make(tfType, Game.world.company, this)
-          Game.world.company.addTransportFacility(tf)
+          val tf = TransportFacilityFactory.make(tfType, world.company, this)
+          world.company.addTransportFacility(tf)
           stats.newEvent(tfType.name + " built")
           (Some(tf), Success())
       }
     }
 
-    buildInternal(transportFacilityOfType(tfType), " this facility") match {
+    buildInternal(transportFacilityOfType(tfType), tfType.name) match {
       case (Some(tf), result : Result) =>
           tfType match {
             case STATION => station = Some(tf.asInstanceOf[Station])
@@ -265,18 +272,24 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable with L
     }
   }
 
+  /**
+    * Build a factory in that town
+    *
+    * @param factoryType The type of factory to build
+    * @return Success or failure
+    */
   def buildFactory(factoryType : FactoryType) : Result = {
-    if (!Game.world.company.canBuy(factoryType.price))
+    if (!world.company.canBuy(factoryType.price))
       return Failure("Not enough money")
 
     if (factories.lengthCompare(maxNbFactory) == 0)
       return Failure("Max number of factory reached")
 
-    factories += FactoryFactory.make(factoryType, Game.world.company, this)
+    factories += FactoryFactory.make(factoryType, world.company, this)
 
     stats.newEvent(factoryType.name + " built")
 
-    Game.world.company.buy(factoryType.price)
+    world.company.buy(factoryType.price)
 
     Success()
   }
@@ -292,19 +305,19 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable with L
     var result : Result = Success()
 
     vehicleType match {
-      case DIESEL_TRAIN | ELECTRIC_TRAIN =>
+      case _ : TrainType =>
         if (!hasStation) return Failure("This town does not have a Station")
         result = station.get.buildTrain(vehicleType.asInstanceOf[TrainType])
 
-      case BOEING | CONCORDE =>
+      case _ : PlaneType =>
         if (!hasAirport) return Failure("This town does not have an airport")
         result = airport.get.buildPlane(vehicleType.asInstanceOf[PlaneType])
 
-      case LINER | CRUISE_BOAT =>
+      case _ : ShipType =>
         if (!hasHarbor) return Failure("This town does not have an harbor")
         result = harbor.get.buildShip(vehicleType.asInstanceOf[ShipType])
 
-      case TRUCK =>
+      case _ : TruckType =>
         if (!hasGasStation) return Failure("This town does not have a gas station")
         result = gasStation.get.buildTruck(vehicleType.asInstanceOf[TruckType])
     }
@@ -386,46 +399,6 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable with L
   }
 
   /**
-    * Send a list of resource packs to a town
-    *
-    * @param town where to send the resources
-    * @param packs the packs to send
-    */
-  def sendResource(town : Town, packs : ListBuffer[ResourcePack]) : Unit = {
-    //TODO do something with cargoes / Take them from somewhere
-    val cargoDryBulk = new Cargo(DRY_BULK)
-    val cargoLiquid = new Cargo(LIQUID)
-    val cargoBoxed = new Cargo(BOXED)
-
-    packs.foldLeft(None)((None, pack) => {
-      pack.resource.resourceType match {
-        case DRY_BULK => cargoDryBulk.store(ListBuffer(pack))
-        case LIQUID => cargoLiquid.store(ListBuffer(pack))
-        case BOXED => cargoBoxed.store(ListBuffer(pack))
-      }
-
-      None
-    })
-
-    val cargoes = ListBuffer(cargoDryBulk, cargoLiquid, cargoBoxed)
-
-    transportFacilities().foreach(tfOpt => {
-      tfOpt.foreach(tf => {
-
-        if (neighboursOf(tfOpt).contains(town))
-          tf.trySendCargoes(town.transportFacilityOfType(tf.transportFacilityType).get,
-            cargoes) match {
-            case Success() =>
-              stats.newEvent("Request answered", town.name)
-
-            case Failure(_) =>
-
-          }
-      })
-    })
-  }
-
-  /**
     * Receive new cargoes and manage them
     *
     * @param cargoes The cargoes to manage
@@ -462,7 +435,7 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable with L
     }
   }
 
-  private def neighboursOf(transportFacilityOpt : Option[TransportFacility]) : ListBuffer[Town] = {
+  def neighboursOf(transportFacilityOpt : Option[TransportFacility]) : ListBuffer[Town] = {
     transportFacilityOpt match {
       case Some(tf) => tf.neighbours().map(tf => tf.town)
       case None => ListBuffer()
@@ -484,15 +457,22 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable with L
     factories.foreach(_.step())
   }
 
+  /**
+    * Consume resources from consumption
+    * If not enough resource is available,
+    * create requests for that resource
+    */
   def consume() : Unit = {
     consumption.resources.foreach(resourceAndQuantity => {
       val (resource, quantity) = resourceAndQuantity
 
-      val (_, missingQuantity) = warehouse.take(resource, quantity)
+      var (_, missingQuantity) = warehouse.take(resource, quantity)
 
-      if (missingQuantity > 0) {
+      if (missingQuantity > 0)
+        missingQuantity = offer.take(resource, missingQuantity)._2
+
+      if (missingQuantity > 0)
         stats.newEvent("City missing resource", new ResourcePack(resource, quantity))
-      }
 
       if (missingQuantity > 0
         && requests.quantityOf(resource) * 2 <= consumption.quantityOf(resource)) {
@@ -523,36 +503,47 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable with L
     })
   }
 
+  /**
+    * Search the nearby cities for requested resources
+    */
   def searchResource() : Unit = {
-    transportFacilities().foreach(tfOpt => {
-      tfOpt.foreach(searchResource)
+    Game.world.towns.foreach(town => {
+      if (town.pos.dist(pos) < SEARCH_RADIUS) {
+        requests.resources.foreach(request => {
+          searchResourceIn(town, request)
+        })
+      }
     })
   }
 
   /**
-    * Search the neighbours cities for missing resources in the city
+    * Search for requested resources in [town]
+    *
+    * @param town The town where to search
+    * @param request The request to send
     */
-  def searchResource(transportFacility : TransportFacility) : Unit = {
-    transportFacility.neighbours().foreach(tf => {
-      requests.resources.foreach(request => {
-        searchResourceIn(tf.town, request)
-      })
-    })
-  }
-
-  def searchResourceIn(town : Town, request : (Resource, Int)) : Unit = {
+  private def searchResourceIn(town : Town, request : (Resource, Int)) : Unit = {
     if (town.offer.quantityOf(request._1) > 0) {
+      println("request " + request._1.name + " " + request._2)
 
       town.takeRequestFromOtherTown(Request(this, request._1, request._2))
     }
   }
 
+  /**
+    * Take a request from another city
+    *
+    * @param request The request to take
+    */
   def takeRequestFromOtherTown(request : Request) : Unit = {
     requestFromOtherCities += request
 
     stats.newEvent("Request received", request)
   }
 
+  /**
+    * Try answer as much as possible requests from other cities
+    */
   def answerRequests() : Unit = {
     val packsTo : mutable.HashMap[Town, ListBuffer[ResourcePack]] = mutable.HashMap.empty
 
@@ -577,7 +568,11 @@ class Town(_pos : Pos, private var _name : String) extends PointUpdatable with L
     packsTo.foreach(townAndPacks => {
       val (town, packs) = townAndPacks
 
-      sendResource(town, packs)
+      requestFromOtherCities = requestFromOtherCities.filter(request => {
+        request.town != town
+      })
+
+      world.company.createContract(this, town, packs, pos.dist(town.pos))
     })
   }
 

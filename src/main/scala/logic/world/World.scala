@@ -11,6 +11,7 @@ import logic.items.transport.roads.RoadTypes.{HIGHWAY, LINE, RAIL, WATERWAY}
 import logic.items.transport.vehicules._
 import logic.items.transport.vehicules.VehicleTypes._
 import logic.items.transport.vehicules.components.{Carriage, TrainComponentFactory}
+import statistics.Statistics
 import utils.{DateTime, Pos}
 
 import scala.collection.mutable.ListBuffer
@@ -38,6 +39,8 @@ class World() extends Loadable{
   private val INIT_NB_TOWNS = 50
   private val APPARITION_WATERWAY = 0.5
 
+  private val stats = new Statistics("World")
+
   private val rand = new Random
 
   var towns : ListBuffer[Town] = ListBuffer.empty
@@ -47,6 +50,9 @@ class World() extends Loadable{
 
   val gameDateTime : DateTime = new DateTime
 
+  /**
+    * Start a new world
+    */
   def start() : Unit = {
     init()
 
@@ -145,7 +151,7 @@ class World() extends Loadable{
     for (i <- 0 to INIT_NB_TOWNS) {
       val x = rand.nextInt(areaWidth - ItemsStyle.INIT_TOWN_SIZE * 2) + (i * areaWidth) + ItemsStyle.INIT_TOWN_SIZE
       val y = rand.nextInt(MAP_HEIGHT - ItemsStyle.INIT_TOWN_SIZE * 2) + ItemsStyle.INIT_TOWN_SIZE
-      towns += new Town(new Pos(x, y), "Town " + i)
+      towns += new Town(this, new Pos(x, y), "Town " + i)
     }
 
     for (townA <- towns) {
@@ -159,6 +165,8 @@ class World() extends Loadable{
         }
       }
     }
+
+    stats.newEvent("New random map generated")
   }
 
   def loadNaturalWaterway(nameTownA : String, nameTownB : String) : Unit = {
@@ -593,7 +601,7 @@ class World() extends Loadable{
           val y = (city \"@y").text.toDouble
           val name = (city \"@name").text
           val population = (city \"@population").text.toInt
-          val town = new Town(new Pos(x, y), name)
+          val town = new Town(this, new Pos(x, y), name)
           town.initPopulation(population)
           town.loadCity(city, company)
           towns += town
@@ -662,6 +670,7 @@ class World() extends Loadable{
   def totalPopulation() : Int = {
     val inTowns = towns.foldLeft(0)((total, town) => total + town.population + town.nbWaitingPassengers)
     val inTrains = company.vehicles.foldLeft(0)((total, vehicle) => total + vehicle.nbPassenger())
+
     inTowns + inTrains
   }
 
