@@ -1,11 +1,15 @@
 package logic.economy
 
+import logic.Loadable
 import logic.economy.Resources.{BoxedResource, DryBulkResource, LiquidResource, Resource}
 import statistics.StatValue
 
+import scala.collection.mutable.ListBuffer
+import scala.xml.Node
+
 class ResourcePack
 (val resource : Resource,
- var quantity : Int) extends StatValue {
+ var quantity : Int) extends StatValue with Loadable {
 
   private var _costOneUnit : Double = resource.defaultCost
 
@@ -29,9 +33,23 @@ class ResourcePack
     }
   }
 
+  override def load(node: Node): Unit = {
+
+  }
+
+  override def save: scala.xml.Node = {
+      <Resource
+      type={this.resource.name.toString}
+      quantity={this.quantity.toString}
+      />
+  }
+
   override def info() : String =
     resource.name + ": " + quantity + " " + resource.unit
 
+  override def mean(l : ListBuffer[StatValue]) : ResourcePack = this
+
+  override def sum(v : StatValue) : ResourcePack = this
 }
 
 class DryBulkResourcePack(resourceType : DryBulkResource, quantity : Int)

@@ -1,6 +1,7 @@
 package logic.items.transport.vehicules.components
 
 import logic.economy.Resources.{BOXED, DRY_BULK, LIQUID}
+import logic.economy.Resources.ResourceType
 import logic.items.transport.vehicules.VehicleTypes._
 import logic.items.transport.vehicules.components.TrainComponentTypes._
 import logic.world.Company
@@ -31,7 +32,7 @@ object TrainComponentFactory {
     }
   }
 
-  def makePassengerCarriage(vehicleType : VehicleType, company : Company) : Carriage = {
+  def makePassengerCarriage(vehicleType : VehicleType, company : Company) : PassengerCarriage = {
     val plan = CarriageEvolutionPlan(
       List(10.0, 12.0, 14.0),
       List(5000.0, 6000.0),
@@ -52,6 +53,15 @@ object TrainComponentFactory {
         new ResourceCarriage(LIQUID, company, plan),
         new ResourceCarriage(BOXED, company, plan)
       )
+  }
+
+  def makeResourceCarriage(vehicleType: VehicleType, resourceType : ResourceType, company: Company) : ResourceCarriage = {
+    val plan = CarriageEvolutionPlan(
+      List(10.0, 12.0, 14.0),
+      List(5000.0, 6000.0),
+      List(50, 60))
+
+    new ResourceCarriage(resourceType, company, plan)
   }
 
 }

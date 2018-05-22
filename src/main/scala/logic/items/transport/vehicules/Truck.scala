@@ -31,7 +31,27 @@ class Truck
 
   private var _fuelLevel : Double = 0.0
 
+  override def save: xml.Node = {
+    <Truck
+    level={level.toString}
+    fuel={fuelLevel.toString}
+    >
+      {cargoOpt match {
+      case Some(cargo) => cargo.save
+      case _ => ()
+    }
+      }
+      {this.saveLocation}
+      {this.saveGoal}
+      {this.saveDestination}
+      {<InitialLocation>
+      <Town name={initialGasStation.town.name}/>
+    </InitialLocation>}
+    </Truck>
+  }
+
   def fuelLevel : Double = _fuelLevel
+  def setFuelLevel (fuelLevel : Double) : Unit = _fuelLevel = fuelLevel
 
   var cargoOpt : Option[Cargo] = None
 

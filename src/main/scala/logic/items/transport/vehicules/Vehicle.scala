@@ -3,7 +3,7 @@ package logic.items.transport.vehicules
 import game.Game
 import interface.{ItemsButtonBar, WorldCanvas}
 import logic.economy.Cargo
-import logic.{PointUpdatable, UpdateRate}
+import logic.{Loadable, PointUpdatable, UpdateRate}
 import logic.items.{EvolutionPlan, Item}
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.roads.Road
@@ -13,6 +13,7 @@ import logic.world.towns.Town
 import utils._
 
 import scala.collection.mutable.ListBuffer
+import scala.xml.NodeSeq
 import scalafx.scene.Node
 import scalafx.scene.control.{Button, Label}
 import scalafx.scene.layout.BorderPane
@@ -23,7 +24,7 @@ abstract class Vehicle
  override val company : Company,
  var currentTransportFacility : Option[TransportFacility],
  override val evolutionPlan : EvolutionPlan)
-  extends Item(vehicleType, company, evolutionPlan) with PointUpdatable {
+  extends Item(vehicleType, company, evolutionPlan) with PointUpdatable with Loadable {
 
   updateRate(UpdateRate.VEHICLE_UPDATE)
 
@@ -46,6 +47,49 @@ abstract class Vehicle
 
   def crashed : Boolean = _crashed
 
+  override def load(node: xml.Node): Unit = {
+
+  }
+
+  override def save: xml.Node = {
+    this match {
+      case train : Train => train.save
+
+      case plane : Plane => plane.save
+
+      case truck : Truck => truck.save
+
+      case ship : Ship => ship.save
+    }
+  }
+
+  def saveLocation : xml.Node = {
+    <Location>
+      {currentTransportFacility match {
+      case Some(transportFacility) => <Town name={transportFacility.town.name} />
+      case _ => currentRoad match {
+        case Some(road) => road.save
+        case _ => //TODO exception
+      }
+    }
+      }
+    </Location>
+  }
+
+  def saveGoal : xml.NodeSeq = {
+    goalTransportFacility match {
+      case Some(transportFacility) => <Goal name={transportFacility.town.name}/>
+      case _ => NodeSeq.Empty
+    }
+  }
+
+  def saveDestination : xml.NodeSeq = {
+    destination match {
+      case Some(transportFacility) => <Destination name={transportFacility.town.name}/>
+      case _ => NodeSeq.Empty
+    }
+  }
+
   override def step() : Boolean = {
     if(!super.step()) return false
 
@@ -55,7 +99,10 @@ abstract class Vehicle
 
     goalTransportFacility match {
       case Some(transportFacility) =>
-        if (pos.inRange(transportFacility.pos, 10)) {
+        var speed = currentSpeed()
+
+        if (pos.inRange(transportFacility.pos, speed + 1)) {
+          pos = transportFacility.pos.copy()
 
           stats.newEvent("Traveled in KM", currentRoad.get.length)
 
@@ -64,7 +111,6 @@ abstract class Vehicle
           transportFacility.unload(this)
 
         } else {
-          var speed = currentSpeed()
           if (currentRoad.nonEmpty && speed > currentRoad.get.speedLimit)
             speed = currentRoad.get.speedLimit
 

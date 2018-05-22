@@ -2,38 +2,112 @@ package statistics
 
 import game.Game
 import interface.GUI
+import logic.Loadable
 import utils.DateTime
 
 import scala.collection.mutable.ListBuffer
+import scala.xml.{Node, NodeSeq}
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control._
 import scalafx.scene.layout.{BorderPane, VBox}
+import scalafx.scene.text.{Font, FontWeight}
 
-trait StatValue {
-
+abstract class StatValue  extends Loadable {
   def info() : String
+  def mean(l : ListBuffer[StatValue]) : StatValue
+  def sum(v : StatValue) : StatValue
 
+  override def load(node: Node): Unit = {
+
+  }
+
+  override def save: NodeSeq = {
+    <Erreur></Erreur>
+  }
 }
 
-case class IntValue(v : Int) extends StatValue
-{ override def info() : String = v.toString }
+case class IntValue(value : Int) extends StatValue {
+  override def info() : String = value.toString
 
-case class DoubleValue(v : Double) extends StatValue
-{ override def info() : String = v.toString }
+  override def mean(l : ListBuffer[StatValue]) : StatValue = {
+    val sum = l.foldLeft(value)((sum, intValue) => {
+      intValue match {
+        case IntValue(iv) => sum + iv
+        case _ => sum
+      }
+    })
 
-case class StringValue(v : String) extends StatValue
-{ override def info() : String = v.toString }
+    IntValue(sum / (l.size + 1))
+  }
 
-case class NoValue() extends StatValue
-{ override def info() : String = "" }
+  override def sum(sv : StatValue) : StatValue = {
+    sv match {
+      case IntValue(iv) => IntValue(value + iv)
+      case _ => IntValue(value)
+    }
+  }
+}
+
+case class DoubleValue(value : Double) extends StatValue {
+  override def info() : String = value.toString
+
+  override def mean(l : ListBuffer[StatValue]) : StatValue = {
+    val sum = l.foldLeft(value)((sum, intValue) => {
+      intValue match {
+        case DoubleValue(dv) => sum + dv
+        case _ => value
+      }
+    })
+
+    DoubleValue(sum / (l.size + 1))
+  }
+
+  override def sum(sv : StatValue) : StatValue = {
+    sv match {
+      case DoubleValue(dv) => DoubleValue(value + dv)
+      case _ => DoubleValue(value)
+    }
+  }
+}
+
+case class StringValue(v : String) extends StatValue {
+  override def info() : String = v.toString
+  override def mean(l : ListBuffer[StatValue]) : StatValue = l.head
+  override def sum(v : StatValue) : StatValue = v
+}
+
+case class NoValue() extends StatValue {
+  override def info() : String = ""
+  override def mean(l : ListBuffer[StatValue]) : StatValue= l.head
+  override def sum(v : StatValue) : StatValue = v
+}
 
 
 class Statistics(title : String) {
 
+  private val NB_EVENT_DISPLAYED = 25
+  private val DIALOG_WIDTH = 1200
+  private val DIALOG_HEIGHT = 500
+  private val FONT_SIZE = 14
+
   case class Event
   (time : DateTime,
    name : String,
-   value : StatValue) {
+   value : StatValue) extends Loadable {
+
+    override def load(node: Node): Unit = {
+
+    }
+
+    override def save: NodeSeq = {
+      <Event
+      day={time.days.toString}
+      hour={time.hours.toString}
+      name={name}
+      >
+        {value.save}
+      </Event>
+    }
 
   }
 
@@ -77,36 +151,76 @@ class Statistics(title : String) {
       headerText = "All statistics about " + statsTitle
     }
 
-    dialog.dialogPane().setPrefSize(1000, 500)
+    dialog.dialogPane().setPrefSize(DIALOG_WIDTH, DIALOG_HEIGHT)
 
+    buildHistoric()
+    buildAverages()
+
+    dialog.dialogPane().setContent(pane)
+
+    dialog.showAndWait()
+  }
+
+  def buildHistoric() : Unit = {
     leftPane.children.clear()
 
     leftPane.children.add(leftPaneTitle)
 
-    var toDisplayEvents = events.takeRight(25)
+    var toDisplayEvents = events.takeRight(NB_EVENT_DISPLAYED)
     toDisplayEvents = toDisplayEvents.reverse
 
     toDisplayEvents.foreach(event => {
       val sb = new StringBuilder
 
-      sb.append("time: " + event.time.time() + " | ")
-      sb.append("event: " + event.name + " | ")
+      sb.append("TIME: " + event.time.time() + " | ")
+      sb.append("EVENT: " + event.name + " | ")
 
       event.value match {
-        case v : NoValue =>
+        case _ : NoValue =>
 
         case _ =>
-          sb.append("value: " + event.value.info())
+          sb.append("VALUE: " + event.value.info())
       }
 
       val label = new Label(sb.toString())
+      label.font = Font.font(null, FontWeight.Bold, FONT_SIZE)
 
       leftPane.children.add(label)
     })
+  }
 
-    dialog.dialogPane().setContent(pane)
+  def buildAverages() : Unit = {
+    rightPane.children.clear()
 
-    dialog.showAndWait()
+    rightPane.children.add(rightPaneTitle)
+
+    val eventMap = events.groupBy[String](event => event.name)
+    eventMap.foreach((name_events) => {
+      val (name, events) = name_events
+
+      val values = events.foldLeft(ListBuffer[StatValue]())((l, event) => {
+        l += event.value
+        l
+      })
+
+      val mean = events.head.value.mean(values)
+
+      val sum = values.foldLeft(values.head)((sum, value) => {
+        sum.sum(value)
+      })
+
+      val sb = new StringBuilder
+      sb.append(name)
+      sb.append(events.head.value match {
+        case _ : NoValue => ""
+        case _ => " | MEAN: " + mean.info() + " | SUM: " + sum.info()
+      })
+
+      val label = new Label(sb.toString())
+      label.font = Font.font(null, FontWeight.Bold, FONT_SIZE)
+
+      rightPane.children.add(label)
+    })
   }
 
 }

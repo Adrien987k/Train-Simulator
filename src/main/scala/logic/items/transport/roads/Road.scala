@@ -1,6 +1,6 @@
 package logic.items.transport.roads
 
-import logic.LineUpdatable
+import logic.{LineUpdatable, Loadable}
 import logic.items.{EvolutionPlan, Item}
 import logic.items.transport.facilities.TransportFacility
 import logic.items.transport.roads.RoadTypes.RoadType
@@ -26,7 +26,7 @@ abstract class Road
  val transportFacilityA : TransportFacility,
  val transportFacilityB : TransportFacility,
  override val evolutionPlan : RoadEvolutionPlan)
-  extends Item(roadType, company, evolutionPlan) with LineUpdatable {
+  extends Item(roadType, company, evolutionPlan) with LineUpdatable with Loadable{
 
   posA = transportFacilityA.pos
   posB = transportFacilityB.pos
@@ -41,6 +41,34 @@ abstract class Road
   def speedLimit : Double = _speedLimit
   def capacity : Int = _capacity
   def length : Double = _length
+
+  override def load(node: xml.Node): Unit = {
+
+  }
+
+  override def save: xml.Node = {
+    roadType.name match {
+      case "Rail" => <Rail
+        townA={transportFacilityA.town.name}
+        townB={transportFacilityB.town.name}
+        />
+
+      case "Line" => <Line
+        townA={transportFacilityA.town.name}
+        townB={transportFacilityB.town.name}
+        />
+
+      case "Waterway" => <Waterway
+        townA={transportFacilityA.town.name}
+        townB={transportFacilityB.town.name}
+        />
+
+      case "Highway" => <Highway
+        townA={transportFacilityA.town.name}
+        townB={transportFacilityB.town.name}
+        />
+    }
+  }
 
   override def step() : Boolean = {
     vehicles.foreach(vehicle => {

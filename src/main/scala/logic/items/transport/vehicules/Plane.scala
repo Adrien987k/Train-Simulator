@@ -37,6 +37,37 @@ class Plane
   private var _fuelLevel : Double = 0
 
   def fuelLevel : Double = _fuelLevel
+  def setFuelLevel (fuelLevel : Double) : Unit = _fuelLevel = fuelLevel
+
+  override def save: xml.Node = {
+    vehicleType.name match {
+      case "Boeing" => <Boeing
+      level={level.toString}
+      fuel={fuelLevel.toString}
+      passenger={nbPassenger().toString}
+      >
+        {this.saveLocation}
+        {this.saveGoal}
+        {this.saveDestination}
+        {<InitialLocation>
+          <Town name={initialAirport.town.name}/>
+        </InitialLocation>}
+      </Boeing>
+
+      case "Concorde" => <Concorde
+      level={level.toString}
+      fuel={fuelLevel.toString}
+      passenger={nbPassenger().toString}
+      >
+        {this.saveLocation}
+        {this.saveGoal}
+        {this.saveDestination}
+        {<InitialLocation>
+          <Town name={initialAirport.town.name}/>
+        </InitialLocation>}
+      </Concorde>
+    }
+  }
 
   override def canTransportResource : Boolean = false
 

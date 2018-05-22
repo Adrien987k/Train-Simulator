@@ -1,22 +1,36 @@
 package logic.world
 
+import game.Game.world
 import logic.{Loadable, Updatable}
 import logic.world.towns.Town
 import interface.{GUI, ItemsStyle}
+import logic.economy.{Cargo, ResourcePack, Resources}
 import logic.items.transport.facilities.TransportFacilityFactory
 import logic.items.transport.facilities.TransportFacilityTypes.{AIRPORT, GAS_STATION, HARBOR, STATION}
 import logic.items.transport.roads.RoadTypes.{HIGHWAY, LINE, RAIL, WATERWAY}
+import logic.items.transport.vehicules._
+import logic.items.transport.vehicules.VehicleTypes._
+import logic.items.transport.vehicules.components.{Carriage, TrainComponentFactory}
 import utils.{DateTime, Pos}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
+import scala.xml.Node
 import scalafx.animation.AnimationTimer
 
 class World() extends Loadable{
 
   class NaturalWaterway
   (val townA : Town,
-   val townB : Town) { }
+   val townB : Town) extends Loadable {
+    override def load(node: Node): Unit = {
+
+    }
+
+    override def save: Node = {
+        <NaturalWaterway townA={townA.name} townB={townB.name}/>
+    }
+  }
 
   private val MAP_WIDTH = 2000
   private val MAP_HEIGHT = 2000
@@ -74,6 +88,21 @@ class World() extends Loadable{
     }
 
     timer.start()
+  }
+
+  override def save : Node = {
+    <Map>
+      <Date days={this.gameDateTime.days.toString} hours={this.gameDateTime.hours.toString}/>
+      <Money>{this.company.money}</Money>
+      {this.towns.foldLeft(scala.xml.NodeSeq.Empty)((acc, town) => acc++town.save)}
+      {this.naturalWaterways.foldLeft(scala.xml.NodeSeq.Empty)((acc, naturalWaterway) => acc++naturalWaterway.save)}
+      <Connection>
+        {world.company.roads.foldLeft(scala.xml.NodeSeq.Empty)((acc, road) => acc++road.save)}
+      </Connection>
+      <Vehicle>
+        {world.company.vehicles.foldLeft(scala.xml.NodeSeq.Empty)((acc, vehicle) => acc++vehicle.save)}
+      </Vehicle>
+    </Map>
   }
 
   def update() : Unit = {
@@ -160,6 +189,402 @@ class World() extends Loadable{
     }
   }
 
+  def loadTruck(node : scala.xml.Node) : Unit = {
+    val level = (node \"@level").text.toInt
+    val fuel = (node \"@fuel").text.toDouble
+    for (<InitialLocation>{subnode @ _*}</InitialLocation> <- node \"InitialLocation") {
+      for (initLocation <- subnode) {initLocation match {
+        case <Town>{_*}</Town> =>
+          towns.foreach(town => if ((initLocation \"@name").text == town.name) {
+            val newTruck = VehicleFactory.make(TRUCK, company, town.gasStation.get).asInstanceOf[Truck]
+            company.addVehicle(newTruck)
+            newTruck.setFuelLevel(fuel)
+            newTruck.level = level
+            for (location @ <Town>{_*}</Town> <- node \"Location") { location match {
+              case <Town>{_*}</Town> =>
+                towns.foreach(city => if ((location \"@name").text == city.name) {
+                  newTruck.currentTransportFacility = Some(city.gasStation.get)
+                  city.gasStation.get.addVehicle(newTruck)
+                })
+              case <Highway>{_*}</Highway> => towns.foreach(townA => if ((location \"@townA").text == townA.name) {
+                towns.foreach(townB => if ((location \"@townB").text == townB.name) {
+                  company.roads.foreach(road => if (road.roadType == HIGHWAY && road.transportFacilityA == townA.gasStation.get && road.transportFacilityB == townB.gasStation.get) {
+                    road.addVehicle(newTruck)
+                    newTruck.currentRoad = Some(road)
+                  })
+                })
+              })
+            }}
+            for (goal <- node \"Goal") {goal match {
+              case <Goal>{_*}</Goal> => towns.foreach(city => if ((goal \"@name").text == city.name) {
+                newTruck.goalTransportFacility = Some(city.gasStation.get)
+              })
+              case _ => ()
+            }}
+            for (destination <- node \"Destination") {destination match {
+              case <Destination>{_*}</Destination> => towns.foreach(city => if ((destination \"@name").text == city.name) {
+                newTruck.destination = Some(city.gasStation.get)
+              })
+              case _ => ()
+            }}
+            for (cargo <- node \"Cargo") {cargo match {
+              case <Cargo>{resources @ _*}</Cargo> => val listResourcePack : ListBuffer[ResourcePack] = ListBuffer.empty
+                for (resource @ <Resource>{_*}</Resource> <- resources) {
+                  val resourceType = (resource \"@type").text
+                  val quantity = (resource \"@quantity").text.toInt
+                  listResourcePack += Resources.loadResource(resourceType, quantity)
+                }
+                val newCargo = new Cargo(listResourcePack.head.resource.resourceType)
+                newCargo.resources.storeResourcePacks(listResourcePack)
+                newTruck.cargoOpt = Some(newCargo)
+            }}
+          })
+        case _ => ()
+      }
+  }}}
+
+  def loadBoeing(node: scala.xml.Node) : Unit = {
+    val level = (node \"@level").text.toInt
+    val fuel = (node \"@fuel").text.toDouble
+    val passenger = (node \"@passenger").text.toInt
+    for (<InitialLocation>{subnode @ _*}</InitialLocation> <- node \"InitialLocation") {
+      for (initLocation <- subnode) {initLocation match {
+        case <Town>{_*}</Town> =>
+          towns.foreach(town => if ((initLocation \"@name").text == town.name) {
+            val newBoeing = VehicleFactory.make(BOEING, company, town.airport.get).asInstanceOf[Plane]
+            company.addVehicle(newBoeing)
+            newBoeing.setFuelLevel(fuel)
+            newBoeing.level = level
+            newBoeing.loadPassenger(passenger)
+            for (location @ <Town>{_*}</Town> <- node \"Location") { location match {
+              case <Town>{_*}</Town> =>
+                towns.foreach(city => if ((location \"@name").text == city.name) {
+                  newBoeing.currentTransportFacility = Some(city.airport.get)
+                  city.airport.get.addVehicle(newBoeing)
+                })
+              case <Line>{_*}</Line> => towns.foreach(townA => if ((location \"@townA").text == townA.name) {
+                towns.foreach(townB => if ((location \"@townB").text == townB.name) {
+                  company.roads.foreach(road => if (road.roadType == LINE && road.transportFacilityA == townA.airport.get && road.transportFacilityB == townB.airport.get) {
+                    road.addVehicle(newBoeing)
+                    newBoeing.currentRoad = Some(road)
+                  })
+                })
+              })
+            }}
+            for (goal <- node \"Goal") {goal match {
+              case <Goal>{_*}</Goal> => towns.foreach(city => if ((goal \"@name").text == city.name) {
+                newBoeing.goalTransportFacility = Some(city.airport.get)
+              })
+              case _ => ()
+            }}
+            for (destination <- node \"Destination") {destination match {
+              case <Destination>{_*}</Destination> => towns.foreach(city => if ((destination \"@name").text == city.name) {
+                newBoeing.destination = Some(city.airport.get)
+              })
+              case _ => ()
+            }}
+          })
+        case _ => ()
+      }
+      }}
+  }
+
+  def loadConcorde(node: scala.xml.Node) : Unit = {
+    val level = (node \"@level").text.toInt
+    val fuel = (node \"@fuel").text.toDouble
+    val passenger = (node \"@passenger").text.toInt
+    for (<InitialLocation>{subnode @ _*}</InitialLocation> <- node \"InitialLocation") {
+      for (initLocation <- subnode) {initLocation match {
+        case <Town>{_*}</Town> =>
+          towns.foreach(town => if ((initLocation \"@name").text == town.name) {
+            val newConcorde = VehicleFactory.make(CONCORDE, company, town.airport.get).asInstanceOf[Plane]
+            company.addVehicle(newConcorde)
+            newConcorde.setFuelLevel(fuel)
+            newConcorde.level = level
+            newConcorde.loadPassenger(passenger)
+            for (location @ <Town>{_*}</Town> <- node \"Location") { location match {
+              case <Town>{_*}</Town> =>
+                towns.foreach(city => if ((location \"@name").text == city.name) {
+                  newConcorde.currentTransportFacility = Some(city.airport.get)
+                  city.airport.get.addVehicle(newConcorde)
+                })
+              case <Line>{_*}</Line> => towns.foreach(townA => if ((location \"@townA").text == townA.name) {
+                towns.foreach(townB => if ((location \"@townB").text == townB.name) {
+                  company.roads.foreach(road => if (road.roadType == LINE && road.transportFacilityA == townA.airport.get && road.transportFacilityB == townB.airport.get) {
+                    road.addVehicle(newConcorde)
+                    newConcorde.currentRoad = Some(road)
+                  })
+                })
+              })
+            }}
+            for (goal <- node \"Goal") {goal match {
+              case <Goal>{_*}</Goal> => towns.foreach(city => if ((goal \"@name").text == city.name) {
+                newConcorde.goalTransportFacility = Some(city.airport.get)
+              })
+              case _ => ()
+            }}
+            for (destination <- node \"Destination") {destination match {
+              case <Destination>{_*}</Destination> => towns.foreach(city => if ((destination \"@name").text == city.name) {
+                newConcorde.destination = Some(city.airport.get)
+              })
+              case _ => ()
+            }}
+          })
+        case _ => ()
+      }
+      }}
+  }
+
+  def loadCruiseBoat(node: scala.xml.Node) : Unit = {
+    val level = (node \"@level").text.toInt
+    val fuel = (node \"@fuel").text.toDouble
+    val passenger = (node \"@passenger").text.toInt
+    for (<InitialLocation>{subnode @ _*}</InitialLocation> <- node \"InitialLocation") {
+      for (initLocation <- subnode) {initLocation match {
+        case <Town>{_*}</Town> =>
+          towns.foreach(town => if ((initLocation \"@name").text == town.name) {
+            val newCruiseBoat = VehicleFactory.make(CRUISE_BOAT, company, town.harbor.get).asInstanceOf[Ship]
+            company.addVehicle(newCruiseBoat)
+            newCruiseBoat.setFuelLevel(fuel)
+            newCruiseBoat.level = level
+            newCruiseBoat.loadPassenger(passenger)
+            for (location @ <Town>{_*}</Town> <- node \"Location") { location match {
+              case <Town>{_*}</Town> =>
+                towns.foreach(city => if ((location \"@name").text == city.name) {
+                  newCruiseBoat.currentTransportFacility = Some(city.harbor.get)
+                  city.harbor.get.addVehicle(newCruiseBoat)
+                })
+              case <Waterway>{_*}</Waterway> => towns.foreach(townA => if ((location \"@townA").text == townA.name) {
+                towns.foreach(townB => if ((location \"@townB").text == townB.name) {
+                  company.roads.foreach(road => if (road.roadType == WATERWAY && road.transportFacilityA == townA.harbor.get && road.transportFacilityB == townB.harbor.get) {
+                    road.addVehicle(newCruiseBoat)
+                    newCruiseBoat.currentRoad = Some(road)
+                  })
+                })
+              })
+            }}
+            for (goal <- node \"Goal") {goal match {
+              case <Goal>{_*}</Goal> => towns.foreach(city => if ((goal \"@name").text == city.name) {
+                newCruiseBoat.goalTransportFacility = Some(city.harbor.get)
+              })
+              case _ => ()
+            }}
+            for (destination <- node \"Destination") {destination match {
+              case <Destination>{_*}</Destination> => towns.foreach(city => if ((destination \"@name").text == city.name) {
+                newCruiseBoat.destination = Some(city.harbor.get)
+              })
+              case _ => ()
+            }}
+          })
+        case _ => ()
+      }
+      }}
+  }
+
+  def loadLiner(node : scala.xml.Node) : Unit = {
+    val level = (node \"@level").text.toInt
+    val fuel = (node \"@fuel").text.toDouble
+    for (<InitialLocation>{subnode @ _*}</InitialLocation> <- node \"InitialLocation") {
+      for (initLocation <- subnode) {initLocation match {
+        case <Town>{_*}</Town> =>
+          towns.foreach(town => if ((initLocation \"@name").text == town.name) {
+            val newLiner = VehicleFactory.make(LINER, company, town.harbor.get).asInstanceOf[Ship]
+            company.addVehicle(newLiner)
+            newLiner.setFuelLevel(fuel)
+            newLiner.level = level
+            for (location @ <Town>{_*}</Town> <- node \"Location") { location match {
+              case <Town>{_*}</Town> =>
+                towns.foreach(city => if ((location \"@name").text == city.name) {
+                  newLiner.currentTransportFacility = Some(city.harbor.get)
+                  city.harbor.get.addVehicle(newLiner)
+                })
+              case <Waterway>{_*}</Waterway> => towns.foreach(townA => if ((location \"@townA").text == townA.name) {
+                towns.foreach(townB => if ((location \"@townB").text == townB.name) {
+                  company.roads.foreach(road => if (road.roadType == WATERWAY && road.transportFacilityA == townA.harbor.get && road.transportFacilityB == townB.harbor.get) {
+                    road.addVehicle(newLiner)
+                    newLiner.currentRoad = Some(road)
+                  })
+                })
+              })
+            }}
+            for (goal <- node \"Goal") {goal match {
+              case <Goal>{_*}</Goal> => towns.foreach(city => if ((goal \"@name").text == city.name) {
+                newLiner.goalTransportFacility = Some(city.harbor.get)
+              })
+              case _ => ()
+            }}
+            for (destination <- node \"Destination") {destination match {
+              case <Destination>{_*}</Destination> => towns.foreach(city => if ((destination \"@name").text == city.name) {
+                newLiner.destination = Some(city.harbor.get)
+              })
+              case _ => ()
+            }}
+            for (cargo <- node \"Cargo") {cargo match {
+              case <Cargo>{resources @ _*}</Cargo> => val listResourcePack : ListBuffer[ResourcePack] = ListBuffer.empty
+                for (resource @ <Resource>{_*}</Resource> <- resources) {
+                  val resourceType = (resource \"@type").text
+                  val quantity = (resource \"@quantity").text.toInt
+                  listResourcePack += Resources.loadResource(resourceType, quantity)
+                }
+                val newCargo = new Cargo(listResourcePack.head.resource.resourceType)
+                newCargo.resources.storeResourcePacks(listResourcePack)
+                newLiner.cargoes += newCargo
+            }}
+          })
+        case _ => ()
+      }
+      }}}
+
+  def loadDieselTrain(node : scala.xml.Node) : Unit = {
+    val level = (node \"@level").text.toInt
+    val fuel = (node \"@fuel").text.toDouble
+    val levelEngine = (node \"@levelengine").text.toInt
+    for (<InitialLocation>{subnode @ _*}</InitialLocation> <- node \"InitialLocation") {
+      for (initLocation <- subnode) {initLocation match {
+        case <Town>{_*}</Town> =>
+          towns.foreach(town => if ((initLocation \"@name").text == town.name) {
+            val newDieselTrain = VehicleFactory.make(DIESEL_TRAIN, company, town.station.get).asInstanceOf[Train]
+            company.addVehicle(newDieselTrain)
+            newDieselTrain.engine.setFuelLevel(fuel)
+            newDieselTrain.engine.level = levelEngine
+            newDieselTrain.level = level
+            for (location @ <Town>{_*}</Town> <- node \"Location") { location match {
+              case <Town>{_*}</Town> =>
+                towns.foreach(city => if ((location \"@name").text == city.name) {
+                  newDieselTrain.currentTransportFacility = Some(city.station.get)
+                  city.station.get.addVehicle(newDieselTrain)
+                })
+              case <Rail>{_*}</Rail> => towns.foreach(townA => if ((location \"@townA").text == townA.name) {
+                towns.foreach(townB => if ((location \"@townB").text == townB.name) {
+                  company.roads.foreach(road => if (road.roadType == RAIL && road.transportFacilityA == townA.station.get && road.transportFacilityB == townB.station.get) {
+                    road.addVehicle(newDieselTrain)
+                    newDieselTrain.currentRoad = Some(road)
+                  })
+                })
+              })
+            }}
+            for (goal <- node \"Goal") {goal match {
+              case <Goal>{_*}</Goal> => towns.foreach(city => if ((goal \"@name").text == city.name) {
+                newDieselTrain.goalTransportFacility = Some(city.station.get)
+              })
+              case _ => ()
+            }}
+            for (destination <- node \"Destination") {destination match {
+              case <Destination>{_*}</Destination> => towns.foreach(city => if ((destination \"@name").text == city.name) {
+                newDieselTrain.destination = Some(city.station.get)
+              })
+              case _ => ()
+            }}
+            val listCarriage : ListBuffer[Carriage] = ListBuffer.empty
+            node match {
+              case <DieselTrain>{subnode @ _*}</DieselTrain> => for (carriage <- subnode) { val levelCarriage = (carriage\"@level").text.toInt
+                carriage match {
+                case <PassengerCarriage>{_*}</PassengerCarriage> => val passenger = (carriage \ "@passenger").text.toInt
+                  val newPassengerCarriage = TrainComponentFactory.makePassengerCarriage(DIESEL_TRAIN, company)
+                  newPassengerCarriage.level = levelCarriage
+                  newPassengerCarriage.nbPassenger = passenger
+                  listCarriage += newPassengerCarriage
+                case <ResourceCarriage>{cargoNodeSeq @ _*}</ResourceCarriage> => val listCargo : ListBuffer[Cargo] = ListBuffer.empty
+                  for (<Cargo>{resources @ _*}</Cargo> <- cargoNodeSeq) {
+                  val listResourcePack : ListBuffer[ResourcePack] = ListBuffer.empty
+                  for (resource @ <Resource>{_*}</Resource> <- resources) {
+                    val resourceType = (resource \"@type").text
+                    val quantity = (resource \"@quantity").text.toInt
+                    listResourcePack += Resources.loadResource(resourceType, quantity)
+                  }
+                  val newCargo = new Cargo(listResourcePack.head.resource.resourceType)
+                  newCargo.resources.storeResourcePacks(listResourcePack)
+                  listCargo += newCargo
+                  }
+                  val newResourceCarriage = TrainComponentFactory.makeResourceCarriage(DIESEL_TRAIN, listCargo.head.resourceType, company)
+                  newResourceCarriage.level = levelCarriage
+                  newResourceCarriage.cargos = listCargo
+                  listCarriage += newResourceCarriage
+                }
+              }
+            }
+            newDieselTrain.carriages.clear()
+            newDieselTrain.carriages ++= listCarriage
+          })
+        case _ => ()
+      }
+      }}}
+
+  def loadElectricTrain(node : scala.xml.Node) : Unit = {
+    val level = (node \"@level").text.toInt
+    val fuel = (node \"@fuel").text.toDouble
+    val levelEngine = (node \"@levelengine").text.toInt
+    for (<InitialLocation>{subnode @ _*}</InitialLocation> <- node \"InitialLocation") {
+      for (initLocation <- subnode) {initLocation match {
+        case <Town>{_*}</Town> =>
+          towns.foreach(town => if ((initLocation \"@name").text == town.name) {
+            val newElectricTrain = VehicleFactory.make(ELECTRIC_TRAIN, company, town.station.get).asInstanceOf[Train]
+            company.addVehicle(newElectricTrain)
+            newElectricTrain.engine.setFuelLevel(fuel)
+            newElectricTrain.engine.level = levelEngine
+            newElectricTrain.level = level
+            for (location @ <Town>{_*}</Town> <- node \"Location") { location match {
+              case <Town>{_*}</Town> =>
+                towns.foreach(city => if ((location \"@name").text == city.name) {
+                  newElectricTrain.currentTransportFacility = Some(city.station.get)
+                  city.station.get.addVehicle(newElectricTrain)
+                })
+              case <Rail>{_*}</Rail> => towns.foreach(townA => if ((location \"@townA").text == townA.name) {
+                towns.foreach(townB => if ((location \"@townB").text == townB.name) {
+                  company.roads.foreach(road => if (road.roadType == RAIL && road.transportFacilityA == townA.station.get && road.transportFacilityB == townB.station.get) {
+                    road.addVehicle(newElectricTrain)
+                    newElectricTrain.currentRoad = Some(road)
+                  })
+                })
+              })
+            }}
+            for (goal <- node \"Goal") {goal match {
+              case <Goal>{_*}</Goal> => towns.foreach(city => if ((goal \"@name").text == city.name) {
+                newElectricTrain.goalTransportFacility = Some(city.station.get)
+              })
+              case _ => ()
+            }}
+            for (destination <- node \"Destination") {destination match {
+              case <Destination>{_*}</Destination> => towns.foreach(city => if ((destination \"@name").text == city.name) {
+                newElectricTrain.destination = Some(city.station.get)
+              })
+              case _ => ()
+            }}
+            val listCarriage : ListBuffer[Carriage] = ListBuffer.empty
+            node match {
+              case <DieselTrain>{subnode @ _*}</DieselTrain> => for (carriage <- subnode) { val levelCarriage = (carriage\"@level").text.toInt
+                carriage match {
+                  case <PassengerCarriage>{_*}</PassengerCarriage> => val passenger = (carriage \ "@passenger").text.toInt
+                    val newPassengerCarriage = TrainComponentFactory.makePassengerCarriage(ELECTRIC_TRAIN, company)
+                    newPassengerCarriage.level = levelCarriage
+                    newPassengerCarriage.nbPassenger = passenger
+                    listCarriage += newPassengerCarriage
+                  case <ResourceCarriage>{cargoNodeSeq @ _*}</ResourceCarriage> => val listCargo : ListBuffer[Cargo] = ListBuffer.empty
+                    for (<Cargo>{resources @ _*}</Cargo> <- cargoNodeSeq) {
+                      val listResourcePack : ListBuffer[ResourcePack] = ListBuffer.empty
+                      for (resource @ <Resource>{_*}</Resource> <- resources) {
+                        val resourceType = (resource \"@type").text
+                        val quantity = (resource \"@quantity").text.toInt
+                        listResourcePack += Resources.loadResource(resourceType, quantity)
+                      }
+                      val newCargo = new Cargo(listResourcePack.head.resource.resourceType)
+                      newCargo.resources.storeResourcePacks(listResourcePack)
+                      listCargo += newCargo
+                    }
+                    val newResourceCarriage = TrainComponentFactory.makeResourceCarriage(ELECTRIC_TRAIN, listCargo.head.resourceType, company)
+                    newResourceCarriage.level = levelCarriage
+                    newResourceCarriage.cargos = listCargo
+                    listCarriage += newResourceCarriage
+                }
+              }
+            }
+            newElectricTrain.carriages.clear()
+            newElectricTrain.carriages ++= listCarriage
+          })
+        case _ => ()
+      }
+      }}}
+
   def generateLoadMap(node : scala.xml.Node) : Unit = {
     node match {
       case <Map>{subnode @ _*}</Map> =>
@@ -183,6 +608,19 @@ class World() extends Loadable{
             val nameTownA = (nodeRoad \"@townA").text
             val nameTownB = (nodeRoad \"@townB").text
             towns.foreach(townA => if (nameTownA == townA.name) {towns.foreach(townB => if (nameTownB == townB.name) {loadConnection(nodeRoad, townA, townB)})} )
+          }
+        }
+        for (<Vehicle>{vehicle @ _*}</Vehicle> <- subnode) {
+          for (nodeVehicle <- vehicle) { nodeVehicle match {
+            case <Truck>{_*}</Truck> => loadTruck(nodeVehicle)
+            case <DieselTrain>{_*}</DieselTrain> => loadDieselTrain(nodeVehicle)
+            case <ElectricTrain>{_*}</ElectricTrain> => loadElectricTrain(nodeVehicle)
+            case <Boeing>{_*}</Boeing> => loadBoeing(nodeVehicle)
+            case <Concorde>{_*}</Concorde> => loadConcorde(nodeVehicle)
+            case <Liner>{_*}</Liner> => loadLiner(nodeVehicle)
+            case <CruiseBoat>{_*}</CruiseBoat> => loadCruiseBoat(nodeVehicle)
+            case _ => ()
+            }
           }
         }
     }

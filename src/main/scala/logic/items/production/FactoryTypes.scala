@@ -53,8 +53,53 @@ object FactoryTypes {
   case object VINEYARD extends FarmsType("Vineyard", 1000)
   case object WIRE_MILL extends SimpleFactoryType("Wire mill", 1000)
 
-  def factories() : List[FactoryType] = {
+  def factoriesTest() : List[FactoryType] = {
     List(GRAIN_FARM, COAL_MINE, BAUXITE_MINE, ALUMINIUM_PLANT, BAKERY, SHEEP_FARM)
+  }
+
+  def factories() : List[FactoryType] = {
+    List(ALUMINIUM_PLANT,
+    BAKERY,
+    BAUXITE_MINE,
+    //BREWERY,
+    //BRICKWORKS,
+    //CANNERY,
+    //CATTLE_RANCH,
+    //CEMENT_FACTORY,
+    //CHEMICAL_PLANT,
+    //CLAY_PIT,
+    COAL_MINE,
+    COPPER_MINE,
+    COTTON_PLANTATION,
+    //ELECTRONICS_FACTORY,
+    FISHERY,
+    //FORESTRY,
+    //FRUIT_ORCHARD,
+    FURNITURE_FACTORY,
+    //GLASS_FACTORY,
+    GRAIN_FARM,
+    IRON_MINE,
+    //LIQUOR_DISTILLERY,
+    //LUMBER_MILL,
+    OIL_REFINERY,
+    OIL_WELLS,
+    //PAPER_MILL,
+    //PIG_FARM,
+    //PRINTING_PRESS,
+    //QUARRY,
+    //RUBBER_PLANTATION,
+    //SAND_PIT,
+    SHEEP_FARM,
+    STEEL_MILL,
+    //STOCKYARD,
+    TANNERY,
+    TEXTILE_MILL
+    //TYRE_FACTORY,
+    //VEHICLE_FACTORY,
+    //VEGETABLE_FARM,
+    //VINEYARD,
+    //WIRE_MILL)
+    )
   }
 
 }

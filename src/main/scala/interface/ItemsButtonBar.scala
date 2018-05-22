@@ -9,43 +9,45 @@ import logic.items.transport.roads.RoadTypes.{HIGHWAY, RAIL}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scalafx.scene.Node
-import scalafx.scene.control.{Button, ButtonBar}
+import scalafx.scene.control._
 import scalafx.scene.layout.BorderPane
 import scalafx.scene.text.{Font, FontWeight}
 
 object ItemsButtonBar extends GUIComponent {
 
-  val mainPane = new BorderPane
+  private val mainPane = new BorderPane
 
-  val bar : ButtonBar = new ButtonBar
-  var itemChoiceButtons : ListBuffer[Button] = ListBuffer.empty
+  private val bar : ButtonBar = new ButtonBar
+  private var itemChoiceButtons : ListBuffer[Button] = ListBuffer.empty
 
-  val trainCategoryButton = new Button("Trains")
-  val planesCategoryButton = new Button("Planes")
-  val shipsCategoryButton = new Button("Ships")
-  val trucksCategoryButton = new Button("Trucks")
-  val factoriesButton = new Button("Factories")
+  private val trainCategoryButton = new Button("Trains")
+  private val planesCategoryButton = new Button("Planes")
+  private val shipsCategoryButton = new Button("Ships")
+  private val trucksCategoryButton = new Button("Trucks")
+  private val factoriesButton = new Button("Factories")
 
-  var buttonsForItemCategory : mutable.HashMap[VehicleCategory, List[Button]] = mutable.HashMap.empty
+  private var buttonsForItemCategory : mutable.HashMap[VehicleCategory, List[Button]] = mutable.HashMap.empty
 
-  var factoriesButtons : List[Button] = List.empty
+  private var factoriesButtons : List[Button] = List.empty
 
-  var selected : Option[(ItemType, Button)] = None
+  private var selected : Option[(ItemType, Option[Button])] = None
 
-  var buildMode = false
+  private var _buildMode = false
 
-  val buildModeButton = new Button("Game mode")
+  private val buildModeButton = new Button("Game mode")
+
+  def buildMode : Boolean = _buildMode
 
   def selectedItem : Option[ItemType] = selected match {
     case Some(itemAndButton) => Some(itemAndButton._1)
     case None => None
   }
 
-  def select(itemAndButton : (ItemType, Button) = null) : Unit = {
-    selected.foreach(_._2.style = "-fx-background-color: lightCoral")
+  def select(itemAndButton : (ItemType, Option[Button]) = null) : Unit = {
+    selected.foreach(_._2.foreach(_.style = "-fx-background-color: lightCoral"))
 
     if (itemAndButton != null) {
-      itemAndButton._2.style = "-fx-background-color: darkGrey"
+      itemAndButton._2.foreach(_.style = "-fx-background-color: darkGrey")
       selected = Option(itemAndButton._1, itemAndButton._2)
     }
   }
@@ -56,15 +58,14 @@ object ItemsButtonBar extends GUIComponent {
     ItemTypes.onSaleItemsForVehicleCategory(vehicleCategory).foldLeft(buttons)(
       (buttons, itemType) => {
 
-        //TODO take price from XML
         val itemButton = new Button(itemType.name + itemType.price + "$" +
           (itemType match {case RAIL | HIGHWAY => " per KM" case _ => ""}))
 
         itemButton.style = buildModeButton.style()
 
         itemButton.onAction = _ => {
-          if (buildMode) {
-            select(itemType, itemButton)
+          if (_buildMode) {
+            select(itemType, Some(itemButton))
           }
         }
 
@@ -84,8 +85,8 @@ object ItemsButtonBar extends GUIComponent {
         itemButton.style = buildModeButton.style()
 
         itemButton.onAction = _ => {
-          if (buildMode) {
-            select(item, itemButton)
+          if (_buildMode) {
+            select(item, Some(itemButton))
           }
         }
 
@@ -112,12 +113,12 @@ object ItemsButtonBar extends GUIComponent {
     buildModeButton.onAction = _ => {
       select()
 
-      if (!buildMode) {
-        buildMode = true
+      if (!_buildMode) {
+        _buildMode = true
         bar.style = "-fx-background-color: black"
         buildModeButton.text = "Build mode"
       } else {
-        buildMode = false
+        _buildMode = false
         bar.style = "-fx-background-color: white"
         buildModeButton.text = "Game mode"
       }
@@ -137,10 +138,35 @@ object ItemsButtonBar extends GUIComponent {
     addActionToCategoryButton(trucksCategoryButton, VehicleCategories.Trucks)
 
     factoriesButton.onAction = _ => {
-      val leftBar = new ButtonBar
-      leftBar.buttons = factoriesButtons
+      val factoryTypes = FactoryTypes.factories()
 
-      mainPane.right = leftBar
+      val factoryButtons = factoryTypes.foldLeft(ListBuffer[Button]())((buttonTypes, ftype) => {
+        buttonTypes += new Button(ftype.name + " $" + ftype.price)
+      })
+
+      val choices =
+        factoryButtons.foldLeft(ListBuffer[String]())((choices, button) => {
+          choices += button.text()
+        })
+
+      case class FactoryResult(name : String)
+
+      val dialog = new ChoiceDialog(defaultChoice = choices.head, choices) {
+        initOwner(GUI.stage)
+        title = "Factories"
+        headerText = "Choose a factory to build"
+      }
+
+      dialog.showAndWait() match {
+        case Some(text) =>
+          println(text)
+          factoryTypes.find(ftype => text.contains(ftype.name)) match {
+            case Some(ftype) => select(ftype, None)
+            case None =>
+          }
+
+        case _ => println("... user chose CANCEL or closed the dialog")
+      }
     }
 
     itemChoiceButtons += factoriesButton
@@ -155,7 +181,7 @@ object ItemsButtonBar extends GUIComponent {
   override def restart() : Unit = {
     select()
 
-    buildMode = false
+    _buildMode = false
     bar.style = "-fx-background-color: white"
     buildModeButton.text = "Game mode"
   }

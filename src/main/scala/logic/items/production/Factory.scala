@@ -1,5 +1,6 @@
 package logic.items.production
 
+import logic.Loadable
 import logic.items.{EvolutionPlan, Facility}
 import logic.items.production.FactoryTypes.FactoryType
 import logic.world.Company
@@ -16,7 +17,7 @@ class Factory
  override val town : Town,
  val recipes : ListBuffer[Recipe] = ListBuffer.empty)
   extends Facility(factoryType, company, town,
-    new EvolutionPlan(List(), 0.0, 0.0)) {
+    new EvolutionPlan(List(), 0.0, 0.0)) with Loadable {
 
   val productions : ListBuffer[Production] = ListBuffer.empty
 
@@ -53,6 +54,17 @@ class Factory
 
   override def evolve() : Unit = {
 
+  }
+
+  override def load(node: xml.Node): Unit = {
+
+  }
+
+  override def save: xml.Node = {
+    <Factory type={this.factoryType.name.toString}>
+      {this.productions.foldLeft(scala.xml.NodeSeq.Empty)((acc, production) =>
+      acc++production.save(this))}
+    </Factory>
   }
 
   def loadProduction (node: scala.xml.Node) : Unit = {

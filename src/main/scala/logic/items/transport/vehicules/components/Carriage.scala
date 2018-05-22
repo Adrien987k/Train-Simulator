@@ -1,5 +1,6 @@
 package logic.items.transport.vehicules.components
 
+import logic.Loadable
 import logic.items.EvolutionPlan
 import logic.items.transport.vehicules.components.TrainComponentTypes.CarriageType
 import logic.world.Company
@@ -18,9 +19,16 @@ abstract class Carriage
 (val carriageType : CarriageType,
  override val company : Company,
  override val evolutionPlan : EvolutionPlan)
-  extends TrainComponent(carriageType, company, evolutionPlan) {
+  extends TrainComponent(carriageType, company, evolutionPlan) with Loadable {
 
   override def step() : Boolean = { false }
+
+  override def save : scala.xml.Node = {
+    this match {
+      case resourceCarriage : ResourceCarriage => resourceCarriage.save
+      case passengerCarriage : PassengerCarriage => passengerCarriage.save
+    }
+  }
 
   override def propertyPane() : Node = { new BorderPane }
 

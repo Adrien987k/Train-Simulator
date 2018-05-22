@@ -28,6 +28,38 @@ class Train
 
   def maxSpeed() : Double = engine.maxSpeed
 
+  override def save: xml.Node = {
+    trainType.name match {
+      case "Diesel Train" => <DieselTrain
+        level={level.toString}
+        levelengine={engine.level.toString}
+        fuel={engine.fuelLevel.toString}
+        >
+          {carriages.foldLeft(scala.xml.NodeSeq.Empty)((acc, carriage) => acc++carriage.save)}
+          {this.saveLocation}
+          {this.saveGoal}
+          {this.saveDestination}
+          {<InitialLocation>
+            <Town name={initialStation.town.name}/>
+          </InitialLocation>}
+        </DieselTrain>
+
+      case "Electric Train" => <ElectricTrain
+        level={level.toString}
+        levelengine={engine.level.toString}
+        fuel={engine.fuelLevel.toString}
+        >
+        {carriages.foldLeft(scala.xml.NodeSeq.Empty)((acc, carriage) => acc++carriage.save)}
+        {this.saveLocation}
+        {this.saveGoal}
+        {this.saveDestination}
+          {<InitialLocation>
+            <Town name={initialStation.town.name}/>
+          </InitialLocation>}
+        </ElectricTrain>
+    }
+  }
+
   override def currentSpeed() : Double = {
     var speed = engine.tractiveEffort(totalWeight)
 

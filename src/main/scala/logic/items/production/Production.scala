@@ -1,12 +1,31 @@
 package logic.items.production
 
 import game.Game
+import logic.Loadable
 import logic.economy.ResourcePack
 import utils.DateTime
 
-class Production(val recipe : Recipe) {
+import scala.xml.Node
+
+class Production(val recipe : Recipe) extends Loadable{
 
   var startTime : DateTime = _
+
+  override def load(node: Node): Unit = {
+
+  }
+
+  override def save: Node = {
+    <Erreur></Erreur>
+  }
+
+  def save (factory: Factory) : Node = {
+      <Production
+      recipe={factory.recipes.indexOf(this.recipe).toString}
+      startday={this.startTime.days.toString}
+      starthour={this.startTime.hours.toString}
+      />
+  }
 
   def start(input : List[ResourcePack]) : Unit = {
     //TODO Check input = recipe.input

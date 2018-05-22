@@ -1,12 +1,14 @@
 package logic.economy
 
+import logic.Loadable
 import logic.economy.Resources.Resource
 
 import scala.collection.mutable
+import scala.xml.{Node, NodeSeq}
 import scalafx.scene.control.Label
 import scalafx.scene.layout.VBox
 
-class ResourceMap() {
+class ResourceMap() extends Loadable {
 
   def this(map : mutable.HashMap[Resource, Int]) {
     this()
@@ -21,6 +23,19 @@ class ResourceMap() {
   }
 
   var resources : mutable.HashMap[Resource, Int] = mutable.HashMap.empty
+
+  def save : NodeSeq = {
+    resources.foldLeft(scala.xml.NodeSeq.Empty)((acc, resourcePack) => acc++
+        <Resource
+    type={resourcePack._1.name.toString}
+    quantity={resourcePack._2.toString}
+    />
+    )
+  }
+
+  override def load(node: Node): Unit = {
+
+  }
 
   def putMap(map : mutable.HashMap[Resource, Int]) : Unit = {
     resources = map

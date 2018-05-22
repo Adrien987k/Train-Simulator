@@ -25,7 +25,7 @@ object Game {
   }
 
   def save () : Unit = {
-    scala.xml.XML.save("save.xml", Save.createNode)
+    scala.xml.XML.save("save.xml", _world.get.save)
   }
 
   def load() : Unit = {

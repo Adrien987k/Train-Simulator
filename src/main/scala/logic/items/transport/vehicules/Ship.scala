@@ -38,7 +38,39 @@ class Ship
   private var _nbPassenger : Int = 0
   private var _fuelLevel : Double = 0
 
+  override def save: xml.Node = {
+    vehicleType.name match {
+      case "Liner" =>  <Liner
+      level={level.toString}
+      fuel={fuelLevel.toString}
+      >
+        {cargoes.foldLeft(scala.xml.NodeSeq.Empty)((acc, cargo) => acc++cargo.save)}
+        {this.saveLocation}
+        {this.saveGoal}
+        {this.saveDestination}
+        {<InitialLocation>
+          <Town name={initialHarbor.town.name}/>
+        </InitialLocation>}
+      </Liner>
+
+      case "Cruise Boat" => <CruiseBoat
+      level={level.toString}
+      fuel={fuelLevel.toString}
+      passenger={_nbPassenger.toString}
+      >
+        {this.saveLocation}
+        {this.saveGoal}
+        {this.saveDestination}
+        {<InitialLocation>
+          <Town name={initialHarbor.town.name}/>
+        </InitialLocation>}
+      </CruiseBoat>
+    }
+
+  }
+
   def fuelLevel : Double = _fuelLevel
+  def setFuelLevel (fuelLevel : Double) : Unit = _fuelLevel = fuelLevel
 
   var cargoes : ListBuffer[Cargo] = ListBuffer.empty
 

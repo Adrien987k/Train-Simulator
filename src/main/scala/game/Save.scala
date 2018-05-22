@@ -56,15 +56,10 @@ object Save {
       day={event.time.days.toString}
       hour={event.time.hours.toString}
       name={event.name}
-      type={event.value match {
-        case IntValue(v) => "Int"
-        case DoubleValue(v) => "Double"
-        case StringValue(v) => "String"
-        case NoValue() => "No"
-      }
-      }
       value={event.value.info()}
-      />
+      >
+      {event.save}
+    </Event>
   }
 
   def createNodeResourceCargo(cargo : Cargo) : scala.xml.Node = {
@@ -93,24 +88,32 @@ object Save {
   def createNodeDieselTrain (train: Train) : scala.xml.Node = {
     <DieselTrain
     level={train.level.toString}
+    levelengine={train.engine.level.toString}
     fuel={train.engine.fuelLevel.toString}
     >
       {train.carriages.foldLeft(scala.xml.NodeSeq.Empty)((acc, carriage) => acc++createNodeCarriage(carriage))}
       {createNodeVehicleLocation(train)}
       {createNodeVehicleGoal(train)}
       {createNodeVehicleDestination(train)}
+      {<InitialLocation>
+      <Town name={train.initialStation.town.name}/>
+    </InitialLocation>}
     </DieselTrain>
   }
 
   def createNodeElectricTrain(train: Train) : scala.xml.Node = {
       <ElectricTrain
       level={train.level.toString}
+      levelengine={train.engine.level.toString}
       fuel={train.engine.fuelLevel.toString}
       >
         {train.carriages.foldLeft(scala.xml.NodeSeq.Empty)((acc, carriage) => acc++createNodeCarriage(carriage))}
         {createNodeVehicleLocation(train)}
         {createNodeVehicleGoal(train)}
         {createNodeVehicleDestination(train)}
+        {<InitialLocation>
+        <Town name={train.initialStation.town.name}/>
+      </InitialLocation>}
       </ElectricTrain>
   }
 
@@ -123,6 +126,9 @@ object Save {
         {createNodeVehicleLocation(plane)}
         {createNodeVehicleGoal(plane)}
         {createNodeVehicleDestination(plane)}
+        {<InitialLocation>
+        <Town name={plane.initialAirport.town.name}/>
+      </InitialLocation>}
       </Boeing>
   }
 
@@ -135,6 +141,9 @@ object Save {
       {createNodeVehicleLocation(plane)}
       {createNodeVehicleGoal(plane)}
       {createNodeVehicleDestination(plane)}
+      {<InitialLocation>
+      <Town name={plane.initialAirport.town.name}/>
+    </InitialLocation>}
     </Concorde>
   }
 
@@ -151,6 +160,9 @@ object Save {
       {createNodeVehicleLocation(truck)}
       {createNodeVehicleGoal(truck)}
       {createNodeVehicleDestination(truck)}
+      {<InitialLocation>
+      <Town name={truck.initialGasStation.town.name}/>
+    </InitialLocation>}
     </Truck>
   }
 
@@ -163,6 +175,9 @@ object Save {
       {createNodeVehicleLocation(ship)}
       {createNodeVehicleGoal(ship)}
       {createNodeVehicleDestination(ship)}
+      {<InitialLocation>
+      <Town name={ship.initialHarbor.town.name}/>
+    </InitialLocation>}
     </Liner>
   }
 
@@ -175,6 +190,9 @@ object Save {
       {createNodeVehicleLocation(ship)}
       {createNodeVehicleGoal(ship)}
       {createNodeVehicleDestination(ship)}
+      {<InitialLocation>
+      <Town name={ship.initialHarbor.town.name}/>
+    </InitialLocation>}
     </CruiseBoat>
   }
 
@@ -208,10 +226,7 @@ object Save {
 
   def createNodeVehicle (vehicle: Vehicle) : scala.xml.Node = {
     vehicle match {
-      case train : Train => vehicle.vehicleType.name match {
-        case "Diesel Train" => createNodeDieselTrain(train)
-        case "Electric Train" => createNodeElectricTrain(train)
-      }
+      case train : Train => train.save
 
       case plane : Plane => vehicle.vehicleType.name match {
         case "Boeing" => createNodeBoeing(plane)
@@ -264,11 +279,14 @@ object Save {
         {town.offer.packs.foldLeft(scala.xml.NodeSeq.Empty)((acc, resourcePack) => acc++createNodeResourcePack(resourcePack))}
       </Offer>
       <Request>
-        {town.requests.resources.foldLeft(scala.xml.NodeSeq.Empty)((acc, resourcePack) => acc++createNodeRequest(resourcePack))}
+        {town.requests.save}
       </Request>
       <Consumption>
         {town.consumption.resources.foldLeft(scala.xml.NodeSeq.Empty)((acc, resourcePack) => acc++createNodeConsumption(resourcePack))}
       </Consumption>
+      <Statistic>
+        {town.stats.events.foldLeft(scala.xml.NodeSeq.Empty)((acc, event) => acc++createNodeEvent(event))}
+      </Statistic>
       {town.factories.foldLeft(scala.xml.NodeSeq.Empty)((acc,factory) => acc++createNodeFactory(factory))}
       {if (town.hasAirport) <Airport level={town.airport.get.level.toString}/>}
       {if (town.hasHarbor) <Port level={town.harbor.get.level.toString}/>}

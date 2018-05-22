@@ -4,6 +4,8 @@ import logic.economy.Resources.Resource
 import statistics.StatValue
 import utils.DateTime
 
+import scala.collection.mutable.ListBuffer
+
 case class Recipe
 (input : List[(Resource, Int)],
  output : (Resource, Int),
@@ -12,4 +14,7 @@ case class Recipe
   override def info() : String =
     output._1.name + " quantity: " + output._2
 
+  override def mean(l : ListBuffer[StatValue]) : StatValue = l.head
+
+  override def sum(v : StatValue) : StatValue = v
 }

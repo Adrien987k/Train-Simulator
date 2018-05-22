@@ -32,6 +32,7 @@ abstract class Engine
   def maxFuelLevel : Double = _maxFuelLevel
 
   def fuelLevel : Double = _fuelLevel
+  def setFuelLevel (fuelLevel : Double) : Unit = _fuelLevel = fuelLevel
 
   def refillFuelLevel() : Unit = {
     _fuelLevel = maxFuelLevel
